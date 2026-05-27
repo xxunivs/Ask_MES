@@ -1,0 +1,21 @@
+# Python
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# 환경변수 (API 키, URL 포함 — 절대 업로드 금지)
+.env
+
+# ChromaDB (자동 재생성됨)
+chroma_db/
+
+# Word 문서 (용량 큰 바이너리)
+*.docx
+
+# 기타
+.DS_Store
+Thumbs.db
+*.log

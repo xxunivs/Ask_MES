@@ -1,0 +1,600 @@
+@prefix mfg:  <http://neurofactory.skku.ac.kr/mes#> .
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
+@prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+
+# ═══════════════════════════════════════════════════════════════════
+# Ontology Declaration
+# ═══════════════════════════════════════════════════════════════════
+
+<http://neurofactory.skku.ac.kr/mes>
+    a owl:Ontology ;
+    rdfs:label "THiRA MES 3.1.0 Manufacturing Ontology"@en ,
+               "THiRA MES 3.1.0 제조 온톨로지"@ko ;
+    rdfs:comment "NeuroFactory NL-to-SQL 시스템을 위한 MES 도메인 온톨로지. SKKU-LS Tirayutech RISE 프로그램 (S-2026-0945-000)"@ko ;
+    owl:versionInfo "1.0" .
+
+# ═══════════════════════════════════════════════════════════════════
+# 1. 클래스 정의 (OWL Classes)
+# ═══════════════════════════════════════════════════════════════════
+
+# ─── 1-1. 로트 (Lot) ───────────────────────────────────────────────
+
+mfg:Lot
+    a owl:Class ;
+    rdfs:label "생산 로트"@ko , "Production Lot"@en ;
+    rdfs:comment "제조 공정에서 일괄 처리되는 제품 단위"@ko ;
+    mfg:mapsToTable "CIM_LOT" ;
+    mfg:primaryKey "LOTID" ;
+    skos:altLabel "LOT"@ko , "로트"@ko , "작업 로트"@ko .
+
+mfg:LotBatchRelation
+    a owl:Class ;
+    rdfs:label "로트-배치 관계"@ko , "Lot-Batch Relation"@en ;
+    mfg:mapsToTable "CIM_LOTBATCHREL" ;
+    mfg:primaryKey "LOTID,BATCHID" .
+
+mfg:LotMaterialRelation
+    a owl:Class ;
+    rdfs:label "로트-자재 관계"@ko , "Lot-Material Relation"@en ;
+    mfg:mapsToTable "CIM_LOTMATERIALLOTREL" ;
+    mfg:primaryKey "LOTID,MATERIALLOTID" .
+
+# ─── 1-2. 배치 (Batch) ────────────────────────────────────────────
+
+mfg:Batch
+    a owl:Class ;
+    rdfs:label "배치"@ko , "Batch"@en ;
+    rdfs:comment "여러 로트를 묶어 처리하는 배치 단위"@ko ;
+    mfg:mapsToTable "CIM_BATCH" ;
+    mfg:primaryKey "BATCHID" ;
+    skos:altLabel "배치잡"@ko , "배치 처리"@ko .
+
+# ─── 1-3. 설비 (Equipment) ────────────────────────────────────────
+
+mfg:Equipment
+    a owl:Class ;
+    rdfs:label "설비"@ko , "Equipment"@en ;
+    rdfs:comment "제조 공정에 사용되는 기계 및 장비"@ko ;
+    mfg:mapsToTable "CIM_EQUIPMENT" ;
+    mfg:primaryKey "EQUIPMENTID" ;
+    skos:altLabel "장비"@ko , "기계"@ko , "머신"@ko .
+
+mfg:EquipmentClass
+    a owl:Class ;
+    rdfs:label "설비 분류"@ko , "Equipment Class"@en ;
+    rdfs:comment "설비의 그룹/분류 정보"@ko ;
+    mfg:mapsToTable "CIM_EQUIPMENTCLASS" ;
+    mfg:primaryKey "EQUIPMENTCLASSID" ;
+    skos:altLabel "설비 유형"@ko , "설비 종류"@ko , "장비 분류"@ko .
+
+# ─── 1-4. 위치 (Facility) ─────────────────────────────────────────
+
+mfg:Facility
+    a owl:Class ;
+    rdfs:label "공정 구역"@ko , "Facility"@en ;
+    rdfs:comment "생산 현장의 위치/구역 정보"@ko ;
+    mfg:mapsToTable "CIM_FACILITY" ;
+    mfg:primaryKey "FACILITYID" ;
+    skos:altLabel "위치"@ko , "작업장"@ko , "구역"@ko .
+
+# ─── 1-5. 자재 (Material) ─────────────────────────────────────────
+
+mfg:MaterialLot
+    a owl:Class ;
+    rdfs:label "자재 로트"@ko , "Material Lot"@en ;
+    rdfs:comment "제조에 투입되는 자재의 로트 단위"@ko ;
+    mfg:mapsToTable "CIM_MATERIALLOT" ;
+    mfg:primaryKey "MATERIALLOTID" ;
+    skos:altLabel "자재 LOT"@ko , "원자재 LOT"@ko , "자재로트"@ko .
+
+mfg:MaterialDefinition
+    a owl:Class ;
+    rdfs:label "자재 정의"@ko , "Material Definition"@en ;
+    rdfs:comment "자재의 종류 및 규격 정의"@ko ;
+    mfg:mapsToTable "CIM_MATERIALDEFINITION" ;
+    mfg:primaryKey "MATERIALDEFINITIONID" ;
+    skos:altLabel "품목코드"@ko , "자재코드"@ko , "자재명"@ko .
+
+mfg:MaterialClass
+    a owl:Class ;
+    rdfs:label "자재 클래스"@ko , "Material Class"@en ;
+    rdfs:comment "자재의 분류 체계"@ko ;
+    mfg:mapsToTable "CIM_MATERIALCLASS" ;
+    mfg:primaryKey "MATERIALCLASSID" ;
+    skos:altLabel "자재 분류"@ko , "자재 유형"@ko .
+
+# ─── 1-6. 공정 (Process) ──────────────────────────────────────────
+
+mfg:ProcessDefinition
+    a owl:Class ;
+    rdfs:label "공정 정의"@ko , "Process Definition"@en ;
+    rdfs:comment "제조 공정의 전체 정의 (BOM 포함)"@ko ;
+    mfg:mapsToTable "CIM_PROCESSDEFINITION" ;
+    mfg:primaryKey "PROCESSDEFINITIONID" ;
+    skos:altLabel "공정정의"@ko , "라우팅"@ko .
+
+mfg:ProcessSegment
+    a owl:Class ;
+    rdfs:label "공정 세그먼트"@ko , "Process Segment"@en ;
+    rdfs:comment "공정 정의 내의 개별 작업 단계"@ko ;
+    mfg:mapsToTable "CIM_PROCESSSEGMENT" ;
+    mfg:primaryKey "PROCESSSEGMENTID" ;
+    skos:altLabel "공정"@ko , "공정명"@ko , "작업 공정"@ko .
+
+mfg:ProcessNode
+    a owl:Class ;
+    rdfs:label "공정 노드"@ko , "Process Node"@en ;
+    rdfs:comment "공정 흐름 그래프의 개별 노드"@ko ;
+    mfg:mapsToTable "CIM_PROCESSNODE" ;
+    mfg:primaryKey "PROCESSNODEID" ;
+    skos:altLabel "공정 단계"@ko , "노드"@ko .
+
+mfg:ProcessPath
+    a owl:Class ;
+    rdfs:label "공정 경로"@ko , "Process Path"@en ;
+    rdfs:comment "공정 노드 간의 전이(라우팅) 경로"@ko ;
+    mfg:mapsToTable "CIM_PROCESSPATH" ;
+    mfg:primaryKey "PROCESSPATHID" ;
+    skos:altLabel "라우팅"@ko , "공정 흐름"@ko .
+
+# ─── 1-7. 제품 (Product) ──────────────────────────────────────────
+
+mfg:ProductDefinition
+    a owl:Class ;
+    rdfs:label "제품 정의"@ko , "Product Definition"@en ;
+    rdfs:comment "생산하는 제품의 종류 및 규격"@ko ;
+    mfg:mapsToTable "CIM_PRODUCTDEFINITION" ;
+    mfg:primaryKey "PRODUCTDEFINITIONID" ;
+    skos:altLabel "품목"@ko , "제품"@ko , "제품코드"@ko .
+
+mfg:ProductClass
+    a owl:Class ;
+    rdfs:label "품목 구분"@ko , "Product Class"@en ;
+    rdfs:comment "제품의 분류 체계"@ko ;
+    mfg:mapsToTable "CIM_PRODUCTCLASS" ;
+    mfg:primaryKey "PRODUCTCLASSID" ;
+    skos:altLabel "품목 분류"@ko , "제품 분류"@ko .
+
+mfg:ProductOrder
+    a owl:Class ;
+    rdfs:label "제품 작업지시"@ko , "Product Order"@en ;
+    rdfs:comment "특정 제품 생산을 위한 작업 지시"@ko ;
+    mfg:mapsToTable "CIM_PRODUCTORDER" ;
+    mfg:primaryKey "PRODUCTORDERID" ;
+    skos:altLabel "작업지시"@ko , "생산지시"@ko , "제조지시"@ko , "오더"@ko .
+
+mfg:ProductProcessRelation
+    a owl:Class ;
+    rdfs:label "제품-공정 관계"@ko , "Product-Process Relation"@en ;
+    mfg:mapsToTable "CIM_PRODUCTPROCESSREL" ;
+    mfg:primaryKey "PRODUCTDEFINITIONID,PROCESSDEFINITIONID" .
+
+# ═══════════════════════════════════════════════════════════════════
+# 2. 객체 속성 (Object Properties) — 클래스 간 관계
+# ═══════════════════════════════════════════════════════════════════
+
+mfg:hasEquipmentClass
+    a owl:ObjectProperty ;
+    rdfs:label "설비 분류"@ko ;
+    rdfs:domain mfg:Equipment ;
+    rdfs:range  mfg:EquipmentClass ;
+    mfg:joinCondition "CIM_EQUIPMENT.EQUIPMENTCLASSID = CIM_EQUIPMENTCLASS.EQUIPMENTCLASSID" .
+
+mfg:locatedAt
+    a owl:ObjectProperty ;
+    rdfs:label "위치"@ko ;
+    rdfs:domain mfg:Equipment ;
+    rdfs:range  mfg:Facility ;
+    mfg:joinCondition "CIM_EQUIPMENT.FACILITYID = CIM_FACILITY.FACILITYID" .
+
+mfg:processedBy
+    a owl:ObjectProperty ;
+    rdfs:label "처리 설비"@ko ;
+    rdfs:domain mfg:Lot ;
+    rdfs:range  mfg:Equipment ;
+    mfg:joinCondition "CIM_LOT.EQUIPMENTID = CIM_EQUIPMENT.EQUIPMENTID" .
+
+mfg:producedUnder
+    a owl:ObjectProperty ;
+    rdfs:label "작업지시"@ko ;
+    rdfs:domain mfg:Lot ;
+    rdfs:range  mfg:ProductOrder ;
+    mfg:joinCondition "CIM_LOT.PRODUCTORDERID = CIM_PRODUCTORDER.PRODUCTORDERID" .
+
+mfg:hasProductDefinition
+    a owl:ObjectProperty ;
+    rdfs:label "제품 정의"@ko ;
+    rdfs:domain mfg:Lot ;
+    rdfs:range  mfg:ProductDefinition ;
+    mfg:joinCondition "CIM_LOT.PRODUCTDEFINITIONID = CIM_PRODUCTDEFINITION.PRODUCTDEFINITIONID" .
+
+mfg:atProcessNode
+    a owl:ObjectProperty ;
+    rdfs:label "현재 공정 노드"@ko ;
+    rdfs:domain mfg:Lot ;
+    rdfs:range  mfg:ProcessNode ;
+    mfg:joinCondition "CIM_LOT.PROCESSNODEID = CIM_PROCESSNODE.PROCESSNODEID" .
+
+mfg:atProcessSegment
+    a owl:ObjectProperty ;
+    rdfs:label "현재 공정 세그먼트"@ko ;
+    rdfs:domain mfg:Lot ;
+    rdfs:range  mfg:ProcessSegment ;
+    mfg:joinCondition "CIM_LOT.PROCESSSEGMENTID = CIM_PROCESSSEGMENT.PROCESSSEGMENTID" .
+
+mfg:followsProcessDefinition
+    a owl:ObjectProperty ;
+    rdfs:label "공정 정의"@ko ;
+    rdfs:domain mfg:Lot ;
+    rdfs:range  mfg:ProcessDefinition ;
+    mfg:joinCondition "CIM_LOT.PROCESSDEFINITIONID = CIM_PROCESSDEFINITION.PROCESSDEFINITIONID" .
+
+mfg:includedInBatch
+    a owl:ObjectProperty ;
+    rdfs:label "배치 포함"@ko ;
+    rdfs:domain mfg:Lot ;
+    rdfs:range  mfg:Batch ;
+    mfg:viaTable "CIM_LOTBATCHREL" ;
+    mfg:joinCondition "CIM_LOT.LOTID = CIM_LOTBATCHREL.LOTID AND CIM_LOTBATCHREL.BATCHID = CIM_BATCH.BATCHID" .
+
+mfg:consumesMaterial
+    a owl:ObjectProperty ;
+    rdfs:label "소비 자재"@ko ;
+    rdfs:domain mfg:Lot ;
+    rdfs:range  mfg:MaterialLot ;
+    mfg:viaTable "CIM_LOTMATERIALLOTREL" ;
+    mfg:joinCondition "CIM_LOT.LOTID = CIM_LOTMATERIALLOTREL.LOTID AND CIM_LOTMATERIALLOTREL.MATERIALLOTID = CIM_MATERIALLOT.MATERIALLOTID" .
+
+mfg:hasMaterialDefinition
+    a owl:ObjectProperty ;
+    rdfs:label "자재 정의"@ko ;
+    rdfs:domain mfg:MaterialLot ;
+    rdfs:range  mfg:MaterialDefinition ;
+    mfg:joinCondition "CIM_MATERIALLOT.MATERIALDEFINITIONID = CIM_MATERIALDEFINITION.MATERIALDEFINITIONID" .
+
+mfg:hasMaterialClass
+    a owl:ObjectProperty ;
+    rdfs:label "자재 클래스"@ko ;
+    rdfs:domain mfg:MaterialLot ;
+    rdfs:range  mfg:MaterialClass ;
+    mfg:joinCondition "CIM_MATERIALLOT.MATERIALCLASSID = CIM_MATERIALCLASS.MATERIALCLASSID" .
+
+mfg:classifiedAs
+    a owl:ObjectProperty ;
+    rdfs:label "자재 분류"@ko ;
+    rdfs:domain mfg:MaterialDefinition ;
+    rdfs:range  mfg:MaterialClass ;
+    mfg:joinCondition "CIM_MATERIALDEFINITION.MATERIALCLASSID = CIM_MATERIALCLASS.MATERIALCLASSID" .
+
+mfg:orderedFor
+    a owl:ObjectProperty ;
+    rdfs:label "대상 제품 정의"@ko ;
+    rdfs:domain mfg:ProductOrder ;
+    rdfs:range  mfg:ProductDefinition ;
+    mfg:joinCondition "CIM_PRODUCTORDER.PRODUCTDEFINITIONID = CIM_PRODUCTDEFINITION.PRODUCTDEFINITIONID" .
+
+mfg:productBelongsTo
+    a owl:ObjectProperty ;
+    rdfs:label "제품 구분"@ko ;
+    rdfs:domain mfg:ProductDefinition ;
+    rdfs:range  mfg:ProductClass ;
+    mfg:joinCondition "CIM_PRODUCTDEFINITION.PRODUCTCLASSID = CIM_PRODUCTCLASS.PRODUCTCLASSID" .
+
+mfg:orderBelongsTo
+    a owl:ObjectProperty ;
+    rdfs:label "작업지시 품목 구분"@ko ;
+    rdfs:domain mfg:ProductOrder ;
+    rdfs:range  mfg:ProductClass ;
+    mfg:joinCondition "CIM_PRODUCTORDER.PRODUCTCLASSID = CIM_PRODUCTCLASS.PRODUCTCLASSID" .
+
+mfg:nodeInProcess
+    a owl:ObjectProperty ;
+    rdfs:label "공정 정의 소속"@ko ;
+    rdfs:domain mfg:ProcessNode ;
+    rdfs:range  mfg:ProcessDefinition ;
+    mfg:joinCondition "CIM_PROCESSNODE.PROCESSDEFINITIONID = CIM_PROCESSDEFINITION.PROCESSDEFINITIONID" .
+
+mfg:nodeAtSegment
+    a owl:ObjectProperty ;
+    rdfs:label "세그먼트 위치"@ko ;
+    rdfs:domain mfg:ProcessNode ;
+    rdfs:range  mfg:ProcessSegment ;
+    mfg:joinCondition "CIM_PROCESSNODE.PROCESSSEGMENTID = CIM_PROCESSSEGMENT.PROCESSSEGMENTID" .
+
+mfg:pathFromNode
+    a owl:ObjectProperty ;
+    rdfs:label "출발 노드"@ko ;
+    rdfs:domain mfg:ProcessPath ;
+    rdfs:range  mfg:ProcessNode ;
+    mfg:joinCondition "CIM_PROCESSPATH.PROCESSNODEID = CIM_PROCESSNODE.PROCESSNODEID" .
+
+mfg:pathToNode
+    a owl:ObjectProperty ;
+    rdfs:label "도착 노드"@ko ;
+    rdfs:domain mfg:ProcessPath ;
+    rdfs:range  mfg:ProcessNode ;
+    mfg:joinCondition "CIM_PROCESSPATH.NEXTPROCESSNODEID = CIM_PROCESSNODE.PROCESSNODEID" .
+
+# ═══════════════════════════════════════════════════════════════════
+# 3. 데이터 속성 (Datatype Properties) — 주요 컬럼 매핑
+# ═══════════════════════════════════════════════════════════════════
+
+# ─── CIM_LOT 핵심 속성 ────────────────────────────────────────────
+
+mfg:lotId
+    a owl:DatatypeProperty ;
+    rdfs:label "LOT ID"@ko ;
+    rdfs:domain mfg:Lot ;
+    rdfs:range  xsd:string ;
+    mfg:mapsToColumn "CIM_LOT.LOTID" ;
+    skos:altLabel "로트번호"@ko , "lot id"@en .
+
+mfg:isOnHold
+    a owl:DatatypeProperty ;
+    rdfs:label "홀드 여부"@ko ;
+    rdfs:domain mfg:Lot ;
+    rdfs:range  xsd:boolean ;
+    mfg:mapsToColumn "CIM_LOT.ISHOLD" ;
+    rdfs:comment "Y=홀드 상태, N=정상"@ko ;
+    skos:altLabel "홀드"@ko , "보류"@ko , "hold"@en .
+
+mfg:isRework
+    a owl:DatatypeProperty ;
+    rdfs:label "재작업 여부"@ko ;
+    rdfs:domain mfg:Lot ;
+    rdfs:range  xsd:boolean ;
+    mfg:mapsToColumn "CIM_LOT.ISREWORK" ;
+    skos:altLabel "재작업"@ko , "rework"@en .
+
+mfg:currentQty
+    a owl:DatatypeProperty ;
+    rdfs:label "현재 수량"@ko ;
+    rdfs:domain mfg:Lot ;
+    rdfs:range  xsd:float ;
+    mfg:mapsToColumn "CIM_LOT.QTY" ;
+    skos:altLabel "수량"@ko , "재고"@ko .
+
+mfg:originalQty
+    a owl:DatatypeProperty ;
+    rdfs:label "원래 수량"@ko ;
+    rdfs:domain mfg:Lot ;
+    rdfs:range  xsd:float ;
+    mfg:mapsToColumn "CIM_LOT.ORIGINALQTY" .
+
+mfg:lossQty
+    a owl:DatatypeProperty ;
+    rdfs:label "불량 수량"@ko ;
+    rdfs:domain mfg:Lot ;
+    rdfs:range  xsd:float ;
+    mfg:mapsToColumn "CIM_LOT.LOSSQTY" ;
+    skos:altLabel "불량"@ko , "손실"@ko , "defect"@en .
+
+mfg:defectQty
+    a owl:DatatypeProperty ;
+    rdfs:label "결함 수량"@ko ;
+    rdfs:domain mfg:Lot ;
+    rdfs:range  xsd:float ;
+    mfg:mapsToColumn "CIM_LOT.DEFECTQTY" ;
+    skos:altLabel "결함"@ko , "불량수량"@ko .
+
+mfg:dueDate
+    a owl:DatatypeProperty ;
+    rdfs:label "납기일"@ko ;
+    rdfs:domain mfg:Lot ;
+    rdfs:range  xsd:dateTime ;
+    mfg:mapsToColumn "CIM_LOT.DUEDATE" ;
+    skos:altLabel "납기"@ko , "마감일"@ko , "기한"@ko .
+
+mfg:trackInTime
+    a owl:DatatypeProperty ;
+    rdfs:label "작업 시작시간"@ko ;
+    rdfs:domain mfg:Lot ;
+    rdfs:range  xsd:dateTime ;
+    mfg:mapsToColumn "CIM_LOT.TRACKINTIME" ;
+    skos:altLabel "trackin"@ko , "track in"@ko , "투입시간"@ko .
+
+mfg:trackOutTime
+    a owl:DatatypeProperty ;
+    rdfs:label "작업 완료시간"@ko ;
+    rdfs:domain mfg:Lot ;
+    rdfs:range  xsd:dateTime ;
+    mfg:mapsToColumn "CIM_LOT.TRACKOUTTIME" ;
+    skos:altLabel "trackout"@ko , "track out"@ko , "완료시간"@ko .
+
+mfg:lotState
+    a owl:DatatypeProperty ;
+    rdfs:label "LOT 상태"@ko ;
+    rdfs:domain mfg:Lot ;
+    rdfs:range  xsd:string ;
+    mfg:mapsToColumn "CIM_LOT.STATE" ;
+    skos:altLabel "상태"@ko , "로트상태"@ko .
+
+mfg:lotPriority
+    a owl:DatatypeProperty ;
+    rdfs:label "우선순위"@ko ;
+    rdfs:domain mfg:Lot ;
+    rdfs:range  xsd:integer ;
+    mfg:mapsToColumn "CIM_LOT.PRIORITY" .
+
+# ─── CIM_EQUIPMENT 핵심 속성 ──────────────────────────────────────
+
+mfg:equipmentId
+    a owl:DatatypeProperty ;
+    rdfs:label "설비코드"@ko ;
+    rdfs:domain mfg:Equipment ;
+    rdfs:range  xsd:string ;
+    mfg:mapsToColumn "CIM_EQUIPMENT.EQUIPMENTID" .
+
+mfg:alarmCode
+    a owl:DatatypeProperty ;
+    rdfs:label "알람코드"@ko ;
+    rdfs:domain mfg:Equipment ;
+    rdfs:range  xsd:string ;
+    mfg:mapsToColumn "CIM_EQUIPMENT.ALARMID" ;
+    skos:altLabel "알람"@ko , "경보"@ko , "alarm"@en .
+
+mfg:isPmTarget
+    a owl:DatatypeProperty ;
+    rdfs:label "PM 대상"@ko ;
+    rdfs:domain mfg:Equipment ;
+    rdfs:range  xsd:string ;
+    mfg:mapsToColumn "CIM_EQUIPMENT.PMTARGET" ;
+    skos:altLabel "PM"@ko , "예방정비"@ko , "preventive maintenance"@en .
+
+mfg:ratingGrade
+    a owl:DatatypeProperty ;
+    rdfs:label "설비 평가등급"@ko ;
+    rdfs:domain mfg:Equipment ;
+    rdfs:range  xsd:string ;
+    mfg:mapsToColumn "CIM_EQUIPMENT.EQPRATINGGRADE" ;
+    skos:altLabel "평가등급"@ko , "등급"@ko .
+
+mfg:tactTime
+    a owl:DatatypeProperty ;
+    rdfs:label "공정 시간"@ko ;
+    rdfs:domain mfg:Equipment ;
+    rdfs:range  xsd:integer ;
+    mfg:mapsToColumn "CIM_EQUIPMENT.TACTTIME" ;
+    skos:altLabel "택타임"@ko , "tact time"@en .
+
+mfg:equipmentState
+    a owl:DatatypeProperty ;
+    rdfs:label "설비 상태"@ko ;
+    rdfs:domain mfg:Equipment ;
+    rdfs:range  xsd:string ;
+    mfg:mapsToColumn "CIM_EQUIPMENT.STATE" .
+
+mfg:isUsable
+    a owl:DatatypeProperty ;
+    rdfs:label "사용 가능"@ko ;
+    rdfs:domain owl:Thing ;
+    rdfs:range  xsd:string ;
+    rdfs:comment "Y=사용 가능, N=불가"@ko ;
+    skos:altLabel "활성"@ko , "사용여부"@ko .
+
+# ─── CIM_PRODUCTORDER 핵심 속성 ───────────────────────────────────
+
+mfg:productOrderId
+    a owl:DatatypeProperty ;
+    rdfs:label "작업지시번호"@ko ;
+    rdfs:domain mfg:ProductOrder ;
+    rdfs:range  xsd:string ;
+    mfg:mapsToColumn "CIM_PRODUCTORDER.PRODUCTORDERID" .
+
+mfg:orderState
+    a owl:DatatypeProperty ;
+    rdfs:label "작업지시 상태"@ko ;
+    rdfs:domain mfg:ProductOrder ;
+    rdfs:range  xsd:string ;
+    mfg:mapsToColumn "CIM_PRODUCTORDER.STATE" .
+
+mfg:isDelayed
+    a owl:DatatypeProperty ;
+    rdfs:label "지연 플래그"@ko ;
+    rdfs:domain mfg:ProductOrder ;
+    rdfs:range  xsd:string ;
+    mfg:mapsToColumn "CIM_PRODUCTORDER.DELAYFLAG" ;
+    skos:altLabel "지연"@ko , "지체"@ko , "delay"@en .
+
+mfg:isFirm
+    a owl:DatatypeProperty ;
+    rdfs:label "확정 플래그"@ko ;
+    rdfs:domain mfg:ProductOrder ;
+    rdfs:range  xsd:string ;
+    mfg:mapsToColumn "CIM_PRODUCTORDER.FIRMFLAG" ;
+    skos:altLabel "확정"@ko , "firm"@en .
+
+mfg:scheduleEndTime
+    a owl:DatatypeProperty ;
+    rdfs:label "생산 완료 목표일"@ko ;
+    rdfs:domain mfg:ProductOrder ;
+    rdfs:range  xsd:dateTime ;
+    mfg:mapsToColumn "CIM_PRODUCTORDER.SCHEDULEENDTIME" ;
+    skos:altLabel "납기"@ko , "계획종료일"@ko .
+
+mfg:orderQty
+    a owl:DatatypeProperty ;
+    rdfs:label "작업지시 수량"@ko ;
+    rdfs:domain mfg:ProductOrder ;
+    rdfs:range  xsd:float ;
+    mfg:mapsToColumn "CIM_PRODUCTORDER.QTY" .
+
+mfg:resultQty
+    a owl:DatatypeProperty ;
+    rdfs:label "양품 수량"@ko ;
+    rdfs:domain mfg:ProductOrder ;
+    rdfs:range  xsd:float ;
+    mfg:mapsToColumn "CIM_PRODUCTORDER.RESULTQTY" .
+
+mfg:procurType
+    a owl:DatatypeProperty ;
+    rdfs:label "외주/사내 구분"@ko ;
+    rdfs:domain mfg:ProductOrder ;
+    rdfs:range  xsd:string ;
+    mfg:mapsToColumn "CIM_PRODUCTORDER.PROCURTYPE" ;
+    skos:altLabel "외주"@ko , "outsourcing"@en .
+
+# ─── CIM_MATERIALLOT 핵심 속성 ────────────────────────────────────
+
+mfg:materialLotId
+    a owl:DatatypeProperty ;
+    rdfs:label "자재 LOT ID"@ko ;
+    rdfs:domain mfg:MaterialLot ;
+    rdfs:range  xsd:string ;
+    mfg:mapsToColumn "CIM_MATERIALLOT.MATERIALLOTID" .
+
+mfg:expireDate
+    a owl:DatatypeProperty ;
+    rdfs:label "사용 만료일"@ko ;
+    rdfs:domain mfg:MaterialLot ;
+    rdfs:range  xsd:dateTime ;
+    mfg:mapsToColumn "CIM_MATERIALLOT.EXPIREDATE" ;
+    skos:altLabel "만료"@ko , "유통기한"@ko , "유효기간"@ko .
+
+mfg:receivedTime
+    a owl:DatatypeProperty ;
+    rdfs:label "입고 시간"@ko ;
+    rdfs:domain mfg:MaterialLot ;
+    rdfs:range  xsd:dateTime ;
+    mfg:mapsToColumn "CIM_MATERIALLOT.RECEIVEDTIME" ;
+    skos:altLabel "입고"@ko , "수령"@ko , "입하"@ko .
+
+mfg:vendorId
+    a owl:DatatypeProperty ;
+    rdfs:label "공급사"@ko ;
+    rdfs:domain mfg:MaterialLot ;
+    rdfs:range  xsd:string ;
+    mfg:mapsToColumn "CIM_MATERIALLOT.VENDORID" ;
+    skos:altLabel "공급업체"@ko , "vendor"@en .
+
+# ═══════════════════════════════════════════════════════════════════
+# 4. 커스텀 어노테이션 속성 (NL-to-SQL 파이프라인용)
+# ═══════════════════════════════════════════════════════════════════
+
+mfg:mapsToTable
+    a owl:AnnotationProperty ;
+    rdfs:label "매핑 테이블"@ko ;
+    rdfs:comment "이 클래스가 매핑되는 MS SQL Server 테이블명"@ko .
+
+mfg:mapsToColumn
+    a owl:AnnotationProperty ;
+    rdfs:label "매핑 컬럼"@ko ;
+    rdfs:comment "이 속성이 매핑되는 테이블.컬럼명 (예: CIM_LOT.ISHOLD)"@ko .
+
+mfg:primaryKey
+    a owl:AnnotationProperty ;
+    rdfs:label "기본 키"@ko ;
+    rdfs:comment "해당 테이블의 기본 키 컬럼명"@ko .
+
+mfg:joinCondition
+    a owl:AnnotationProperty ;
+    rdfs:label "JOIN 조건"@ko ;
+    rdfs:comment "SQL JOIN에 사용되는 ON 절 조건식"@ko .
+
+mfg:viaTable
+    a owl:AnnotationProperty ;
+    rdfs:label "경유 테이블"@ko ;
+    rdfs:comment "다대다 관계에서 경유하는 중간 테이블"@ko .

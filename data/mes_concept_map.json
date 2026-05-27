@@ -1,0 +1,142 @@
+{
+  "_comment": "MES 자연어 개념 → 테이블/컬럼 매핑 (Lightweight Ontology for NeuroFactory)",
+  "_version": "1.0",
+
+  "concepts": {
+    "생산 로트": {
+      "tables": ["CIM_LOT"],
+      "key_columns": ["CIM_LOT.LOTID", "CIM_LOT.LOTNAME"],
+      "aliases": ["LOT", "로트", "제품 로트", "생산 로트", "작업 로트"]
+    },
+    "홀드": {
+      "tables": ["CIM_LOT"],
+      "key_columns": ["CIM_LOT.ISHOLD"],
+      "aliases": ["홀드", "hold", "보류", "정지", "잠금"]
+    },
+    "재작업": {
+      "tables": ["CIM_LOT"],
+      "key_columns": ["CIM_LOT.ISREWORK"],
+      "aliases": ["재작업", "rework", "리워크", "재처리"]
+    },
+    "불량": {
+      "tables": ["CIM_LOT"],
+      "key_columns": ["CIM_LOT.LOSSQTY", "CIM_LOT.DEFECTQTY", "CIM_LOT.ORIGINALQTY"],
+      "aliases": ["불량", "불량률", "손실", "defect", "loss", "결함", "불량수량"]
+    },
+    "납기": {
+      "tables": ["CIM_LOT", "CIM_PRODUCTORDER"],
+      "key_columns": ["CIM_LOT.DUEDATE", "CIM_PRODUCTORDER.SCHEDULEENDTIME"],
+      "aliases": ["납기", "납기일", "마감일", "due date", "duedate", "기한"]
+    },
+    "설비": {
+      "tables": ["CIM_EQUIPMENT"],
+      "key_columns": ["CIM_EQUIPMENT.EQUIPMENTID", "CIM_EQUIPMENT.EQUIPMENTNAME"],
+      "aliases": ["설비", "장비", "equipment", "기계", "머신"]
+    },
+    "설비 분류": {
+      "tables": ["CIM_EQUIPMENTCLASS"],
+      "key_columns": ["CIM_EQUIPMENTCLASS.EQUIPMENTCLASSID", "CIM_EQUIPMENTCLASS.EQUIPMENTCLASSNAME"],
+      "aliases": ["설비 분류", "설비 유형", "설비 종류", "equipment class", "장비 분류"]
+    },
+    "알람": {
+      "tables": ["CIM_EQUIPMENT"],
+      "key_columns": ["CIM_EQUIPMENT.ALARMID"],
+      "aliases": ["알람", "경보", "alarm", "알람코드", "경고"]
+    },
+    "PM": {
+      "tables": ["CIM_EQUIPMENT"],
+      "key_columns": ["CIM_EQUIPMENT.PMTARGET"],
+      "aliases": ["PM", "예방정비", "preventive maintenance", "정기점검", "보전"]
+    },
+    "작업지시": {
+      "tables": ["CIM_PRODUCTORDER"],
+      "key_columns": ["CIM_PRODUCTORDER.PRODUCTORDERID", "CIM_PRODUCTORDER.STATE"],
+      "aliases": ["작업지시", "작업 지시", "work order", "생산지시", "제조지시", "오더"]
+    },
+    "지연": {
+      "tables": ["CIM_PRODUCTORDER"],
+      "key_columns": ["CIM_PRODUCTORDER.DELAYFLAG", "CIM_PRODUCTORDER.SCHEDULEENDTIME"],
+      "aliases": ["지연", "지체", "delay", "delayed", "늦음", "초과"]
+    },
+    "확정": {
+      "tables": ["CIM_PRODUCTORDER"],
+      "key_columns": ["CIM_PRODUCTORDER.FIRMFLAG"],
+      "aliases": ["확정", "확정 오더", "firm", "confirmed", "확정된"]
+    },
+    "제품 정의": {
+      "tables": ["CIM_PRODUCTDEFINITION"],
+      "key_columns": ["CIM_PRODUCTDEFINITION.PRODUCTDEFINITIONID", "CIM_PRODUCTDEFINITION.PRODUCTDEFINITIONNAME"],
+      "aliases": ["제품 정의", "품목", "제품", "product definition", "제품코드"]
+    },
+    "품목 구분": {
+      "tables": ["CIM_PRODUCTCLASS"],
+      "key_columns": ["CIM_PRODUCTCLASS.PRODUCTCLASSID", "CIM_PRODUCTCLASS.PRODUCTCLASSNAME"],
+      "aliases": ["품목 구분", "품목 분류", "product class", "제품 분류"]
+    },
+    "자재 로트": {
+      "tables": ["CIM_MATERIALLOT"],
+      "key_columns": ["CIM_MATERIALLOT.MATERIALLOTID", "CIM_MATERIALLOT.QTY"],
+      "aliases": ["자재 LOT", "자재 로트", "material lot", "자재로트", "원자재 LOT"]
+    },
+    "자재 정의": {
+      "tables": ["CIM_MATERIALDEFINITION"],
+      "key_columns": ["CIM_MATERIALDEFINITION.MATERIALDEFINITIONID", "CIM_MATERIALDEFINITION.MATERIALDEFINITIONNAME"],
+      "aliases": ["자재 정의", "품목코드", "material definition", "자재코드", "자재명"]
+    },
+    "자재 클래스": {
+      "tables": ["CIM_MATERIALCLASS"],
+      "key_columns": ["CIM_MATERIALCLASS.MATERIALCLASSID", "CIM_MATERIALCLASS.MATERIALCLASSNAME"],
+      "aliases": ["자재 클래스", "자재 분류", "자재 유형", "material class"]
+    },
+    "만료": {
+      "tables": ["CIM_MATERIALLOT"],
+      "key_columns": ["CIM_MATERIALLOT.EXPIREDATE"],
+      "aliases": ["만료", "유통기한", "expire", "expiry", "만료일", "유효기간"]
+    },
+    "공정": {
+      "tables": ["CIM_PROCESSSEGMENT", "CIM_PROCESSDEFINITION"],
+      "key_columns": ["CIM_PROCESSSEGMENT.PROCESSSEGMENTID", "CIM_PROCESSSEGMENT.PROCESSSEGMENTNAME"],
+      "aliases": ["공정", "공정명", "process", "프로세스", "작업 공정"]
+    },
+    "공정 노드": {
+      "tables": ["CIM_PROCESSNODE"],
+      "key_columns": ["CIM_PROCESSNODE.PROCESSNODEID", "CIM_PROCESSNODE.PROCESSNODENAME"],
+      "aliases": ["공정 노드", "process node", "노드", "공정 단계"]
+    },
+    "배치": {
+      "tables": ["CIM_BATCH"],
+      "key_columns": ["CIM_BATCH.BATCHID", "CIM_BATCH.BATCHNAME", "CIM_BATCH.STATE"],
+      "aliases": ["배치", "배치작업", "batch", "배치잡", "배치 처리"]
+    },
+    "위치": {
+      "tables": ["CIM_FACILITY"],
+      "key_columns": ["CIM_FACILITY.FACILITYID", "CIM_FACILITY.FACILITYNAME"],
+      "aliases": ["위치", "공정 구역", "작업장", "facility", "구역", "장소"]
+    },
+    "공정 경로": {
+      "tables": ["CIM_PROCESSPATH"],
+      "key_columns": ["CIM_PROCESSPATH.PROCESSPATHID", "CIM_PROCESSPATH.PROCESSNODEID"],
+      "aliases": ["공정 경로", "라우팅", "routing", "공정 흐름"]
+    },
+    "수량": {
+      "tables": ["CIM_LOT", "CIM_MATERIALLOT", "CIM_PRODUCTORDER"],
+      "key_columns": ["CIM_LOT.QTY", "CIM_LOT.ORIGINALQTY", "CIM_MATERIALLOT.QTY"],
+      "aliases": ["수량", "재고", "qty", "quantity", "개수", "잔량"]
+    },
+    "입고": {
+      "tables": ["CIM_MATERIALLOT"],
+      "key_columns": ["CIM_MATERIALLOT.RECEIVEDTIME", "CIM_MATERIALLOT.STOCKDATE"],
+      "aliases": ["입고", "수령", "입하", "received", "입고일"]
+    },
+    "TrackIn": {
+      "tables": ["CIM_LOT"],
+      "key_columns": ["CIM_LOT.TRACKINTIME", "CIM_LOT.TRACKINUSER"],
+      "aliases": ["trackin", "track in", "작업 시작", "투입", "착수"]
+    },
+    "TrackOut": {
+      "tables": ["CIM_LOT"],
+      "key_columns": ["CIM_LOT.TRACKOUTTIME", "CIM_LOT.TRACKOUTUSER"],
+      "aliases": ["trackout", "track out", "작업 완료", "완료", "완공"]
+    }
+  }
+}

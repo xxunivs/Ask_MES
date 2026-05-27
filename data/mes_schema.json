@@ -1,0 +1,3471 @@
+{
+  "source": "THiRA_MES_3_1_0_ERD_공정관리",
+  "version": "3.1.0",
+  "domain": "공정관리 (Process Management)",
+  "tables": [
+    {
+      "name": "CIM_BATCH",
+      "description": "배치 (PK: BATCHID, SITEID)",
+      "label": "배치",
+      "pk": [
+        "BATCHID",
+        "SITEID"
+      ],
+      "columns": [
+        {
+          "name": "BATCHID",
+          "type": "varchar(40)",
+          "description": "배치번호",
+          "isPK": true,
+          "nullable": false
+        },
+        {
+          "name": "SITEID",
+          "type": "varchar(40)",
+          "description": "사이트 ID",
+          "isPK": true,
+          "nullable": false
+        },
+        {
+          "name": "BATCHNAME",
+          "type": "nvarchar(40)",
+          "description": "배치잡명",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "BATCHTYPE",
+          "type": "varchar(40)",
+          "description": "배치 유형",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "STATE",
+          "type": "varchar(40)",
+          "description": "상태 정의",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "PREVSTATE",
+          "type": "varchar(40)",
+          "description": "이전 상태",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "QTY",
+          "type": "float(53,NULL)",
+          "description": "수량",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "UNITID",
+          "type": "varchar(40)",
+          "description": "단위코드",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "STOCKEDDATE",
+          "type": "varchar(40)",
+          "description": "입고일",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "PICKEDDATE",
+          "type": "varchar(40)",
+          "description": "픽킹일",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "SHIPPEDDATE",
+          "type": "varchar(40)",
+          "description": "적재일",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "RETURNEDDATE",
+          "type": "varchar(40)",
+          "description": "반송일",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "DELIVERYORDERID",
+          "type": "varchar(40)",
+          "description": "포장 작업지시 no",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "PREVDELIVERYORDERID",
+          "type": "varchar(40)",
+          "description": "이전 delivery order",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "ACTIVITY",
+          "type": "varchar(100)",
+          "description": "활동",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "PREVACTIVITY",
+          "type": "varchar(100)",
+          "description": "이전 활동",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "CUSTOMACTIVITY",
+          "type": "varchar(100)",
+          "description": "CUSTOM ACTIVITY",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "PREVCUSTOMACTIVITY",
+          "type": "varchar(100)",
+          "description": "PREV CUSTOM ACTIVITY",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "ISUSABLE",
+          "type": "varchar(40)",
+          "description": "사용 가능",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "DESCRIPTION",
+          "type": "nvarchar(2000)",
+          "description": "설명",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "REASONCODE",
+          "type": "varchar(40)",
+          "description": "원인 코드",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "COMMENTS",
+          "type": "nvarchar(2000)",
+          "description": "코멘트",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "CREATOR",
+          "type": "varchar(40)",
+          "description": "생성자",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "CREATETIME",
+          "type": "datetime2",
+          "description": "생성 시간",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "MODIFIER",
+          "type": "varchar(40)",
+          "description": "수정자",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "MODIFYTIME",
+          "type": "datetime2",
+          "description": "수정시간",
+          "isPK": false,
+          "nullable": false
+        },
+        {
+          "name": "LASTEVENTTIME",
+          "type": "datetime2",
+          "description": "마지막 시간",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "TID",
+          "type": "varchar(40)",
+          "description": "트랜잭션 ID",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "EQUIPMENTID",
+          "type": "varchar(40)",
+          "description": "설비코드",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "PRIORITY",
+          "type": "int(10,0)",
+          "description": "우선순위",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "COMMENTS1",
+          "type": "nvarchar(2000)",
+          "description": "비고 #1",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "COMMENTS2",
+          "type": "nvarchar(2000)",
+          "description": "비고 #2",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "BATCHDATE",
+          "type": "datetime2",
+          "description": "배치계획일",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "BATCHLOGFILEID",
+          "type": "varchar(100)",
+          "description": "배치로그파일ID",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "COMMENTS3",
+          "type": "nvarchar(2000)",
+          "description": null,
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "WORKCENTER",
+          "type": "varchar(40)",
+          "description": null,
+          "isPK": false,
+          "nullable": true
+        }
+      ],
+      "foreign_keys": []
+    },
+    {
+      "name": "CIM_CODE",
+      "description": "CIM_CODE (컬럼 정보 필요 - convert_schema.py 실행)",
+      "label": "CIM_CODE",
+      "pk": [],
+      "columns": [],
+      "foreign_keys": []
+    },
+    {
+      "name": "CIM_CODECLASS",
+      "description": "CIM_CODECLASS (컬럼 정보 필요 - convert_schema.py 실행)",
+      "label": "CIM_CODECLASS",
+      "pk": [],
+      "columns": [],
+      "foreign_keys": []
+    },
+    {
+      "name": "CIM_DEFECT",
+      "description": "CIM_DEFECT (컬럼 정보 필요 - convert_schema.py 실행)",
+      "label": "CIM_DEFECT",
+      "pk": [],
+      "columns": [],
+      "foreign_keys": []
+    },
+    {
+      "name": "CIM_DEFECTCLASS",
+      "description": "CIM_DEFECTCLASS (컬럼 정보 필요 - convert_schema.py 실행)",
+      "label": "CIM_DEFECTCLASS",
+      "pk": [],
+      "columns": [],
+      "foreign_keys": []
+    },
+    {
+      "name": "CIM_EQUIPMENT",
+      "description": "설비 (PK: EQUIPMENTID, SITEID)",
+      "label": "설비",
+      "pk": [
+        "EQUIPMENTID",
+        "SITEID"
+      ],
+      "columns": [
+        {
+          "name": "EQUIPMENTID",
+          "type": "varchar(40)",
+          "description": "설비코드",
+          "isPK": true,
+          "nullable": false
+        },
+        {
+          "name": "SITEID",
+          "type": "varchar(40)",
+          "description": "사이트 ID",
+          "isPK": true,
+          "nullable": false
+        },
+        {
+          "name": "EQUIPMENTNAME",
+          "type": "nvarchar(40)",
+          "description": "설비명",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "EQUIPMENTCLASSID",
+          "type": "varchar(40)",
+          "description": "장비 분류",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "EQUIPMENTTYPE",
+          "type": "varchar(40)",
+          "description": "설비 구분",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "PARENTID",
+          "type": "varchar(40)",
+          "description": "부모ID",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "EQUIPMENTLEVEL",
+          "type": "numeric(4,0)",
+          "description": "설비 레벨",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "RUNCOUNT",
+          "type": "numeric(4,0)",
+          "description": "작업 횟수",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "RECIPEID",
+          "type": "varchar(40)",
+          "description": "레시피ID",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "STATETIME",
+          "type": "datetime2",
+          "description": "작업 시간",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "PREVSTATETIME",
+          "type": "datetime2",
+          "description": "이전 작업 시간",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "STATE",
+          "type": "varchar(40)",
+          "description": "상태 정의",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "PREVSTATE",
+          "type": "varchar(40)",
+          "description": "이전 상태",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "VENDORID",
+          "type": "varchar(40)",
+          "description": "공급사",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "MODELNUMBER",
+          "type": "varchar(40)",
+          "description": "모델",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "SERIALNO",
+          "type": "varchar(40)",
+          "description": "시리얼 번호",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "ECSERVERNAME",
+          "type": "nvarchar(40)",
+          "description": "EC서버명",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "CONTROLMODE",
+          "type": "varchar(40)",
+          "description": "통신모드",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "PREVCONTROLMODE",
+          "type": "varchar(40)",
+          "description": "이전 통신모드",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "CONTROLMODETIME",
+          "type": "datetime2",
+          "description": "제어 모드 변경 타임",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "PREVCONTROLMODETIME",
+          "type": "datetime2",
+          "description": "이전 제어 모드 변경 시간",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "OPERATIONMODE",
+          "type": "varchar(40)",
+          "description": "작업자 모드",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "PREVOPERATIONMODE",
+          "type": "varchar(40)",
+          "description": "이전 작업자 모드",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "OPERATIONMODETIME",
+          "type": "datetime2",
+          "description": "작업자 모드 변경 시간",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "PREVOPERATIONMODETIME",
+          "type": "datetime2",
+          "description": "이전 작업자 모드 변경 시간",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "ALARMID",
+          "type": "varchar(40)",
+          "description": "알람코드",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "CAPABILITY",
+          "type": "float(53,NULL)",
+          "description": "생산CAPA",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "CAPABILITYUNIT",
+          "type": "varchar(40)",
+          "description": "생산CAPA UNIT",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "MAXCAPACITY",
+          "type": "float(53,NULL)",
+          "description": "최대 Capa.",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "MINCAPACITY",
+          "type": "float(53,NULL)",
+          "description": "최소 생산 CAPA",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "TACTTIME",
+          "type": "numeric(4,0)",
+          "description": "공정 시간",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "TACTTIMEUNIT",
+          "type": "varchar(40)",
+          "description": "공정 시간 단위",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "LEADTIME",
+          "type": "numeric(4,0)",
+          "description": "소요시간",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "LEADTIMEUNIT",
+          "type": "varchar(40)",
+          "description": "소요시간단위",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "LOCATION",
+          "type": "varchar(40)",
+          "description": "작업장",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "PREVLOCATION",
+          "type": "varchar(40)",
+          "description": "이전위치ID",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "PROCESSSSTATE",
+          "type": "varchar(40)",
+          "description": "상태",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "PREVPROCESSSTATE",
+          "type": "varchar(40)",
+          "description": "이전 상태",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "PROCESSSSTATETIME",
+          "type": "datetime2",
+          "description": "상태 변경 시간",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "PREVPROCESSSTATETIME",
+          "type": "datetime2",
+          "description": "이전 상태 변경 시간",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "UISEQUENCE",
+          "type": "numeric(4,0)",
+          "description": "UI시퀀스",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "ACTIVITY",
+          "type": "varchar(100)",
+          "description": "활동",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "PREVACTIVITY",
+          "type": "varchar(100)",
+          "description": "이전 활동",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "CUSTOMACTIVITY",
+          "type": "varchar(100)",
+          "description": "CUSTOM ACTIVITY",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "PREVCUSTOMACTIVITY",
+          "type": "varchar(100)",
+          "description": "PREV CUSTOM ACTIVITY",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "ISUSABLE",
+          "type": "varchar(40)",
+          "description": "사용 가능",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "DESCRIPTION",
+          "type": "nvarchar(2000)",
+          "description": "설명",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "REASONCODE",
+          "type": "varchar(40)",
+          "description": "원인 코드",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "COMMENTS",
+          "type": "nvarchar(2000)",
+          "description": "코멘트",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "CREATOR",
+          "type": "varchar(40)",
+          "description": "생성자",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "CREATETIME",
+          "type": "datetime2",
+          "description": "생성 시간",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "MODIFIER",
+          "type": "varchar(40)",
+          "description": "수정자",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "MODIFYTIME",
+          "type": "datetime2",
+          "description": "수정시간",
+          "isPK": false,
+          "nullable": false
+        },
+        {
+          "name": "LASTEVENTTIME",
+          "type": "datetime2",
+          "description": "마지막 시간",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "TID",
+          "type": "varchar(40)",
+          "description": "트랜잭션 ID",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "CHARGEDEPT",
+          "type": "varchar(50)",
+          "description": "보전부서",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "INSTPOSITION",
+          "type": "varchar(100)",
+          "description": "설치위치",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "COSTCENTERID",
+          "type": "varchar(40)",
+          "description": "코스트센터 ID",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "FACILITYID",
+          "type": "varchar(40)",
+          "description": "위치ID",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "ASSETNO",
+          "type": "varchar(40)",
+          "description": "Asset no",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "COUNTRYORIGIN",
+          "type": "varchar(40)",
+          "description": "제작국가",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "INSTASLLATIONDATE",
+          "type": "varchar(40)",
+          "description": "설치일",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "MANUFACTUREYEAR",
+          "type": "varchar(40)",
+          "description": "제작년도",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "EQPRATINGGRADE",
+          "type": "varchar(40)",
+          "description": "설비평가등급",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "PMTARGET",
+          "type": "varchar(40)",
+          "description": "PM대상",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "EQPGROUP1",
+          "type": "varchar(40)",
+          "description": "설비그룹 #1",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "EQPGROUP2",
+          "type": "varchar(40)",
+          "description": "설비그룹 #2",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "ELECTRICALSPECV",
+          "type": "varchar(40)",
+          "description": "전기사양(V)",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "ELECTRICALSPECHZ",
+          "type": "varchar(40)",
+          "description": "전기사양(Hz)",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "ELECTRICALSPECKW",
+          "type": "varchar(40)",
+          "description": "전기사양(kW)",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "POWERACTUAL",
+          "type": "varchar(40)",
+          "description": "전력(실부하율)",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "EQUIPWEIGHTKG",
+          "type": "varchar(40)",
+          "description": "설비중량(KG)",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "EQUIPDIMENWDH",
+          "type": "varchar(40)",
+          "description": "설비치수(W*D*H)",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "PRODUCTORDERID",
+          "type": "varchar(40)",
+          "description": "작업지시번호",
+          "isPK": false,
+          "nullable": true
+        }
+      ],
+      "foreign_keys": [
+        {
+          "column": "EQUIPMENTCLASSID",
+          "ref_table": "CIM_EQUIPMENTCLASS",
+          "ref_column": "EQUIPMENTCLASSID",
+          "label": "장비 분류 소속"
+        },
+        {
+          "column": "FACILITYID",
+          "ref_table": "CIM_FACILITY",
+          "ref_column": "FACILITYID",
+          "label": "위치(설비) 소속"
+        }
+      ]
+    },
+    {
+      "name": "CIM_EQUIPMENTCLASS",
+      "description": "설비 분류 (PK: EQUIPMENTCLASSID, SITEID)",
+      "label": "설비 분류",
+      "pk": [
+        "EQUIPMENTCLASSID",
+        "SITEID"
+      ],
+      "columns": [
+        {
+          "name": "EQUIPMENTCLASSID",
+          "type": "varchar(40)",
+          "description": "장비 분류",
+          "isPK": true,
+          "nullable": false
+        },
+        {
+          "name": "SITEID",
+          "type": "varchar(40)",
+          "description": "사이트 ID",
+          "isPK": true,
+          "nullable": false
+        },
+        {
+          "name": "EQUIPMENTCLASSNAME",
+          "type": "nvarchar(40)",
+          "description": "장비그룹ID",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "PARENTID",
+          "type": "varchar(40)",
+          "description": "부모ID",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "EQUIPMENTLEVEL",
+          "type": "numeric(4,0)",
+          "description": "설비 레벨",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "ACTIVITY",
+          "type": "varchar(100)",
+          "description": "활동",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "PREVACTIVITY",
+          "type": "varchar(100)",
+          "description": "이전 활동",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "CUSTOMACTIVITY",
+          "type": "varchar(100)",
+          "description": "CUSTOM ACTIVITY",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "PREVCUSTOMACTIVITY",
+          "type": "varchar(100)",
+          "description": "PREV CUSTOM ACTIVITY",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "ISUSABLE",
+          "type": "varchar(40)",
+          "description": "사용 가능",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "DESCRIPTION",
+          "type": "nvarchar(2000)",
+          "description": "설명",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "REASONCODE",
+          "type": "varchar(40)",
+          "description": "원인 코드",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "COMMENTS",
+          "type": "nvarchar(2000)",
+          "description": "코멘트",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "CREATOR",
+          "type": "varchar(40)",
+          "description": "생성자",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "CREATETIME",
+          "type": "datetime2",
+          "description": "생성 시간",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "MODIFIER",
+          "type": "varchar(40)",
+          "description": "수정자",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "MODIFYTIME",
+          "type": "datetime2",
+          "description": "수정시간",
+          "isPK": false,
+          "nullable": false
+        },
+        {
+          "name": "LASTEVENTTIME",
+          "type": "datetime2",
+          "description": "마지막 시간",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "TID",
+          "type": "varchar(40)",
+          "description": "트랜잭션 ID",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "VENDORID",
+          "type": "varchar(40)",
+          "description": "공급사",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "FILEGROUPID",
+          "type": "varchar(400)",
+          "description": "파일그룹ID",
+          "isPK": false,
+          "nullable": true
+        }
+      ],
+      "foreign_keys": []
+    },
+    {
+      "name": "CIM_FACILITY",
+      "description": "위치(공정 구역) (PK: FACILITYID, SITEID)",
+      "label": "위치(공정 구역)",
+      "pk": [
+        "FACILITYID",
+        "SITEID"
+      ],
+      "columns": [
+        {
+          "name": "FACILITYID",
+          "type": "varchar(40)",
+          "description": "위치ID",
+          "isPK": true,
+          "nullable": false
+        },
+        {
+          "name": "SITEID",
+          "type": "varchar(40)",
+          "description": "사이트 ID",
+          "isPK": true,
+          "nullable": false
+        },
+        {
+          "name": "FACILITYNAME",
+          "type": "nvarchar(40)",
+          "description": "위치명",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "FACILITYCLASSID",
+          "type": "varchar(40)",
+          "description": "위치 그룹 코드",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "FACILITYTYPE",
+          "type": "varchar(40)",
+          "description": "위치구분",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "QUEUETIME",
+          "type": "numeric(4,0)",
+          "description": "큐타임 기준시간",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "QUEUEUNIT",
+          "type": "varchar(40)",
+          "description": "큐단위",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "ACTIVITY",
+          "type": "varchar(100)",
+          "description": "활동",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "PREVACTIVITY",
+          "type": "varchar(100)",
+          "description": "이전 활동",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "CUSTOMACTIVITY",
+          "type": "varchar(100)",
+          "description": "CUSTOM ACTIVITY",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "PREVCUSTOMACTIVITY",
+          "type": "varchar(100)",
+          "description": "PREV CUSTOM ACTIVITY",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "ISUSABLE",
+          "type": "varchar(40)",
+          "description": "사용 가능",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "DESCRIPTION",
+          "type": "nvarchar(2000)",
+          "description": "설명",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "REASONCODE",
+          "type": "varchar(40)",
+          "description": "원인 코드",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "COMMENTS",
+          "type": "nvarchar(2000)",
+          "description": "코멘트",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "CREATOR",
+          "type": "varchar(40)",
+          "description": "생성자",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "CREATETIME",
+          "type": "datetime2",
+          "description": "생성 시간",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "MODIFIER",
+          "type": "varchar(40)",
+          "description": "수정자",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "MODIFYTIME",
+          "type": "datetime2",
+          "description": "수정시간",
+          "isPK": false,
+          "nullable": false
+        },
+        {
+          "name": "LASTEVENTTIME",
+          "type": "datetime2",
+          "description": "마지막 시간",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "TID",
+          "type": "varchar(40)",
+          "description": "트랜잭션 ID",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "COSTCENTERID",
+          "type": "varchar(40)",
+          "description": "코스트센터 ID",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "OUTSOURCINGID",
+          "type": "varchar(40)",
+          "description": "외주ID",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "OUTSOURCINGNAME",
+          "type": "varchar(40)",
+          "description": "외주명",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "GROUPTYPE",
+          "type": "varchar(40)",
+          "description": "그룹유형",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "OUTFACILITYID",
+          "type": "varchar(40)",
+          "description": "외부위치",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "MESLOCATIONYN",
+          "type": "varchar(1)",
+          "description": "MES위치여부",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "QMS_SPECIAL",
+          "type": "varchar(1)",
+          "description": "품질위치여부",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "STEUS",
+          "type": "varchar(40)",
+          "description": null,
+          "isPK": false,
+          "nullable": true
+        }
+      ],
+      "foreign_keys": []
+    },
+    {
+      "name": "CIM_FACILITYMAP",
+      "description": "CIM_FACILITYMAP (컬럼 정보 필요 - convert_schema.py 실행)",
+      "label": "CIM_FACILITYMAP",
+      "pk": [],
+      "columns": [],
+      "foreign_keys": []
+    },
+    {
+      "name": "CIM_LOT",
+      "description": "생산 로트 (PK: LOTID, SITEID)",
+      "label": "생산 로트",
+      "pk": [
+        "LOTID",
+        "SITEID"
+      ],
+      "columns": [
+        {
+          "name": "LOTID",
+          "type": "varchar(40)",
+          "description": "LOT ID",
+          "isPK": true,
+          "nullable": false
+        },
+        {
+          "name": "SITEID",
+          "type": "varchar(40)",
+          "description": "사이트 ID",
+          "isPK": true,
+          "nullable": false
+        },
+        {
+          "name": "LOTNAME",
+          "type": "nvarchar(40)",
+          "description": "Lot명",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "PRODUCTDEFINITIONID",
+          "type": "varchar(40)",
+          "description": "제품정의ID (FK)",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "PRODUCTCLASSID",
+          "type": "varchar(40)",
+          "description": "품목구분 (FK)",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "PRODUCTTYPE",
+          "type": "varchar(40)",
+          "description": "품목타입",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "PARENTLOTID",
+          "type": "varchar(40)",
+          "description": "부모 LOT ID",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "ROOTPARENTLOTID",
+          "type": "varchar(40)",
+          "description": "최상위 부모 LOT ID",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "STATE",
+          "type": "varchar(40)",
+          "description": "상태",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "ORIGINALQTY",
+          "type": "float(53,NULL)",
+          "description": "원래 수량",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "QTY",
+          "type": "float(53,NULL)",
+          "description": "현재 수량",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "LOSSQTY",
+          "type": "float(53,NULL)",
+          "description": "불량 수량",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "DEFECTQTY",
+          "type": "float(53,NULL)",
+          "description": "결함 수량",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "UNITID",
+          "type": "varchar(40)",
+          "description": "단위코드",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "LOCATION",
+          "type": "varchar(40)",
+          "description": "위치",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "PRODUCTORDERID",
+          "type": "varchar(40)",
+          "description": "작업지시번호 (FK)",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "WORKORDERID",
+          "type": "varchar(40)",
+          "description": "작업계획오더 (FK)",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "PROCESSDEFINITIONID",
+          "type": "varchar(40)",
+          "description": "공정정의ID (FK)",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "SUBPROCESSDEFINITIONID",
+          "type": "varchar(40)",
+          "description": "하위 공정정의ID (FK)",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "PROCESSNODEID",
+          "type": "varchar(40)",
+          "description": "현재 공정노드ID (FK)",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "PROCESSSEGMENTID",
+          "type": "varchar(40)",
+          "description": "현재 공정세그먼트ID (FK)",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "EQUIPMENTID",
+          "type": "varchar(40)",
+          "description": "현재 설비ID (FK)",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "PORTID",
+          "type": "varchar(40)",
+          "description": "포트 ID",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "PROCESSSEGMENTRULEID",
+          "type": "varchar(40)",
+          "description": "공정세그먼트 규칙ID",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "RULESEQUENCE",
+          "type": "numeric(4,0)",
+          "description": "규칙 시퀀스",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "PROCESSINGSTATE",
+          "type": "varchar(40)",
+          "description": "처리 상태",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "TRACKINTIME",
+          "type": "datetime2",
+          "description": "작업 시작시간",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "TRACKOUTTIME",
+          "type": "datetime2",
+          "description": "작업 완료시간",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "LOTFINISHEDTIME",
+          "type": "datetime2",
+          "description": "Lot 완료시간",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "LOTSHIPPEDTIME",
+          "type": "datetime2",
+          "description": "Lot 출하시간",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "PROCESSSSTARTTIME",
+          "type": "datetime2",
+          "description": "공정 시작시간",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "PROCESSENDTIME",
+          "type": "datetime2",
+          "description": "공정 종료시간",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "GRADE",
+          "type": "varchar(40)",
+          "description": "등급",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "ISHOLD",
+          "type": "varchar(1)",
+          "description": "홀드 여부",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "ISREWORK",
+          "type": "varchar(1)",
+          "description": "재작업 여부",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "PRIORITY",
+          "type": "numeric(4,0)",
+          "description": "우선순위",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "DUEDATE",
+          "type": "datetime2",
+          "description": "납기일",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "TRACKINUSER",
+          "type": "nvarchar(40)",
+          "description": "작업시작 작업자",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "TRACKOUTUSER",
+          "type": "nvarchar(40)",
+          "description": "작업완료 작업자",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "ACTIVITY",
+          "type": "varchar(100)",
+          "description": "활동",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "PREVACTIVITY",
+          "type": "varchar(100)",
+          "description": "이전 활동",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "CUSTOMACTIVITY",
+          "type": "varchar(100)",
+          "description": "CUSTOM ACTIVITY",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "PREVCUSTOMACTIVITY",
+          "type": "varchar(100)",
+          "description": "PREV CUSTOM ACTIVITY",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "ISUSABLE",
+          "type": "varchar(40)",
+          "description": "사용 가능",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "DESCRIPTION",
+          "type": "nvarchar(2000)",
+          "description": "설명",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "REASONCODE",
+          "type": "varchar(40)",
+          "description": "원인 코드",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "COMMENTS",
+          "type": "nvarchar(2000)",
+          "description": "코멘트",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "CREATOR",
+          "type": "varchar(40)",
+          "description": "생성자",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "CREATETIME",
+          "type": "datetime2",
+          "description": "생성 시간",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "MODIFIER",
+          "type": "varchar(40)",
+          "description": "수정자",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "MODIFYTIME",
+          "type": "datetime2",
+          "description": "수정시간",
+          "isPK": false,
+          "nullable": false
+        },
+        {
+          "name": "LASTEVENTTIME",
+          "type": "datetime2",
+          "description": "마지막 이벤트시간",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "TID",
+          "type": "varchar(40)",
+          "description": "트랜잭션 ID",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "REWORKPROCESSLIST",
+          "type": "varchar(-1)",
+          "description": "재작업 공정 LIST",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "CONCESSION",
+          "type": "char(1)",
+          "description": "특채",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "SERIALNO",
+          "type": "varchar(40)",
+          "description": "시리얼 번호",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "TRACKINUSERNAME",
+          "type": "nvarchar(200)",
+          "description": "작업시작 작업자",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "TRACKOUTUSERNAME",
+          "type": "nvarchar(200)",
+          "description": "작업완료 작업자",
+          "isPK": false,
+          "nullable": true
+        }
+      ],
+      "foreign_keys": [
+        {
+          "column": "WORKORDERID",
+          "ref_table": "CIM_WORKORDER",
+          "ref_column": "WORKORDERID",
+          "label": "작업계획오더 소속"
+        },
+        {
+          "column": "PRODUCTORDERID",
+          "ref_table": "CIM_PRODUCTORDER",
+          "ref_column": "PRODUCTORDERID",
+          "label": "제품 작업지시 소속"
+        },
+        {
+          "column": "PRODUCTDEFINITIONID",
+          "ref_table": "CIM_PRODUCTDEFINITION",
+          "ref_column": "PRODUCTDEFINITIONID",
+          "label": "제품 정의 참조"
+        },
+        {
+          "column": "PROCESSDEFINITIONID",
+          "ref_table": "CIM_PROCESSDEFINITION",
+          "ref_column": "PROCESSDEFINITIONID",
+          "label": "공정 정의 따름"
+        },
+        {
+          "column": "PROCESSNODEID",
+          "ref_table": "CIM_PROCESSNODE",
+          "ref_column": "PROCESSNODEID",
+          "label": "현재 공정 노드"
+        },
+        {
+          "column": "PROCESSSEGMENTID",
+          "ref_table": "CIM_PROCESSSEGMENT",
+          "ref_column": "PROCESSSEGMENTID",
+          "label": "현재 공정 세그먼트"
+        },
+        {
+          "column": "EQUIPMENTID",
+          "ref_table": "CIM_EQUIPMENT",
+          "ref_column": "EQUIPMENTID",
+          "label": "현재 설비"
+        },
+        {
+          "column": "LOTID",
+          "ref_table": "CIM_LOTBATCHREL",
+          "ref_column": "LOTID",
+          "label": "배치 보유 (via REL) [via CIM_LOTBATCHREL]"
+        },
+        {
+          "column": "LOTID",
+          "ref_table": "CIM_LOTMATERIALLOTREL",
+          "ref_column": "LOTID",
+          "label": "자재 로트 소비 (via REL) [via CIM_LOTMATERIALLOTREL]"
+        }
+      ]
+    },
+    {
+      "name": "CIM_LOTBATCHREL",
+      "description": "로트-배치 관계 (PK: LOTID, BATCHID, SITEID)",
+      "label": "로트-배치 관계",
+      "pk": [
+        "LOTID",
+        "BATCHID",
+        "SITEID"
+      ],
+      "columns": [
+        {
+          "name": "LOTID",
+          "type": "varchar(40)",
+          "description": "LOT ID (FK)",
+          "isPK": true,
+          "nullable": false
+        },
+        {
+          "name": "BATCHID",
+          "type": "varchar(40)",
+          "description": "배치ID (FK)",
+          "isPK": true,
+          "nullable": false
+        },
+        {
+          "name": "SITEID",
+          "type": "varchar(40)",
+          "description": "사이트 ID",
+          "isPK": true,
+          "nullable": false
+        },
+        {
+          "name": "QTY",
+          "type": "float(53,NULL)",
+          "description": "수량",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "UNITID",
+          "type": "varchar(40)",
+          "description": "단위코드",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "ACTIVITY",
+          "type": "varchar(100)",
+          "description": "활동",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "CREATETIME",
+          "type": "datetime2",
+          "description": "생성 시간",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "MODIFYTIME",
+          "type": "datetime2",
+          "description": "수정시간",
+          "isPK": false,
+          "nullable": false
+        }
+      ],
+      "foreign_keys": []
+    },
+    {
+      "name": "CIM_LOTDEFECT",
+      "description": "CIM_LOTDEFECT (컬럼 정보 필요 - convert_schema.py 실행)",
+      "label": "CIM_LOTDEFECT",
+      "pk": [],
+      "columns": [],
+      "foreign_keys": []
+    },
+    {
+      "name": "CIM_LOTHIST",
+      "description": "CIM_LOTHIST (컬럼 정보 필요 - convert_schema.py 실행)",
+      "label": "CIM_LOTHIST",
+      "pk": [],
+      "columns": [],
+      "foreign_keys": []
+    },
+    {
+      "name": "CIM_LOTMATERIALLOTREL",
+      "description": "로트-자재로트 관계 (PK: LOTID, MATERIALLOTID, SUBPROCESSDEFINITIONID, PROCESSSEGMENTID, REPEATCOUNT, SITEID)",
+      "label": "로트-자재로트 관계",
+      "pk": [
+        "LOTID",
+        "MATERIALLOTID",
+        "SUBPROCESSDEFINITIONID",
+        "PROCESSSEGMENTID",
+        "REPEATCOUNT",
+        "SITEID"
+      ],
+      "columns": [
+        {
+          "name": "LOTID",
+          "type": "varchar(40)",
+          "description": "LOT ID (FK)",
+          "isPK": true,
+          "nullable": false
+        },
+        {
+          "name": "MATERIALLOTID",
+          "type": "varchar(100)",
+          "description": "자재LOT ID (FK)",
+          "isPK": true,
+          "nullable": false
+        },
+        {
+          "name": "SUBPROCESSDEFINITIONID",
+          "type": "varchar(40)",
+          "description": "하위 공정정의ID (FK)",
+          "isPK": true,
+          "nullable": false
+        },
+        {
+          "name": "PROCESSSEGMENTID",
+          "type": "varchar(40)",
+          "description": "공정세그먼트ID (FK)",
+          "isPK": true,
+          "nullable": false
+        },
+        {
+          "name": "REPEATCOUNT",
+          "type": "numeric(4,0)",
+          "description": "반복횟수",
+          "isPK": true,
+          "nullable": false
+        },
+        {
+          "name": "SITEID",
+          "type": "varchar(40)",
+          "description": "사이트 ID",
+          "isPK": true,
+          "nullable": false
+        },
+        {
+          "name": "PRODUCTDEFINITIONID",
+          "type": "varchar(40)",
+          "description": "제품정의ID",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "PROCESSDEFINITIONID",
+          "type": "varchar(40)",
+          "description": "공정정의ID",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "QTY",
+          "type": "float(53,NULL)",
+          "description": "소비수량",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "UNITID",
+          "type": "varchar(40)",
+          "description": "단위코드",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "LOCATION",
+          "type": "varchar(40)",
+          "description": "위치",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "EQUIPMENTID",
+          "type": "varchar(40)",
+          "description": "설비ID",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "PROCESSNODEID",
+          "type": "varchar(40)",
+          "description": "공정노드ID",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "SERIALNO",
+          "type": "varchar(40)",
+          "description": "시리얼 번호",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "RESERVEQTY",
+          "type": "float(53,NULL)",
+          "description": "예약수량",
+          "isPK": false,
+          "nullable": true
+        }
+      ],
+      "foreign_keys": []
+    },
+    {
+      "name": "CIM_MATERIALCLASS",
+      "description": "자재 클래스 (PK: MATERIALCLASSID, SITEID)",
+      "label": "자재 클래스",
+      "pk": [
+        "MATERIALCLASSID",
+        "SITEID"
+      ],
+      "columns": [
+        {
+          "name": "MATERIALCLASSID",
+          "type": "varchar(40)",
+          "description": "자재 클래스ID",
+          "isPK": true,
+          "nullable": false
+        },
+        {
+          "name": "SITEID",
+          "type": "varchar(40)",
+          "description": "사이트 ID",
+          "isPK": true,
+          "nullable": false
+        },
+        {
+          "name": "MATERIALCLASSNAME",
+          "type": "nvarchar(40)",
+          "description": "자재 클래스명",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "PARENTID",
+          "type": "varchar(40)",
+          "description": "부모ID",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "ACTIVITY",
+          "type": "varchar(100)",
+          "description": "활동",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "ISUSABLE",
+          "type": "varchar(40)",
+          "description": "사용 가능",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "DESCRIPTION",
+          "type": "nvarchar(2000)",
+          "description": "설명",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "CREATOR",
+          "type": "varchar(40)",
+          "description": "생성자",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "CREATETIME",
+          "type": "datetime2",
+          "description": "생성 시간",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "MODIFYTIME",
+          "type": "datetime2",
+          "description": "수정시간",
+          "isPK": false,
+          "nullable": false
+        },
+        {
+          "name": "MATKIND",
+          "type": "varchar(40)",
+          "description": "자재종류",
+          "isPK": false,
+          "nullable": true
+        }
+      ],
+      "foreign_keys": []
+    },
+    {
+      "name": "CIM_MATERIALDEFINITION",
+      "description": "자재 정의 (PK: MATERIALDEFINITIONID, SITEID)",
+      "label": "자재 정의",
+      "pk": [
+        "MATERIALDEFINITIONID",
+        "SITEID"
+      ],
+      "columns": [
+        {
+          "name": "MATERIALDEFINITIONID",
+          "type": "varchar(40)",
+          "description": "자재 정의ID",
+          "isPK": true,
+          "nullable": false
+        },
+        {
+          "name": "SITEID",
+          "type": "varchar(40)",
+          "description": "사이트 ID",
+          "isPK": true,
+          "nullable": false
+        },
+        {
+          "name": "MATERIALDEFINITIONNAME",
+          "type": "nvarchar(80)",
+          "description": "자재정의명",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "MATERIALCLASSID",
+          "type": "varchar(40)",
+          "description": "자재 클래스ID (FK)",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "MATERIALTYPE",
+          "type": "varchar(40)",
+          "description": "자재타입",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "QTY",
+          "type": "float(53,NULL)",
+          "description": "수량",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "UNITID",
+          "type": "varchar(40)",
+          "description": "단위코드",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "ISUSABLE",
+          "type": "varchar(40)",
+          "description": "사용 가능",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "DESCRIPTION",
+          "type": "nvarchar(2000)",
+          "description": "설명",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "VENDORID",
+          "type": "varchar(40)",
+          "description": "공급사",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "INSPECTTYPE",
+          "type": "varchar(40)",
+          "description": "검사구분",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "MODELNUMBER",
+          "type": "varchar(40)",
+          "description": "모델",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "RESERVATIONQTY",
+          "type": "float(53,NULL)",
+          "description": "예약수량",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "PURCHASEQTY",
+          "type": "float(53,NULL)",
+          "description": "발주잔량",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "STDPRICE",
+          "type": "float(53,NULL)",
+          "description": "표준단가",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "MAKER",
+          "type": "varchar(40)",
+          "description": "메이커",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "MATERIALDEFINITIONTYPE",
+          "type": "varchar(40)",
+          "description": "자재 정의 유형",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "SAFETY_QTY",
+          "type": "float(53,NULL)",
+          "description": "안전재고",
+          "isPK": false,
+          "nullable": true
+        }
+      ],
+      "foreign_keys": [
+        {
+          "column": "MATERIALCLASSID",
+          "ref_table": "CIM_MATERIALCLASS",
+          "ref_column": "MATERIALCLASSID",
+          "label": "자재 클래스 소속"
+        }
+      ]
+    },
+    {
+      "name": "CIM_MATERIALLOT",
+      "description": "자재 로트 (PK: MATERIALLOTID, SITEID)",
+      "label": "자재 로트",
+      "pk": [
+        "MATERIALLOTID",
+        "SITEID"
+      ],
+      "columns": [
+        {
+          "name": "MATERIALLOTID",
+          "type": "varchar(100)",
+          "description": "자재 LOT ID",
+          "isPK": true,
+          "nullable": false
+        },
+        {
+          "name": "SITEID",
+          "type": "varchar(40)",
+          "description": "사이트 ID",
+          "isPK": true,
+          "nullable": false
+        },
+        {
+          "name": "MATERIALLOTNAME",
+          "type": "nvarchar(80)",
+          "description": "자재LOT이름",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "MATERIALDEFINITIONID",
+          "type": "varchar(40)",
+          "description": "품목코드 (FK)",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "MATERIALCLASSID",
+          "type": "varchar(40)",
+          "description": "자재유형 (FK)",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "MATERIALTYPE",
+          "type": "varchar(40)",
+          "description": "자재타입",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "PARENTMATERIALLOTID",
+          "type": "varchar(80)",
+          "description": "모LOTID",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "STATE",
+          "type": "varchar(40)",
+          "description": "상태 정의",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "ORIGINALQTY",
+          "type": "float(53,NULL)",
+          "description": "입고수량",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "QTY",
+          "type": "float(53,NULL)",
+          "description": "현재 수량",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "LOSSQTY",
+          "type": "float(53,NULL)",
+          "description": "불량수량",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "UNITID",
+          "type": "varchar(40)",
+          "description": "단위코드",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "LOCATION",
+          "type": "varchar(40)",
+          "description": "작업장",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "EQUIPMENTID",
+          "type": "varchar(40)",
+          "description": "설비코드",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "VENDORID",
+          "type": "varchar(40)",
+          "description": "공급사",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "RECEIVEDTIME",
+          "type": "datetime2",
+          "description": "받은 시간",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "PREVSTATE",
+          "type": "varchar(40)",
+          "description": "이전 상태",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "ACTIVITY",
+          "type": "varchar(100)",
+          "description": "활동",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "ISUSABLE",
+          "type": "varchar(40)",
+          "description": "사용 가능",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "DESCRIPTION",
+          "type": "nvarchar(2000)",
+          "description": "설명",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "CREATOR",
+          "type": "varchar(40)",
+          "description": "생성자",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "CREATETIME",
+          "type": "datetime2",
+          "description": "생성 시간",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "MODIFYTIME",
+          "type": "datetime2",
+          "description": "수정시간",
+          "isPK": false,
+          "nullable": false
+        },
+        {
+          "name": "LASTEVENTTIME",
+          "type": "datetime2",
+          "description": "마지막 시간",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "STOCKDATE",
+          "type": "datetime2",
+          "description": "입고일",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "EXPIREDATE",
+          "type": "datetime2",
+          "description": "사용만료일",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "SERIALNO",
+          "type": "varchar(40)",
+          "description": "시리얼 번호",
+          "isPK": false,
+          "nullable": true
+        }
+      ],
+      "foreign_keys": [
+        {
+          "column": "MATERIALDEFINITIONID",
+          "ref_table": "CIM_MATERIALDEFINITION",
+          "ref_column": "MATERIALDEFINITIONID",
+          "label": "자재 정의 참조"
+        },
+        {
+          "column": "MATERIALCLASSID",
+          "ref_table": "CIM_MATERIALCLASS",
+          "ref_column": "MATERIALCLASSID",
+          "label": "자재 클래스 소속"
+        }
+      ]
+    },
+    {
+      "name": "CIM_PROCESSDEFINITION",
+      "description": "공정 정의 (PK: PROCESSDEFINITIONID, SITEID)",
+      "label": "공정 정의",
+      "pk": [
+        "PROCESSDEFINITIONID",
+        "SITEID"
+      ],
+      "columns": [
+        {
+          "name": "PROCESSDEFINITIONID",
+          "type": "varchar(40)",
+          "description": "프로세스 정의 ID",
+          "isPK": true,
+          "nullable": false
+        },
+        {
+          "name": "SITEID",
+          "type": "varchar(40)",
+          "description": "사이트 ID",
+          "isPK": true,
+          "nullable": false
+        },
+        {
+          "name": "PROCESSDEFINITIONNAME",
+          "type": "nvarchar(50)",
+          "description": "공정 이름",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "PROCESSTYPE",
+          "type": "varchar(40)",
+          "description": "공정 구분",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "ACTIVITY",
+          "type": "varchar(100)",
+          "description": "활동",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "ISUSABLE",
+          "type": "varchar(40)",
+          "description": "사용 가능",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "DESCRIPTION",
+          "type": "nvarchar(2000)",
+          "description": "설명",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "CREATOR",
+          "type": "varchar(40)",
+          "description": "생성자",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "CREATETIME",
+          "type": "datetime2",
+          "description": "생성 시간",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "MODIFYTIME",
+          "type": "datetime2",
+          "description": "수정시간",
+          "isPK": false,
+          "nullable": false
+        },
+        {
+          "name": "BOMTYPE",
+          "type": "varchar(40)",
+          "description": "BOM구분",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "COATINGTYPE",
+          "type": "varchar(40)",
+          "description": "Coating 유형",
+          "isPK": false,
+          "nullable": true
+        }
+      ],
+      "foreign_keys": []
+    },
+    {
+      "name": "CIM_PROCESSNODE",
+      "description": "공정 노드 (PK: PROCESSNODEID, SITEID)",
+      "label": "공정 노드",
+      "pk": [
+        "PROCESSNODEID",
+        "SITEID"
+      ],
+      "columns": [
+        {
+          "name": "PROCESSNODEID",
+          "type": "varchar(40)",
+          "description": "진행노드ID",
+          "isPK": true,
+          "nullable": false
+        },
+        {
+          "name": "SITEID",
+          "type": "varchar(40)",
+          "description": "사이트 ID",
+          "isPK": true,
+          "nullable": false
+        },
+        {
+          "name": "PROCESSNODENAME",
+          "type": "nvarchar(40)",
+          "description": "진행노드명",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "PROCESSDEFINITIONID",
+          "type": "varchar(40)",
+          "description": "프로세스 정의 ID (FK)",
+          "isPK": false,
+          "nullable": false
+        },
+        {
+          "name": "PROCESSNODETYPE",
+          "type": "varchar(1)",
+          "description": "진행 노드 구분",
+          "isPK": false,
+          "nullable": false
+        },
+        {
+          "name": "SUBPROCESSDEFINITIONID",
+          "type": "varchar(40)",
+          "description": "하위 프로세스 정의 ID (FK)",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "PROCESSSEGMENTID",
+          "type": "varchar(40)",
+          "description": "프로세스 세그먼트 ID (FK)",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "ISSTARTNODE",
+          "type": "varchar(1)",
+          "description": "시작 노드 여부",
+          "isPK": false,
+          "nullable": false
+        },
+        {
+          "name": "ISENDNODE",
+          "type": "varchar(1)",
+          "description": "종료 노드 여부",
+          "isPK": false,
+          "nullable": false
+        },
+        {
+          "name": "PROCESSNODESEQUENCE",
+          "type": "numeric(4,0)",
+          "description": "진행노드 시퀀스",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "X",
+          "type": "float(53,NULL)",
+          "description": "X좌표",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "Y",
+          "type": "float(53,NULL)",
+          "description": "Y좌표",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "ISUSABLE",
+          "type": "varchar(40)",
+          "description": "사용 가능",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "DESCRIPTION",
+          "type": "nvarchar(2000)",
+          "description": "설명",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "CREATOR",
+          "type": "varchar(40)",
+          "description": "생성자",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "CREATETIME",
+          "type": "datetime2",
+          "description": "생성 시간",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "MODIFYTIME",
+          "type": "datetime2",
+          "description": "수정시간",
+          "isPK": false,
+          "nullable": false
+        },
+        {
+          "name": "ISSAPINTERFACE",
+          "type": "varchar(1)",
+          "description": "마일스톤",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "SAPCODEID",
+          "type": "varchar(40)",
+          "description": "ERP 공정코드",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "ERP_OPRNO",
+          "type": "varchar(40)",
+          "description": "공정순서맵핑",
+          "isPK": false,
+          "nullable": true
+        }
+      ],
+      "foreign_keys": [
+        {
+          "column": "PROCESSDEFINITIONID",
+          "ref_table": "CIM_PROCESSDEFINITION",
+          "ref_column": "PROCESSDEFINITIONID",
+          "label": "공정 정의 소속"
+        },
+        {
+          "column": "PROCESSSEGMENTID",
+          "ref_table": "CIM_PROCESSSEGMENT",
+          "ref_column": "PROCESSSEGMENTID",
+          "label": "공정 세그먼트 소속"
+        },
+        {
+          "column": "SUBPROCESSDEFINITIONID",
+          "ref_table": "CIM_PROCESSDEFINITION",
+          "ref_column": "PROCESSDEFINITIONID",
+          "label": "하위 공정 정의"
+        }
+      ]
+    },
+    {
+      "name": "CIM_PROCESSPATH",
+      "description": "공정 경로(라우팅) (PK: PROCESSPATHID, PROCESSNODEID, SITEID)",
+      "label": "공정 경로(라우팅)",
+      "pk": [
+        "PROCESSPATHID",
+        "PROCESSNODEID",
+        "SITEID"
+      ],
+      "columns": [
+        {
+          "name": "PROCESSPATHID",
+          "type": "varchar(40)",
+          "description": "프로세스 경로 ID",
+          "isPK": true,
+          "nullable": false
+        },
+        {
+          "name": "PROCESSNODEID",
+          "type": "varchar(40)",
+          "description": "현재 노드ID (FK)",
+          "isPK": true,
+          "nullable": false
+        },
+        {
+          "name": "SITEID",
+          "type": "varchar(40)",
+          "description": "사이트 ID",
+          "isPK": true,
+          "nullable": false
+        },
+        {
+          "name": "PROCESSPATHNAME",
+          "type": "nvarchar(40)",
+          "description": "프로세스 경로 이름",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "NEXTPROCESSNODEID",
+          "type": "varchar(40)",
+          "description": "다음 프로세스 노드 ID (FK)",
+          "isPK": false,
+          "nullable": false
+        },
+        {
+          "name": "PRIORITY",
+          "type": "numeric(4,0)",
+          "description": "우선순위",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "ISAUTODISPATCH",
+          "type": "varchar(1)",
+          "description": "자동디스패치",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "ISUSABLE",
+          "type": "varchar(40)",
+          "description": "사용 가능",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "CREATETIME",
+          "type": "datetime2",
+          "description": "생성 시간",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "MODIFYTIME",
+          "type": "datetime2",
+          "description": "수정시간",
+          "isPK": false,
+          "nullable": false
+        }
+      ],
+      "foreign_keys": [
+        {
+          "column": "PROCESSNODEID",
+          "ref_table": "CIM_PROCESSNODE",
+          "ref_column": "PROCESSNODEID",
+          "label": "현재 노드 (라우팅 출발)"
+        },
+        {
+          "column": "NEXTPROCESSNODEID",
+          "ref_table": "CIM_PROCESSNODE",
+          "ref_column": "PROCESSNODEID",
+          "label": "다음 노드 (라우팅 도착)"
+        }
+      ]
+    },
+    {
+      "name": "CIM_PROCESSSEGMENT",
+      "description": "공정 세그먼트 (PK: PROCESSSEGMENTID, SITEID)",
+      "label": "공정 세그먼트",
+      "pk": [
+        "PROCESSSEGMENTID",
+        "SITEID"
+      ],
+      "columns": [
+        {
+          "name": "PROCESSSEGMENTID",
+          "type": "varchar(40)",
+          "description": "프로세스 세그먼트 ID",
+          "isPK": true,
+          "nullable": false
+        },
+        {
+          "name": "SITEID",
+          "type": "varchar(40)",
+          "description": "사이트 ID",
+          "isPK": true,
+          "nullable": false
+        },
+        {
+          "name": "PROCESSSEGMENTNAME",
+          "type": "nvarchar(40)",
+          "description": "공정명",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "PROCESSSEGMENTRULECLSID",
+          "type": "varchar(40)",
+          "description": "공정진행방식그룹ID",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "SEGMENTTYPE",
+          "type": "varchar(40)",
+          "description": "공정구분",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "LEADTIME",
+          "type": "float(53,NULL)",
+          "description": "소요시간",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "LEADTIMEUNIT",
+          "type": "varchar(40)",
+          "description": "소요시간단위",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "SAPCODEID",
+          "type": "varchar(40)",
+          "description": "ERP 공정코드",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "ISSAPINTERFACE",
+          "type": "varchar(1)",
+          "description": "마일스톤",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "ISUSABLE",
+          "type": "varchar(40)",
+          "description": "사용 가능",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "DESCRIPTION",
+          "type": "nvarchar(2000)",
+          "description": "설명",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "CREATOR",
+          "type": "varchar(40)",
+          "description": "생성자",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "CREATETIME",
+          "type": "datetime2",
+          "description": "생성 시간",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "MODIFYTIME",
+          "type": "datetime2",
+          "description": "수정시간",
+          "isPK": false,
+          "nullable": false
+        },
+        {
+          "name": "LOCATION",
+          "type": "varchar(50)",
+          "description": "작업장",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "AUTOSPLIT",
+          "type": "varchar(1)",
+          "description": "자동 분할",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "INSPECTION_TYPE",
+          "type": "nvarchar(100)",
+          "description": "검사타입",
+          "isPK": false,
+          "nullable": true
+        }
+      ],
+      "foreign_keys": []
+    },
+    {
+      "name": "CIM_PROCESSSEGMENTEQUIPMENTREL",
+      "description": "CIM_PROCESSSEGMENTEQUIPMENTREL (컬럼 정보 필요 - convert_schema.py 실행)",
+      "label": "CIM_PROCESSSEGMENTEQUIPMENTREL",
+      "pk": [],
+      "columns": [],
+      "foreign_keys": []
+    },
+    {
+      "name": "CIM_PRODUCTCLASS",
+      "description": "품목 구분 (PK: PRODUCTCLASSID, SITEID)",
+      "label": "품목 구분",
+      "pk": [
+        "PRODUCTCLASSID",
+        "SITEID"
+      ],
+      "columns": [
+        {
+          "name": "PRODUCTCLASSID",
+          "type": "varchar(40)",
+          "description": "품목구분",
+          "isPK": true,
+          "nullable": false
+        },
+        {
+          "name": "SITEID",
+          "type": "varchar(40)",
+          "description": "사이트 ID",
+          "isPK": true,
+          "nullable": false
+        },
+        {
+          "name": "PRODUCTCLASSNAME",
+          "type": "nvarchar(40)",
+          "description": "품목구분명",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "PARENTID",
+          "type": "varchar(40)",
+          "description": "부모ID",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "ISUSABLE",
+          "type": "varchar(40)",
+          "description": "사용 가능",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "DESCRIPTION",
+          "type": "nvarchar(2000)",
+          "description": "설명",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "CREATOR",
+          "type": "varchar(40)",
+          "description": "생성자",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "CREATETIME",
+          "type": "datetime2",
+          "description": "생성 시간",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "MODIFYTIME",
+          "type": "datetime2",
+          "description": "수정시간",
+          "isPK": false,
+          "nullable": false
+        },
+        {
+          "name": "MATKIND",
+          "type": "varchar(40)",
+          "description": "자재종류",
+          "isPK": false,
+          "nullable": true
+        }
+      ],
+      "foreign_keys": []
+    },
+    {
+      "name": "CIM_PRODUCTDEFINITION",
+      "description": "제품 정의 (PK: PRODUCTDEFINITIONID, SITEID)",
+      "label": "제품 정의",
+      "pk": [
+        "PRODUCTDEFINITIONID",
+        "SITEID"
+      ],
+      "columns": [
+        {
+          "name": "PRODUCTDEFINITIONID",
+          "type": "varchar(40)",
+          "description": "제품 정의 ID",
+          "isPK": true,
+          "nullable": false
+        },
+        {
+          "name": "SITEID",
+          "type": "varchar(40)",
+          "description": "사이트 ID",
+          "isPK": true,
+          "nullable": false
+        },
+        {
+          "name": "PRODUCTDEFINITIONNAME",
+          "type": "nvarchar(100)",
+          "description": "품목코드명",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "PRODUCTCLASSID",
+          "type": "varchar(40)",
+          "description": "품목구분 (FK)",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "PRODUCTTYPE",
+          "type": "varchar(40)",
+          "description": "품목타입",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "SALESCODE",
+          "type": "varchar(40)",
+          "description": "판매코드",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "GRADE",
+          "type": "varchar(40)",
+          "description": "등급",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "QTY",
+          "type": "float(53,NULL)",
+          "description": "수량",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "UNITID",
+          "type": "varchar(40)",
+          "description": "단위코드",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "PRODUCTDEFINITIONTYPE",
+          "type": "varchar(40)",
+          "description": "제품코드구분",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "MATERIALTYPE",
+          "type": "varchar(40)",
+          "description": "자재타입",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "ISUSABLE",
+          "type": "varchar(40)",
+          "description": "사용 가능",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "DESCRIPTION",
+          "type": "nvarchar(2000)",
+          "description": "설명",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "CREATOR",
+          "type": "varchar(40)",
+          "description": "생성자",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "CREATETIME",
+          "type": "datetime2",
+          "description": "생성 시간",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "MODIFYTIME",
+          "type": "datetime2",
+          "description": "수정시간",
+          "isPK": false,
+          "nullable": false
+        },
+        {
+          "name": "LOTSIZE",
+          "type": "float(53,NULL)",
+          "description": "LOT SIZE",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "SPEC",
+          "type": "nvarchar(50)",
+          "description": "Size/Dimension",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "LOTFLAG",
+          "type": "nchar(1)",
+          "description": "LOT 투입여부",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "COATINGTYPE",
+          "type": "varchar(40)",
+          "description": "Coating 유형",
+          "isPK": false,
+          "nullable": true
+        }
+      ],
+      "foreign_keys": [
+        {
+          "column": "PRODUCTCLASSID",
+          "ref_table": "CIM_PRODUCTCLASS",
+          "ref_column": "PRODUCTCLASSID",
+          "label": "품목 구분 소속"
+        },
+        {
+          "column": "PRODUCTDEFINITIONID",
+          "ref_table": "CIM_PRODUCTPROCESSREL",
+          "ref_column": "PRODUCTDEFINITIONID",
+          "label": "제품-공정 관계 (via REL) [via CIM_PRODUCTPROCESSREL]"
+        }
+      ]
+    },
+    {
+      "name": "CIM_PRODUCTORDER",
+      "description": "제품 작업지시 (PK: PRODUCTORDERID, SITEID)",
+      "label": "제품 작업지시",
+      "pk": [
+        "PRODUCTORDERID",
+        "SITEID"
+      ],
+      "columns": [
+        {
+          "name": "PRODUCTORDERID",
+          "type": "varchar(40)",
+          "description": "작업지시번호",
+          "isPK": true,
+          "nullable": false
+        },
+        {
+          "name": "SITEID",
+          "type": "varchar(40)",
+          "description": "사이트 ID",
+          "isPK": true,
+          "nullable": false
+        },
+        {
+          "name": "PRODUCTORDERNAME",
+          "type": "nvarchar(40)",
+          "description": "작업지시명",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "PRODUCTCLASSID",
+          "type": "nvarchar(40)",
+          "description": "품목구분 (FK)",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "PRODUCTDEFINITIONID",
+          "type": "varchar(40)",
+          "description": "제품 정의 ID (FK)",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "PRODUCTTYPE",
+          "type": "varchar(40)",
+          "description": "품목타입",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "PURCHASEORDER",
+          "type": "varchar(40)",
+          "description": "구매오더",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "SALESORDER",
+          "type": "varchar(40)",
+          "description": "판매오더",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "PRODUCTORDERTYPE",
+          "type": "varchar(40)",
+          "description": "작업지시타입",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "STATE",
+          "type": "varchar(40)",
+          "description": "상태 정의",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "PREVSTATE",
+          "type": "varchar(40)",
+          "description": "이전 상태",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "QTY",
+          "type": "float(53,NULL)",
+          "description": "수량",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "RESULTQTY",
+          "type": "float(53,NULL)",
+          "description": "양품수량",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "UNITID",
+          "type": "varchar(40)",
+          "description": "단위코드",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "REQUESTTIME",
+          "type": "datetime2",
+          "description": "의뢰일시",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "SCHEDULESTARTTIME",
+          "type": "datetime2",
+          "description": "계획시작일",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "SCHEDULEENDTIME",
+          "type": "datetime2",
+          "description": "생산완료목표일",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "STARTTIME",
+          "type": "datetime2",
+          "description": "실적시작일",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "ENDTIME",
+          "type": "datetime2",
+          "description": "실적종료일",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "CUSTOMERID",
+          "type": "varchar(40)",
+          "description": "고객ID",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "WORKCENTER",
+          "type": "varchar(40)",
+          "description": "작업장",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "ACTIVITY",
+          "type": "varchar(100)",
+          "description": "활동",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "PREVCUSTOMACTIVITY",
+          "type": "varchar(100)",
+          "description": "PREV CUSTOM ACTIVITY",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "ISUSABLE",
+          "type": "varchar(40)",
+          "description": "사용 가능",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "DESCRIPTION",
+          "type": "nvarchar(2000)",
+          "description": "설명",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "REASONCODE",
+          "type": "varchar(40)",
+          "description": "원인 코드",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "COMMENTS",
+          "type": "nvarchar(2000)",
+          "description": "코멘트",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "CREATOR",
+          "type": "varchar(40)",
+          "description": "생성자",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "CREATETIME",
+          "type": "datetime2",
+          "description": "생성 시간",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "MODIFYTIME",
+          "type": "datetime2",
+          "description": "수정시간",
+          "isPK": false,
+          "nullable": false
+        },
+        {
+          "name": "LASTEVENTTIME",
+          "type": "datetime2",
+          "description": "마지막 시간",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "PRIORITY",
+          "type": "varchar(10)",
+          "description": "우선순위",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "VENDORID",
+          "type": "varchar(40)",
+          "description": "공급사",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "FACTORY",
+          "type": "varchar(100)",
+          "description": "공장",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "FIRMFLAG",
+          "type": "char(1)",
+          "description": "확정 플래그",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "DELAYFLAG",
+          "type": "char(1)",
+          "description": "지연 플래그",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "PROCURTYPE",
+          "type": "varchar(1)",
+          "description": "외주/사내 구분",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "DELIVERYDATE",
+          "type": "datetime2",
+          "description": "Delivery Date",
+          "isPK": false,
+          "nullable": true
+        }
+      ],
+      "foreign_keys": [
+        {
+          "column": "PRODUCTDEFINITIONID",
+          "ref_table": "CIM_PRODUCTDEFINITION",
+          "ref_column": "PRODUCTDEFINITIONID",
+          "label": "제품 정의 참조"
+        },
+        {
+          "column": "PRODUCTCLASSID",
+          "ref_table": "CIM_PRODUCTCLASS",
+          "ref_column": "PRODUCTCLASSID",
+          "label": "품목 구분 참조"
+        }
+      ]
+    },
+    {
+      "name": "CIM_PRODUCTPROCESSREL",
+      "description": "제품-공정 관계 (PK: PRODUCTDEFINITIONID, PROCESSDEFINITIONID, SITEID)",
+      "label": "제품-공정 관계",
+      "pk": [
+        "PRODUCTDEFINITIONID",
+        "PROCESSDEFINITIONID",
+        "SITEID"
+      ],
+      "columns": [
+        {
+          "name": "PRODUCTDEFINITIONID",
+          "type": "varchar(40)",
+          "description": "제품 정의 ID (FK)",
+          "isPK": true,
+          "nullable": false
+        },
+        {
+          "name": "PROCESSDEFINITIONID",
+          "type": "varchar(40)",
+          "description": "프로세스 정의 ID (FK)",
+          "isPK": true,
+          "nullable": false
+        },
+        {
+          "name": "SITEID",
+          "type": "varchar(40)",
+          "description": "사이트 ID",
+          "isPK": true,
+          "nullable": false
+        },
+        {
+          "name": "ISDEFAULT",
+          "type": "varchar(40)",
+          "description": "디폴트 여부",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "SEQUENCE",
+          "type": "varchar(40)",
+          "description": "시퀀스",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "ISUSABLE",
+          "type": "varchar(40)",
+          "description": "사용 가능",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "CREATETIME",
+          "type": "datetime2",
+          "description": "생성 시간",
+          "isPK": false,
+          "nullable": true
+        },
+        {
+          "name": "MODIFYTIME",
+          "type": "datetime2",
+          "description": "수정시간",
+          "isPK": false,
+          "nullable": false
+        },
+        {
+          "name": "ERPROUTINGID",
+          "type": "varchar(10)",
+          "description": "ERP 라우팅 코드",
+          "isPK": false,
+          "nullable": true
+        }
+      ],
+      "foreign_keys": []
+    }
+  ]
+}
