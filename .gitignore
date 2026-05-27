@@ -12,9 +12,6 @@ __pycache__/
 # ChromaDB (자동 재생성됨)
 chroma_db/
 
-# Word 문서 (용량 큰 바이너리)
-*.docx
-
 # 기타
 .DS_Store
 Thumbs.db
