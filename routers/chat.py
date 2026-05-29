@@ -15,6 +15,7 @@ from core.ollama import llm_generate, check_ollama
 from core.config import LLM_MODEL, LLM_PROVIDER
 from core.retriever import retrieve_context
 from core.db_client import execute_sql
+from core.db_context import build_live_db_context, validate_sql_against_schema
 
 router = APIRouter()
 
@@ -42,30 +43,39 @@ NL_TO_SQL_PROMPT = """당신은 MES(제조실행시스템) 전문 SQL 생성 어
 ## MES 스키마 정보
 {schema}
 
+## 실제 MES DB 탐색 결과
+{db_context}
+
 ## 규칙
 1. SELECT 문만 생성 (INSERT/UPDATE/DELETE/DROP/EXEC 절대 금지)
 2. MS SQL Server 문법 사용. WITH (NOLOCK) 힌트를 모든 테이블에 적용하세요.
 3. 컬럼/테이블명은 반드시 스키마에 있는 이름 그대로 사용 (존재하지 않는 컬럼 사용 금지)
+4. 실제 MES DB 탐색 결과에 샘플값/날짜범위/주요값이 있으면 그 값을 우선 참고하세요.
 
 ## 날짜 규칙
-4. [중요] 기본 기준일은 항상 1년 전이다. 사용자가 날짜를 별도로 지정하지 않으면 DATEADD(year, -1, GETDATE())를 기준으로 사용하라.
+5. [중요] 기본 기준일은 항상 1년 전이다. 사용자가 날짜를 별도로 지정하지 않으면 DATEADD(year, -1, GETDATE())를 기준으로 사용하라.
    - "오늘" / 날짜 미지정 → DATEADD(year, -1, GETDATE())
    - "어제" → DATEADD(day, -1, DATEADD(year, -1, CAST(GETDATE() AS date)))
    - "이번 달" → 1년 전 같은 달: YEAR(DATEADD(year,-1,GETDATE())), MONTH(DATEADD(year,-1,GETDATE()))
    - "이번 주" → DATEADD(year,-1,GETDATE()) 기준 해당 주
    - "최근 N일" → DATEADD(day, -N, DATEADD(year, -1, GETDATE())) ~ DATEADD(year, -1, GETDATE())
-5. 특정 연도/월이 명시된 경우 (예: "2025년 12월") → 리터럴 날짜 사용 (GETDATE() 계산 금지)
+6. 특정 연도/월이 명시된 경우 (예: "2025년 12월") → 리터럴 날짜 사용 (GETDATE() 계산 금지)
    예시: TRACKINTIME >= '2025-12-01' AND TRACKINTIME < '2026-01-01'
-6. 날짜 범위 필터는 BETWEEN보다 >= AND < 형식 사용
+7. 날짜 범위 필터는 BETWEEN보다 >= AND < 형식 사용
 
 ## 집계/추이 규칙
 9. 일별 추이 집계 시 날짜 컬럼은 CONVERT(date, 날짜컬럼) 사용
 10. 설비 가동 횟수 추이 → CIM_LOT 테이블의 TRACKINTIME + EQUIPMENTID로 COUNT(*) 집계
     (CIM_EQUIPMENT.RUNCOUNT는 현재 누적값이므로 추이 분석에 사용 금지)
 11. 불량률 계산 → SUM(LOSSQTY) / NULLIF(SUM(ORIGINALQTY), 0) * 100
+12. 생산량/생산 실적 질문은 CIM_LOT를 기준 사실 테이블로 사용하세요.
+    - 생산량: SUM(CIM_LOT.QTY)
+    - 생산건수: COUNT(*)
+    - 설비별 생산량: CIM_LOT.EQUIPMENTID 기준 집계 후 CIM_EQUIPMENT와 JOIN해 설비명을 표시
+    - 제품별 생산량: CIM_LOT.PRODUCTDEFINITIONID 기준 집계 후 CIM_PRODUCTDEFINITION과 JOIN해 제품명을 표시
 
 ## alias 규칙
-12. 컬럼 alias에 SQL 예약어 사용 금지: DATE, TIME, NAME, VALUE, COUNT, STATE, TYPE, DATA, KEY, INDEX, ORDER
+13. 컬럼 alias에 SQL 예약어 사용 금지: DATE, TIME, NAME, VALUE, COUNT, STATE, TYPE, DATA, KEY, INDEX, ORDER
     예시: AS DATE (X) → AS 작업일자 (O), AS COUNT (X) → AS 건수 (O)
 
 ## 응답 형식
@@ -74,6 +84,36 @@ NL_TO_SQL_PROMPT = """당신은 MES(제조실행시스템) 전문 SQL 생성 어
 
 ## 사용자 질문
 {question}
+
+JSON 응답:"""
+
+
+SQL_REPAIR_PROMPT = """당신은 MES(제조실행시스템) 전문 SQL 수정 어시스턴트입니다.
+아래 SQL은 실제 MES DB에서 실행 실패했습니다. 오류와 실제 DB 탐색 결과를 참고해 실행 가능한 MS SQL Server SELECT 쿼리로 고치세요.
+
+## MES 스키마 정보
+{schema}
+
+## 실제 MES DB 탐색 결과
+{db_context}
+
+## 사용자 질문
+{question}
+
+## 실패한 SQL
+{sql}
+
+## DB 오류
+{error}
+
+## 규칙
+1. SELECT 문만 생성하세요.
+2. WITH (NOLOCK)을 모든 테이블에 적용하세요.
+3. 스키마/실제 DB 탐색 결과에 없는 테이블명과 컬럼명을 만들지 마세요.
+4. 오류 원인을 반영해 JOIN, 컬럼명, 날짜 조건, 집계식을 수정하세요.
+
+반드시 아래 JSON 형식으로만 응답하세요:
+{{"sql": "SELECT ...", "description": "한국어로 수정 내용 설명"}}
 
 JSON 응답:"""
 
@@ -115,6 +155,37 @@ def _parse_llm_json(raw: str) -> tuple[str, str]:
     sql_match = re.search(r'(SELECT\s.+?)(?:;|$)', raw, re.DOTALL | re.IGNORECASE)
     sql = sql_match.group(1).strip() if sql_match else raw
     return sql, ""
+
+
+def _semantic_sql_errors(question: str, sql: str) -> list[str]:
+    """Catch common SQL that runs but answers the wrong MES business question."""
+    q = question.replace(" ", "")
+    upper_sql = sql.upper()
+    errors: list[str] = []
+
+    if "생산" in q:
+        if "CIM_LOT" not in upper_sql:
+            errors.append("생산량/생산 실적 질문은 CIM_LOT를 기준 테이블로 사용해야 합니다.")
+        if "생산량" in q and "SUM(" not in upper_sql:
+            errors.append("생산량 질문은 COUNT만 쓰지 말고 CIM_LOT.QTY를 SUM 집계해야 합니다.")
+        if "생산량" in q and ".QTY" not in upper_sql and " QTY" not in upper_sql and "[QTY]" not in upper_sql:
+            errors.append("생산량 질문에는 CIM_LOT.QTY 컬럼이 포함되어야 합니다.")
+    if "설비별" in q and "생산" in q and "EQUIPMENTID" not in upper_sql:
+        errors.append("설비별 생산 질문은 EQUIPMENTID 기준으로 그룹화해야 합니다.")
+    if "제품별" in q and "생산" in q and "PRODUCTDEFINITIONID" not in upper_sql:
+        errors.append("제품별 생산 질문은 PRODUCTDEFINITIONID 기준으로 그룹화해야 합니다.")
+
+    return errors
+
+
+async def _llm_sql_from_prompt(prompt: str) -> tuple[str, str]:
+    raw_response = await llm_generate(prompt, temperature=0.05, max_tokens=512)
+    sql, description = _parse_llm_json(raw_response)
+    if not sql:
+        raise HTTPException(status_code=500, detail="SQL 생성 실패 — LLM 응답을 파싱할 수 없습니다.")
+    if not re.match(r"^\s*SELECT\b", sql, re.IGNORECASE):
+        raise HTTPException(status_code=500, detail=f"SQL 생성 실패 — SELECT 문이 아닙니다: {sql[:120]}")
+    return sql, description
 
 
 def _rows_to_text(columns: list, rows: list, max_rows: int = 20) -> str:
@@ -242,6 +313,9 @@ async def nl_to_sql(req: NlToSqlRequest):
     preset = _preset_sql(req.question)
     if preset:
         sql, description = preset
+        generated_by_llm = False
+        schema_ctx = ""
+        db_context = ""
     else:
         # 1. RAG: 관련 스키마 청크 조회
         try:
@@ -250,36 +324,90 @@ async def nl_to_sql(req: NlToSqlRequest):
             schema_ctx = "(스키마 정보 조회 실패)"
             print(f"[RAG] 오류: {e}")
 
-        # 2. LLM: SQL 생성
-        prompt = NL_TO_SQL_PROMPT.format(schema=schema_ctx, question=req.question)
+        # 2. 실제 DB 탐색: 관련 테이블의 샘플/날짜범위/주요값 확인
         try:
-            raw_response = await llm_generate(prompt, temperature=0.05, max_tokens=512)
+            db_context = await build_live_db_context(schema_ctx)
+        except Exception as e:
+            db_context = "(실제 MES DB 탐색 실패)"
+            print(f"[DB_CONTEXT] 오류: {e}")
+
+        # 3. LLM: SQL 생성
+        prompt = NL_TO_SQL_PROMPT.format(
+            schema=schema_ctx,
+            db_context=db_context or "(관련 테이블의 실제 DB 샘플 없음)",
+            question=req.question,
+        )
+        try:
+            sql, description = await _llm_sql_from_prompt(prompt)
+        except HTTPException:
+            raise
         except Exception as e:
             raise HTTPException(status_code=503, detail=f"LLM 연결 오류: {e}")
 
-        sql, description = _parse_llm_json(raw_response)
-        if not sql:
-            raise HTTPException(status_code=500, detail="SQL 생성 실패 — LLM 응답을 파싱할 수 없습니다.")
-        if not re.match(r"^\s*SELECT\b", sql, re.IGNORECASE):
-            raise HTTPException(status_code=500, detail=f"SQL 생성 실패 — SELECT 문이 아닙니다: {sql[:120]}")
-
         if not description:
             description = f'"{req.question}" 조회 결과'
+        generated_by_llm = True
 
-    # 3. DB 실행 (mes-api 위임)
+    # 4. DB 실행 (mes-api 위임). LLM 생성 SQL은 실패 시 오류를 넣어 재시도.
     db_data = None
     db_error = None
-    try:
-        db_result = await execute_sql(sql, limit=req.limit)
-        # rows를 dict 배열 형식으로 정규화
-        db_data = {
-            "columns": db_result.get("columns", []),
-            "rows": db_result.get("rows", []),   # [{col: val, ...}]
-            "count": db_result.get("count", 0),
-        }
-    except Exception as e:
-        db_error = str(e)
-        print(f"[DB] 오류: {e}")
+    max_attempts = 3 if generated_by_llm else 1
+    for attempt in range(max_attempts):
+        preflight_errors = validate_sql_against_schema(sql) + _semantic_sql_errors(req.question, sql)
+        if preflight_errors:
+            db_error = "SQL 사전 검증 실패: " + "; ".join(preflight_errors)
+            print(f"[SQL_SCHEMA] 오류(attempt {attempt + 1}/{max_attempts}): {db_error}")
+            if not generated_by_llm or attempt >= max_attempts - 1:
+                break
+
+            repair_prompt = SQL_REPAIR_PROMPT.format(
+                schema=schema_ctx,
+                db_context=db_context or "(관련 테이블의 실제 DB 샘플 없음)",
+                question=req.question,
+                sql=sql,
+                error=db_error,
+            )
+            try:
+                repaired_sql, repaired_description = await _llm_sql_from_prompt(repair_prompt)
+                sql = repaired_sql
+                if repaired_description:
+                    description = repaired_description
+                continue
+            except Exception as repair_error:
+                db_error = f"{db_error} / SQL 수정 실패: {repair_error}"
+                break
+
+        try:
+            db_result = await execute_sql(sql, limit=req.limit)
+            # rows를 dict 배열 형식으로 정규화
+            db_data = {
+                "columns": db_result.get("columns", []),
+                "rows": db_result.get("rows", []),   # [{col: val, ...}]
+                "count": db_result.get("count", 0),
+            }
+            db_error = None
+            break
+        except Exception as e:
+            db_error = str(e)
+            print(f"[DB] 오류(attempt {attempt + 1}/{max_attempts}): {e}")
+            if not generated_by_llm or attempt >= max_attempts - 1:
+                break
+
+            repair_prompt = SQL_REPAIR_PROMPT.format(
+                schema=schema_ctx,
+                db_context=db_context or "(관련 테이블의 실제 DB 샘플 없음)",
+                question=req.question,
+                sql=sql,
+                error=db_error,
+            )
+            try:
+                repaired_sql, repaired_description = await _llm_sql_from_prompt(repair_prompt)
+                sql = repaired_sql
+                if repaired_description:
+                    description = repaired_description
+            except Exception as repair_error:
+                db_error = f"{db_error} / SQL 수정 실패: {repair_error}"
+                break
 
     return {
         "success": True,
