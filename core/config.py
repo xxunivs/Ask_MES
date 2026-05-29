@@ -3,9 +3,17 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+# LLM 설정
+LLM_PROVIDER = os.getenv("LLM_PROVIDER", "ollama").lower()
+LLM_MODEL = os.getenv("LLM_MODEL", os.getenv("OLLAMA_MODEL", "qwen35-9b"))
+
 # Ollama 설정
-OLLAMA_URL   = os.getenv("OLLAMA_URL",  "http://localhost:11434")
-OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "qwen2.5:7b")
+OLLAMA_URL = os.getenv("OLLAMA_URL", "http://localhost:11434")
+OLLAMA_MODEL = LLM_MODEL
+
+# vLLM / OpenAI-compatible API 설정
+VLLM_API_URL = os.getenv("VLLM_API_URL", "http://127.0.0.1:8008/v1")
+VLLM_API_KEY = os.getenv("VLLM_API_KEY", "EMPTY")
 
 # MES DB API (기존 mes-api) 설정
 MES_API_URL = os.getenv("MES_API_URL", "http://localhost:8000")

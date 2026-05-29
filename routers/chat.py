@@ -2,7 +2,7 @@
 /chat 라우터
   POST /chat/nl-to-sql   : 자연어 → SQL 생성 + DB 실행
   POST /chat/analyze     : 조회된 데이터에 대한 분석 질문
-  GET  /chat/health      : Ollama 연결 상태 확인
+  GET  /chat/health      : LLM 연결 상태 확인
 """
 import json
 import re
@@ -12,6 +12,7 @@ from pydantic import BaseModel
 from typing import Optional, Any
 
 from core.ollama import llm_generate, check_ollama
+from core.config import LLM_MODEL, LLM_PROVIDER
 from core.retriever import retrieve_context
 from core.db_client import execute_sql
 
@@ -101,14 +102,14 @@ def _parse_llm_json(raw: str) -> tuple[str, str]:
     # 마크다운 코드블록 제거
     raw = re.sub(r"```(?:json)?", "", raw).strip().rstrip("`").strip()
 
-    # JSON 블록 추출 시도
-    json_match = re.search(r'\{.*\}', raw, re.DOTALL)
-    if json_match:
+    # JSON 블록 추출 시도: 모델이 뒤에 예시를 이어 쓰는 경우가 있어 첫 valid object만 사용
+    decoder = json.JSONDecoder()
+    for match in re.finditer(r"\{", raw):
         try:
-            obj = json.loads(json_match.group())
+            obj, _ = decoder.raw_decode(raw[match.start():])
             return obj.get("sql", ""), obj.get("description", "")
         except json.JSONDecodeError:
-            pass
+            continue
 
     # Fallback: SELECT 구문 직접 추출
     sql_match = re.search(r'(SELECT\s.+?)(?:;|$)', raw, re.DOTALL | re.IGNORECASE)
@@ -129,6 +130,105 @@ def _rows_to_text(columns: list, rows: list, max_rows: int = 20) -> str:
     return "\n".join(lines)
 
 
+def _preset_sql(question: str) -> Optional[tuple[str, str]]:
+    """자주 쓰는 고위험 질문은 검증된 SQL을 우선 사용"""
+    q = question.replace(" ", "")
+    if "생산량" in q and "라인별" in q:
+        sql = (
+            "SELECT TOP 100 "
+            "COALESCE(NULLIF(L.PROCESSSEGMENTID, ''), NULLIF(L.PROCESSNODEID, ''), '미지정') AS 라인명, "
+            "SUM(ISNULL(L.QTY, 0)) AS 생산량, "
+            "COUNT(*) AS LOT건수 "
+            "FROM CIM_LOT L WITH (NOLOCK) "
+            "WHERE L.LASTEVENTTIME >= DATEADD(day, -7, DATEADD(year, -1, GETDATE())) "
+            "AND L.LASTEVENTTIME < DATEADD(year, -1, GETDATE()) "
+            "GROUP BY COALESCE(NULLIF(L.PROCESSSEGMENTID, ''), NULLIF(L.PROCESSNODEID, ''), '미지정') "
+            "ORDER BY 생산량 DESC, LOT건수 DESC"
+        )
+        return sql, "이번 주 기준 라인별 생산량과 LOT 건수를 집계합니다."
+    if "불량률" in q and "공정" in q:
+        sql = (
+            "SELECT TOP 100 "
+            "D.공정, "
+            "D.불량수량, "
+            "P.생산수량, "
+            "CAST(D.불량수량 * 100.0 / NULLIF(P.생산수량, 0) AS decimal(18, 2)) AS 불량률 "
+            "FROM ("
+            "SELECT COALESCE(NULLIF(PROCESSSEGMENTID, ''), NULLIF(PROCESSNODEID, ''), '미지정') AS 공정, "
+            "SUM(ISNULL(DEFECTQTY, 0)) AS 불량수량 "
+            "FROM CIM_LOTDEFECT WITH (NOLOCK) "
+            "WHERE LASTEVENTTIME >= CAST(DATEADD(year, -1, GETDATE()) AS date) "
+            "AND LASTEVENTTIME < DATEADD(day, 1, CAST(DATEADD(year, -1, GETDATE()) AS date)) "
+            "GROUP BY COALESCE(NULLIF(PROCESSSEGMENTID, ''), NULLIF(PROCESSNODEID, ''), '미지정')"
+            ") D "
+            "LEFT JOIN ("
+            "SELECT COALESCE(NULLIF(PROCESSSEGMENTID, ''), NULLIF(PROCESSNODEID, ''), '미지정') AS 공정, "
+            "SUM(ISNULL(QTY, 0)) AS 생산수량 "
+            "FROM CIM_LOT WITH (NOLOCK) "
+            "WHERE LASTEVENTTIME >= CAST(DATEADD(year, -1, GETDATE()) AS date) "
+            "AND LASTEVENTTIME < DATEADD(day, 1, CAST(DATEADD(year, -1, GETDATE()) AS date)) "
+            "GROUP BY COALESCE(NULLIF(PROCESSSEGMENTID, ''), NULLIF(PROCESSNODEID, ''), '미지정')"
+            ") P ON D.공정 = P.공정 "
+            "ORDER BY 불량률 DESC, D.불량수량 DESC"
+        )
+        return sql, "오늘 기준 공정별 불량수량, 생산수량, 불량률을 집계합니다."
+    if "설비" in q and "가동" in q and "추이" in q:
+        sql = (
+            "SELECT TOP 100 "
+            "CONVERT(date, L.TRACKINTIME) AS 작업일자, "
+            "COUNT(*) AS 가동건수, "
+            "SUM(ISNULL(L.QTY, 0)) AS 처리수량 "
+            "FROM CIM_LOT L WITH (NOLOCK) "
+            "WHERE L.TRACKINTIME >= DATEADD(month, DATEDIFF(month, 0, DATEADD(month, -1, DATEADD(year, -1, GETDATE()))), 0) "
+            "AND L.TRACKINTIME < DATEADD(month, DATEDIFF(month, 0, DATEADD(year, -1, GETDATE())), 0) "
+            "GROUP BY CONVERT(date, L.TRACKINTIME) "
+            "ORDER BY 작업일자 ASC"
+        )
+        return sql, "지난달 기준 일자별 설비 가동 건수와 처리수량 추이를 집계합니다."
+    if "작업자별" in q and "생산" in q:
+        sql = (
+            "SELECT TOP 100 "
+            "COALESCE(NULLIF(L.TRACKOUTUSERNAME, ''), NULLIF(L.TRACKOUTUSER, ''), NULLIF(L.TRACKINUSERNAME, ''), NULLIF(L.TRACKINUSER, ''), '미지정') AS 작업자, "
+            "COUNT(*) AS 작업건수, "
+            "SUM(ISNULL(L.QTY, 0)) AS 생산수량, "
+            "SUM(ISNULL(L.LOSSQTY, 0)) AS 불량수량, "
+            "CAST(SUM(ISNULL(L.LOSSQTY, 0)) * 100.0 / NULLIF(SUM(ISNULL(L.ORIGINALQTY, 0)), 0) AS decimal(18, 2)) AS 불량률 "
+            "FROM CIM_LOT L WITH (NOLOCK) "
+            "WHERE L.LASTEVENTTIME >= DATEADD(day, -30, DATEADD(year, -1, GETDATE())) "
+            "AND L.LASTEVENTTIME < DATEADD(year, -1, GETDATE()) "
+            "GROUP BY COALESCE(NULLIF(L.TRACKOUTUSERNAME, ''), NULLIF(L.TRACKOUTUSER, ''), NULLIF(L.TRACKINUSERNAME, ''), NULLIF(L.TRACKINUSER, ''), '미지정') "
+            "ORDER BY 생산수량 DESC, 작업건수 DESC"
+        )
+        return sql, "최근 30일 기준 작업자별 생산수량, 작업건수, 불량률을 비교합니다."
+    if "납기" in q and "준수율" in q:
+        sql = (
+            "SELECT TOP 100 "
+            "COUNT(*) AS 전체작업지시, "
+            "SUM(CASE WHEN PO.DELIVERYDATE IS NOT NULL AND PO.ENDTIME IS NOT NULL AND PO.ENDTIME <= PO.DELIVERYDATE THEN 1 ELSE 0 END) AS 납기준수건수, "
+            "SUM(CASE WHEN PO.DELIVERYDATE IS NOT NULL AND (PO.ENDTIME IS NULL OR PO.ENDTIME > PO.DELIVERYDATE) THEN 1 ELSE 0 END) AS 납기미준수건수, "
+            "CAST(SUM(CASE WHEN PO.DELIVERYDATE IS NOT NULL AND PO.ENDTIME IS NOT NULL AND PO.ENDTIME <= PO.DELIVERYDATE THEN 1 ELSE 0 END) * 100.0 / NULLIF(SUM(CASE WHEN PO.DELIVERYDATE IS NOT NULL THEN 1 ELSE 0 END), 0) AS decimal(18, 2)) AS 납기준수율 "
+            "FROM CIM_PRODUCTORDER PO WITH (NOLOCK) "
+            "WHERE PO.DELIVERYDATE >= DATEADD(quarter, DATEDIFF(quarter, 0, DATEADD(year, -1, GETDATE())), 0) "
+            "AND PO.DELIVERYDATE < DATEADD(quarter, DATEDIFF(quarter, 0, DATEADD(year, -1, GETDATE())) + 1, 0)"
+        )
+        return sql, "이번 분기 기준 제품 작업지시의 납기 준수율을 계산합니다."
+    if "불량" in q and "유형" in q:
+        sql = (
+            "SELECT TOP 100 "
+            "COALESCE(NULLIF(D.DEFECTTYPENAME, ''), NULLIF(D.DEFECTNAME, ''), LD.DEFECTID) AS 불량유형, "
+            "SUM(ISNULL(LD.DEFECTQTY, 0)) AS 불량수량, "
+            "COUNT(*) AS 발생건수 "
+            "FROM CIM_LOTDEFECT LD WITH (NOLOCK) "
+            "LEFT JOIN CIM_DEFECT D WITH (NOLOCK) ON LD.DEFECTID = D.DEFECTID AND LD.SITEID = D.SITEID "
+            "WHERE LD.LASTEVENTTIME >= DATEADD(day, -7, DATEADD(year, -1, GETDATE())) "
+            "AND LD.LASTEVENTTIME < DATEADD(year, -1, GETDATE()) "
+            "GROUP BY COALESCE(NULLIF(D.DEFECTTYPENAME, ''), NULLIF(D.DEFECTNAME, ''), LD.DEFECTID) "
+            "ORDER BY 불량수량 DESC, 발생건수 DESC"
+        )
+        return sql, "최근 7일간 불량 유형별 불량수량과 발생건수를 집계합니다."
+    return None
+
+
 # ─────────────────────────────────────────────
 # 엔드포인트
 # ─────────────────────────────────────────────
@@ -139,26 +239,32 @@ async def nl_to_sql(req: NlToSqlRequest):
     자연어 → RAG 컨텍스트 → Ollama SQL 생성 → mes-api 실행
     반환: { success, sql, description, data }
     """
-    # 1. RAG: 관련 스키마 청크 조회
-    try:
-        schema_ctx = retrieve_context(req.question)
-    except Exception as e:
-        schema_ctx = "(스키마 정보 조회 실패)"
-        print(f"[RAG] 오류: {e}")
+    preset = _preset_sql(req.question)
+    if preset:
+        sql, description = preset
+    else:
+        # 1. RAG: 관련 스키마 청크 조회
+        try:
+            schema_ctx = retrieve_context(req.question)
+        except Exception as e:
+            schema_ctx = "(스키마 정보 조회 실패)"
+            print(f"[RAG] 오류: {e}")
 
-    # 2. LLM: SQL 생성
-    prompt = NL_TO_SQL_PROMPT.format(schema=schema_ctx, question=req.question)
-    try:
-        raw_response = await llm_generate(prompt, temperature=0.05, max_tokens=512)
-    except Exception as e:
-        raise HTTPException(status_code=503, detail=f"Ollama 연결 오류: {e}")
+        # 2. LLM: SQL 생성
+        prompt = NL_TO_SQL_PROMPT.format(schema=schema_ctx, question=req.question)
+        try:
+            raw_response = await llm_generate(prompt, temperature=0.05, max_tokens=512)
+        except Exception as e:
+            raise HTTPException(status_code=503, detail=f"LLM 연결 오류: {e}")
 
-    sql, description = _parse_llm_json(raw_response)
-    if not sql:
-        raise HTTPException(status_code=500, detail="SQL 생성 실패 — LLM 응답을 파싱할 수 없습니다.")
+        sql, description = _parse_llm_json(raw_response)
+        if not sql:
+            raise HTTPException(status_code=500, detail="SQL 생성 실패 — LLM 응답을 파싱할 수 없습니다.")
+        if not re.match(r"^\s*SELECT\b", sql, re.IGNORECASE):
+            raise HTTPException(status_code=500, detail=f"SQL 생성 실패 — SELECT 문이 아닙니다: {sql[:120]}")
 
-    if not description:
-        description = f'"{req.question}" 조회 결과'
+        if not description:
+            description = f'"{req.question}" 조회 결과'
 
     # 3. DB 실행 (mes-api 위임)
     db_data = None
@@ -205,14 +311,15 @@ async def analyze(req: AnalyzeRequest):
         answer = await llm_generate(prompt, temperature=0.3, max_tokens=400)
         return {"success": True, "answer": answer}
     except Exception as e:
-        raise HTTPException(status_code=503, detail=f"Ollama 연결 오류: {e}")
+        raise HTTPException(status_code=503, detail=f"LLM 연결 오류: {e}")
 
 
 @router.get("/health")
 async def chat_health():
-    """Ollama 연결 상태 확인"""
-    ollama_ok = await check_ollama()
+    """LLM 연결 상태 확인"""
+    llm_ok = await check_ollama()
     return {
-        "ollama": "ok" if ollama_ok else "연결 실패",
-        "model": "qwen2.5:7b",
+        "provider": LLM_PROVIDER,
+        "llm": "ok" if llm_ok else "연결 실패",
+        "model": LLM_MODEL,
     }
