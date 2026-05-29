@@ -12,6 +12,13 @@ __pycache__/
 # ChromaDB (자동 재생성됨)
 chroma_db/
 
+# Frontend local files
+UI/.env
+UI/.git/
+UI/.vite/
+UI/node_modules/
+UI/dist/
+
 # 기타
 .DS_Store
 Thumbs.db
