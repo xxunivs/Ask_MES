@@ -87,14 +87,21 @@ export default function App() {
         </div>
       </div>
 
-      {/* 콘텐츠 */}
+      {/* 콘텐츠: 탭 전환 시 컴포넌트를 유지해서 채팅 기록이 사라지지 않게 함 */}
       <div className="tab-content">
-        {active?.type === "chat" && (
-          <ChatPage key={active.id} onSqlConfirmed={handleSqlConfirmed} />
-        )}
-        {active?.type === "analysis" && (
-          <AnalysisPage key={active.id} sqlInfo={active.sqlInfo} />
-        )}
+        {tabs.map((tab) => (
+          <div
+            key={tab.id}
+            className={`tab-panel ${activeTab === tab.id ? "active" : ""}`}
+            hidden={activeTab !== tab.id}
+          >
+            {tab.type === "chat" ? (
+              <ChatPage onSqlConfirmed={handleSqlConfirmed} />
+            ) : (
+              <AnalysisPage sqlInfo={tab.sqlInfo} />
+            )}
+          </div>
+        ))}
       </div>
     </div>
   );

@@ -9,9 +9,25 @@ function now() {
   return new Date().toLocaleTimeString("ko-KR", { hour: "2-digit", minute: "2-digit" });
 }
 
+function normalizeTableData(data) {
+  if (!data || !Array.isArray(data.columns) || !Array.isArray(data.rows)) return null;
+  const rows = data.rows.map((row) => {
+    if (Array.isArray(row)) return row;
+    if (row && typeof row === "object") {
+      return data.columns.map((col) => {
+        const value = row[col];
+        return value === null || value === undefined ? "" : value;
+      });
+    }
+    return data.columns.map(() => "");
+  });
+  return { columns: data.columns, rows, count: data.count ?? rows.length };
+}
+
 export default function AnalysisPage({ sqlInfo }) {
   // sqlInfo: { sql, description, data: { columns, rows, count } }
   const actualData = sqlInfo?.data || null;
+  const tableData = normalizeTableData(actualData);
 
   const [messages, setMessages] = useState([
     {
@@ -79,7 +95,7 @@ export default function AnalysisPage({ sqlInfo }) {
       <div className="analysis-layout">
         {/* 왼쪽: 통계 뷰 */}
         <div className="analysis-left">
-          <StatisticsView sqlInfo={sqlInfo} tableData={actualData} />
+          <StatisticsView sqlInfo={sqlInfo} tableData={tableData} />
         </div>
 
         {/* 오른쪽: 분석 채팅 */}

@@ -112,6 +112,17 @@ html, body, #root {
 
 .tab-content { flex: 1; overflow: hidden; display: flex; flex-direction: column; }
 
+.tab-panel {
+  flex: 1;
+  min-height: 0;
+  display: none;
+  flex-direction: column;
+}
+
+.tab-panel.active {
+  display: flex;
+}
+
 /* ─── Chat Page ────────────────────────────────────────────────────── */
 .chat-page {
   display: flex;
