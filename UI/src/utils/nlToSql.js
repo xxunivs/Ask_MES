@@ -8,11 +8,17 @@ const LLM_API_URL = import.meta.env.VITE_LLM_API_URL || "http://localhost:8001";
 // 자연어 → SQL 변환 + DB 실행
 // 반환: { sql, description, data: { columns, rows, count } | null, db_error }
 // ─────────────────────────────────────────────
-export async function convertNlToSql(text, limit = 100) {
+export async function convertNlToSql(text, limit = 100, context = {}) {
   const resp = await fetch(`${LLM_API_URL}/chat/nl-to-sql`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ question: text, limit }),
+    body: JSON.stringify({
+      question: text,
+      limit,
+      user_role: context.userRole || "general",
+      current_view: context.currentView || "chat",
+      conversation_context: context.conversationContext || [],
+    }),
   });
 
   if (!resp.ok) {
@@ -26,6 +32,8 @@ export async function convertNlToSql(text, limit = 100) {
     description: result.description,
     data: result.data,         // { columns: [...], rows: [{...}], count: N } | null
     db_error: result.db_error, // DB 실행 실패 시 오류 메시지
+    term_note: result.term_note,
+    term_resolution: result.term_resolution,
   };
 }
 

@@ -5,6 +5,14 @@ import ChatMessage from "./ChatMessage";
 import ChatInput from "./ChatInput";
 import { convertNlToSql } from "../../utils/nlToSql";
 
+const USER_ROLES = [
+  { value: "quality", label: "품질팀" },
+  { value: "production", label: "생산팀" },
+  { value: "equipment", label: "설비팀" },
+  { value: "management", label: "관리팀" },
+  { value: "general", label: "일반" },
+];
+
 function now() {
   return new Date().toLocaleTimeString("ko-KR", { hour: "2-digit", minute: "2-digit" });
 }
@@ -23,6 +31,7 @@ function normalizeTableData(data) {
 }
 
 export default function ChatPage({ onSqlConfirmed }) {
+  const [userRole, setUserRole] = useState("production");
   const [messages, setMessages] = useState([
     {
       id: 0,
@@ -41,6 +50,10 @@ export default function ChatPage({ onSqlConfirmed }) {
   }, [messages]);
 
   async function handleSend(text) {
+    const conversationContext = messages
+      .filter((msg) => msg.role === "user" && msg.content)
+      .slice(-4)
+      .map((msg) => msg.content);
     const userMsg = {
       id: Date.now(),
       role: "user",
@@ -54,7 +67,11 @@ export default function ChatPage({ onSqlConfirmed }) {
     setLoading(true);
 
     try {
-      const result = await convertNlToSql(text);
+      const result = await convertNlToSql(text, 100, {
+        userRole,
+        currentView: "chat",
+        conversationContext,
+      });
       const sqlMsg = {
         id: Date.now() + 2,
         role: "assistant",
@@ -63,6 +80,8 @@ export default function ChatPage({ onSqlConfirmed }) {
         description: result.description,
         data: result.data,        // 실제 DB 데이터 (또는 null)
         db_error: result.db_error,
+        term_note: result.term_note,
+        term_resolution: result.term_resolution,
         pending: true,
         confirmed: false,
         time: now(),
@@ -168,7 +187,23 @@ export default function ChatPage({ onSqlConfirmed }) {
             <p className="header-sub">자연어 → SQL 변환 · 데이터 분석</p>
           </div>
         </div>
-        <div className="header-badge">NeuroFactory</div>
+        <div className="chat-header-right">
+          <label className="role-select-wrap">
+            <span>역할</span>
+            <select
+              className="role-select"
+              value={userRole}
+              onChange={(e) => setUserRole(e.target.value)}
+            >
+              {USER_ROLES.map((role) => (
+                <option key={role.value} value={role.value}>
+                  {role.label}
+                </option>
+              ))}
+            </select>
+          </label>
+          <div className="header-badge">NeuroFactory</div>
+        </div>
       </div>
 
       {/* 자주 묻는 질문 */}

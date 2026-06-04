@@ -1,0 +1,12 @@
+steps:
+  - name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - -t
+      - $_IMAGE
+      - --build-arg
+      - VITE_LLM_API_URL=$_VITE_LLM_API_URL
+      - .
+
+images:
+  - $_IMAGE

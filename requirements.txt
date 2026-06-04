@@ -7,3 +7,4 @@ chromadb
 sentence-transformers
 langchain
 langchain-community
+rdflib

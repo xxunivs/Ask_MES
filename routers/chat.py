@@ -8,7 +8,7 @@ import json
 import re
 
 from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import Optional, Any
 
 from core.ollama import llm_generate, check_ollama
@@ -16,6 +16,11 @@ from core.config import LLM_MODEL, LLM_PROVIDER
 from core.retriever import retrieve_context
 from core.db_client import execute_sql
 from core.db_context import build_live_db_context, validate_sql_against_schema
+from core.term_resolver import (
+    format_term_resolution_for_prompt,
+    format_term_resolution_for_user,
+    resolve_ambiguous_terms,
+)
 
 router = APIRouter()
 
@@ -26,6 +31,9 @@ router = APIRouter()
 class NlToSqlRequest(BaseModel):
     question: str
     limit: int = 100
+    user_role: str = "general"
+    current_view: str = "chat"
+    conversation_context: list[str] = Field(default_factory=list)
 
 
 class AnalyzeRequest(BaseModel):
@@ -46,22 +54,26 @@ NL_TO_SQL_PROMPT = """당신은 MES(제조실행시스템) 전문 SQL 생성 어
 ## 실제 MES DB 탐색 결과
 {db_context}
 
+## 모호 제조 용어 해석
+{term_context}
+
 ## 규칙
 1. SELECT 문만 생성 (INSERT/UPDATE/DELETE/DROP/EXEC 절대 금지)
 2. MS SQL Server 문법 사용. WITH (NOLOCK) 힌트를 모든 테이블에 적용하세요.
 3. 컬럼/테이블명은 반드시 스키마에 있는 이름 그대로 사용 (존재하지 않는 컬럼 사용 금지)
 4. 실제 MES DB 탐색 결과에 샘플값/날짜범위/주요값이 있으면 그 값을 우선 참고하세요.
+5. 모호 제조 용어 해석 결과가 있으면 해당 의미와 SQL 힌트를 우선 적용하세요.
 
 ## 날짜 규칙
-5. [중요] 기본 기준일은 항상 1년 전이다. 사용자가 날짜를 별도로 지정하지 않으면 DATEADD(year, -1, GETDATE())를 기준으로 사용하라.
+6. [중요] 기본 기준일은 항상 1년 전이다. 사용자가 날짜를 별도로 지정하지 않으면 DATEADD(year, -1, GETDATE())를 기준으로 사용하라.
    - "오늘" / 날짜 미지정 → DATEADD(year, -1, GETDATE())
    - "어제" → DATEADD(day, -1, DATEADD(year, -1, CAST(GETDATE() AS date)))
    - "이번 달" → 1년 전 같은 달: YEAR(DATEADD(year,-1,GETDATE())), MONTH(DATEADD(year,-1,GETDATE()))
    - "이번 주" → DATEADD(year,-1,GETDATE()) 기준 해당 주
    - "최근 N일" → DATEADD(day, -N, DATEADD(year, -1, GETDATE())) ~ DATEADD(year, -1, GETDATE())
-6. 특정 연도/월이 명시된 경우 (예: "2025년 12월") → 리터럴 날짜 사용 (GETDATE() 계산 금지)
+7. 특정 연도/월이 명시된 경우 (예: "2025년 12월") → 리터럴 날짜 사용 (GETDATE() 계산 금지)
    예시: TRACKINTIME >= '2025-12-01' AND TRACKINTIME < '2026-01-01'
-7. 날짜 범위 필터는 BETWEEN보다 >= AND < 형식 사용
+8. 날짜 범위 필터는 BETWEEN보다 >= AND < 형식 사용
 
 ## 집계/추이 규칙
 9. 일별 추이 집계 시 날짜 컬럼은 CONVERT(date, 날짜컬럼) 사용
@@ -96,6 +108,9 @@ SQL_REPAIR_PROMPT = """당신은 MES(제조실행시스템) 전문 SQL 수정 �
 
 ## 실제 MES DB 탐색 결과
 {db_context}
+
+## 모호 제조 용어 해석
+{term_context}
 
 ## 사용자 질문
 {question}
@@ -157,6 +172,13 @@ def _parse_llm_json(raw: str) -> tuple[str, str]:
     return sql, ""
 
 
+def _clip_prompt_text(text: str, max_chars: int) -> str:
+    """Keep prompts below the 4096-token vLLM context limit."""
+    if not text or len(text) <= max_chars:
+        return text
+    return text[:max_chars].rstrip() + "\n... (컨텍스트 길이 제한으로 일부 생략)"
+
+
 def _semantic_sql_errors(question: str, sql: str) -> list[str]:
     """Catch common SQL that runs but answers the wrong MES business question."""
     q = question.replace(" ", "")
@@ -179,7 +201,7 @@ def _semantic_sql_errors(question: str, sql: str) -> list[str]:
 
 
 async def _llm_sql_from_prompt(prompt: str) -> tuple[str, str]:
-    raw_response = await llm_generate(prompt, temperature=0.05, max_tokens=512)
+    raw_response = await llm_generate(prompt, temperature=0.05, max_tokens=384)
     sql, description = _parse_llm_json(raw_response)
     if not sql:
         raise HTTPException(status_code=500, detail="SQL 생성 실패 — LLM 응답을 파싱할 수 없습니다.")
@@ -311,6 +333,10 @@ async def nl_to_sql(req: NlToSqlRequest):
     반환: { success, sql, description, data }
     """
     preset = _preset_sql(req.question)
+    term_resolution = None
+    term_context = format_term_resolution_for_prompt(None)
+    term_user_note = ""
+
     if preset:
         sql, description = preset
         generated_by_llm = False
@@ -331,10 +357,30 @@ async def nl_to_sql(req: NlToSqlRequest):
             db_context = "(실제 MES DB 탐색 실패)"
             print(f"[DB_CONTEXT] 오류: {e}")
 
-        # 3. LLM: SQL 생성
+        # 3. 모호 제조 용어 해석: 역할/맥락 + RAG 스키마 + 실제 DB 탐색 결과 기반 동적 판단
+        try:
+            term_resolution = await resolve_ambiguous_terms(
+                question=req.question,
+                user_role=req.user_role,
+                current_view=req.current_view,
+                conversation_context=req.conversation_context,
+                schema_context=schema_ctx,
+                db_context=db_context,
+            )
+        except Exception as e:
+            term_resolution = None
+            print(f"[TERM_RESOLVER] 오류: {e}")
+        term_context = format_term_resolution_for_prompt(term_resolution)
+        term_user_note = format_term_resolution_for_user(term_resolution)
+
+        # 4. LLM: SQL 생성
+        prompt_schema_ctx = _clip_prompt_text(schema_ctx, 5200)
+        prompt_db_context = _clip_prompt_text(db_context or "(관련 테이블의 실제 DB 샘플 없음)", 1800)
+        prompt_term_context = _clip_prompt_text(term_context, 1100)
         prompt = NL_TO_SQL_PROMPT.format(
-            schema=schema_ctx,
-            db_context=db_context or "(관련 테이블의 실제 DB 샘플 없음)",
+            schema=prompt_schema_ctx,
+            db_context=prompt_db_context,
+            term_context=prompt_term_context,
             question=req.question,
         )
         try:
@@ -361,8 +407,9 @@ async def nl_to_sql(req: NlToSqlRequest):
                 break
 
             repair_prompt = SQL_REPAIR_PROMPT.format(
-                schema=schema_ctx,
-                db_context=db_context or "(관련 테이블의 실제 DB 샘플 없음)",
+                schema=_clip_prompt_text(schema_ctx, 4200),
+                db_context=_clip_prompt_text(db_context or "(관련 테이블의 실제 DB 샘플 없음)", 1400),
+                term_context=_clip_prompt_text(term_context, 1000),
                 question=req.question,
                 sql=sql,
                 error=db_error,
@@ -394,8 +441,9 @@ async def nl_to_sql(req: NlToSqlRequest):
                 break
 
             repair_prompt = SQL_REPAIR_PROMPT.format(
-                schema=schema_ctx,
-                db_context=db_context or "(관련 테이블의 실제 DB 샘플 없음)",
+                schema=_clip_prompt_text(schema_ctx, 4200),
+                db_context=_clip_prompt_text(db_context or "(관련 테이블의 실제 DB 샘플 없음)", 1400),
+                term_context=_clip_prompt_text(term_context, 1000),
                 question=req.question,
                 sql=sql,
                 error=db_error,
@@ -415,6 +463,8 @@ async def nl_to_sql(req: NlToSqlRequest):
         "description": description,
         "data": db_data,
         "db_error": db_error,
+        "term_resolution": term_resolution,
+        "term_note": term_user_note,
     }
 
 

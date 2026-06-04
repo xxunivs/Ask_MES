@@ -30,13 +30,15 @@ try:
     from rdflib.namespace import RDF, RDFS, OWL, SKOS, XSD
     RDFLIB_OK = True
 except ImportError:
+    Graph = Namespace = URIRef = Literal = None
+    RDF = RDFS = OWL = SKOS = XSD = None
     RDFLIB_OK = False
 
 # ──────────────────────────────────────────────────────────────────
 # 네임스페이스
 # ──────────────────────────────────────────────────────────────────
 
-MFG = Namespace("http://neurofactory.skku.ac.kr/mes#")
+MFG = Namespace("http://neurofactory.skku.ac.kr/mes#") if RDFLIB_OK else None
 
 _BASE_DIR     = os.path.dirname(__file__)
 ONTOLOGY_PATH = os.path.join(_BASE_DIR, "../data/mes_ontology.ttl")

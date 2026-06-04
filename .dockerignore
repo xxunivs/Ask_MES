@@ -1,0 +1,16 @@
+.git
+.DS_Store
+.env
+venv/
+__pycache__/
+*.pyc
+*.log
+chroma_db/
+UI/node_modules/
+UI/dist/
+UI/.env
+UI/.git/
+docs/
+prototype-gt/
+prototype-wj/
+*.mov
