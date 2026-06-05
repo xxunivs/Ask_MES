@@ -179,7 +179,38 @@ def _clip_prompt_text(text: str, max_chars: int) -> str:
     return text[:max_chars].rstrip() + "\n... (컨텍스트 길이 제한으로 일부 생략)"
 
 
-def _semantic_sql_errors(question: str, sql: str) -> list[str]:
+def _sql_contains_column(sql: str, column_ref: str) -> bool:
+    match = re.match(r"^\s*(CIM_[A-Z0-9_]+)\.([A-Z0-9_]+)\s*$", column_ref.upper())
+    if not match:
+        return False
+    table, column = match.groups()
+    upper_sql = sql.upper()
+    return column in upper_sql and table in upper_sql
+
+
+def _term_resolution_sql_errors(sql: str, term_resolution: dict[str, Any] | None) -> list[str]:
+    if not term_resolution:
+        return []
+
+    errors: list[str] = []
+    for item in term_resolution.get("resolved_terms", []) or []:
+        term = str(item.get("term", ""))
+        meaning = str(item.get("selected_meaning", ""))
+        columns = item.get("validated_columns") or item.get("selected_columns") or []
+        columns = [str(col) for col in columns if isinstance(col, str)]
+        if not columns:
+            continue
+
+        missing = [col for col in columns[:4] if not _sql_contains_column(sql, col)]
+        if missing:
+            errors.append(
+                f"모호어 '{term}'은 '{meaning}'로 해석됐으므로 SQL에 선택 후보 컬럼 "
+                f"{', '.join(missing)} 이 포함되어야 합니다."
+            )
+    return errors
+
+
+def _semantic_sql_errors(question: str, sql: str, term_resolution: dict[str, Any] | None = None) -> list[str]:
     """Catch common SQL that runs but answers the wrong MES business question."""
     q = question.replace(" ", "")
     upper_sql = sql.upper()
@@ -197,6 +228,7 @@ def _semantic_sql_errors(question: str, sql: str) -> list[str]:
     if "제품별" in q and "생산" in q and "PRODUCTDEFINITIONID" not in upper_sql:
         errors.append("제품별 생산 질문은 PRODUCTDEFINITIONID 기준으로 그룹화해야 합니다.")
 
+    errors.extend(_term_resolution_sql_errors(sql, term_resolution))
     return errors
 
 
@@ -374,9 +406,9 @@ async def nl_to_sql(req: NlToSqlRequest):
         term_user_note = format_term_resolution_for_user(term_resolution)
 
         # 4. LLM: SQL 생성
-        prompt_schema_ctx = _clip_prompt_text(schema_ctx, 5200)
-        prompt_db_context = _clip_prompt_text(db_context or "(관련 테이블의 실제 DB 샘플 없음)", 1800)
-        prompt_term_context = _clip_prompt_text(term_context, 1100)
+        prompt_schema_ctx = _clip_prompt_text(schema_ctx, 3200)
+        prompt_db_context = _clip_prompt_text(db_context or "(관련 테이블의 실제 DB 샘플 없음)", 900)
+        prompt_term_context = _clip_prompt_text(term_context, 1400)
         prompt = NL_TO_SQL_PROMPT.format(
             schema=prompt_schema_ctx,
             db_context=prompt_db_context,
@@ -399,7 +431,7 @@ async def nl_to_sql(req: NlToSqlRequest):
     db_error = None
     max_attempts = 3 if generated_by_llm else 1
     for attempt in range(max_attempts):
-        preflight_errors = validate_sql_against_schema(sql) + _semantic_sql_errors(req.question, sql)
+        preflight_errors = validate_sql_against_schema(sql) + _semantic_sql_errors(req.question, sql, term_resolution)
         if preflight_errors:
             db_error = "SQL 사전 검증 실패: " + "; ".join(preflight_errors)
             print(f"[SQL_SCHEMA] 오류(attempt {attempt + 1}/{max_attempts}): {db_error}")

@@ -7,11 +7,13 @@ the current role, view/context, retrieved schema, and live DB context.
 """
 from __future__ import annotations
 
+import asyncio
 import json
 import os
 import re
 from typing import Any
 
+from core.db_client import execute_sql
 from core.ollama import llm_generate
 
 _BASE_DIR = os.path.dirname(__file__)
@@ -64,14 +66,38 @@ AMBIGUOUS_TERM_HINTS = (
     "손실",
 )
 
+TERM_SEARCH_HINTS = {
+    # 의미 사전이 아니라 DB 후보 탐색용 seed token이다.
+    "불량": ("DEFECT", "LOSS", "NG", "FAIL", "REJECT", "SCRAP"),
+    "완료": ("FINISH", "FINISHED", "COMPLETE", "END", "RESULT", "TRACKOUT", "STATE"),
+    "실적": ("RESULT", "PERFORMANCE", "QTY", "TRACK", "ACTUAL"),
+    "생산": ("QTY", "LOT", "PRODUCT", "RESULT", "TRACK"),
+    "정지": ("STOP", "DOWN", "STATE", "EQUIPMENT", "REPAIR"),
+    "가동": ("RUN", "OPERAT", "EQUIPMENT", "TRACK", "STATE"),
+    "지연": ("DELAY", "DUE", "DELIVERY", "END", "PLAN"),
+    "효율": ("EFF", "RESULT", "QTY", "RUN", "TIME"),
+    "수율": ("YIELD", "QTY", "LOSS", "DEFECT", "ORIGINAL"),
+    "손실": ("LOSS", "SCRAP", "DEFECT", "QTY"),
+}
+
+ROLE_BIAS_TOKENS = {
+    "quality": ("DEFECT", "NG", "FAIL", "INSPECT", "QUALITY", "REJECT"),
+    "production": ("QTY", "LOT", "RESULT", "TRACK", "LOSS", "SCRAP"),
+    "equipment": ("EQUIPMENT", "RUN", "OPERAT", "STOP", "DOWN", "REPAIR"),
+    "management": ("LOSS", "RATE", "RESULT", "ORDER", "DELIVERY", "QTY"),
+    "general": (),
+}
+
 TERM_RESOLUTION_PROMPT = """당신은 MES 자연어 질의를 SQL 의미로 해석하는 전문가입니다.
 사용자 질문 안에 모호한 제조 용어가 있으면, 그 용어가 이번 질문에서 어떤 SQL 의미인지 결정하세요.
 
 중요:
 - 고정 규칙표처럼 기계적으로 판단하지 마세요.
+- 미리 정의된 의미 사전을 고르는 것이 아니라, 아래 "DB에서 동적 생성된 SQL 의미 후보" 중에서 질문 맥락상 가장 적절한 의미를 고르세요.
 - 사용자 역할, 현재 화면/공정 맥락, 이전 대화, 검색된 스키마, 실제 DB 탐색 결과를 모두 근거로 삼으세요.
 - 같은 단어라도 역할과 공정 맥락에 따라 다른 SQL 의미가 될 수 있습니다.
 - SQL 생성에 직접 쓸 수 있는 테이블/컬럼/집계 힌트를 제시하세요.
+- selected_columns에는 실제 사용할 후보 컬럼을 `TABLE.COLUMN` 형식으로 넣으세요.
 - 비율/률 계산 SQL 힌트는 반드시 `* 100`을 사용하세요. 임의 숫자를 만들지 마세요.
 - 근거가 약하면 confidence를 낮게 주고 alternatives에 다른 후보를 남기세요.
 
@@ -95,6 +121,9 @@ TERM_RESOLUTION_PROMPT = """당신은 MES 자연어 질의를 SQL 의미로 해�
 
 ## 실제 MES DB 탐색 결과
 {db_context}
+
+## DB에서 동적 생성된 SQL 의미 후보
+{dynamic_candidates}
 
 ## 후보 컬럼 인벤토리
 {column_inventory}
@@ -203,6 +232,143 @@ def _detected_ambiguous_terms(question: str) -> list[str]:
     return [term for term in AMBIGUOUS_TERM_HINTS if term in compact]
 
 
+def _quote_col(column: str) -> str:
+    return f"[{column}]"
+
+
+def _candidate_kind(column_name: str, description: str) -> str:
+    text = f"{column_name} {description}".upper()
+    if any(token in text for token in ("RATE", "RATIO", "PERCENT", "율")):
+        return "비율/률"
+    if any(token in text for token in ("QTY", "COUNT", "CNT", "수량", "건수")):
+        return "수량"
+    if any(token in text for token in ("STATE", "STATUS", "상태")):
+        return "상태"
+    if any(token in text for token in ("TIME", "DATE", "일자", "시간")):
+        return "시간"
+    if any(token in text for token in ("TYPE", "NAME", "ID", "코드", "명")):
+        return "분류/식별"
+    return "값"
+
+
+def _token_matches(token: str, haystack: str) -> bool:
+    token = token.upper()
+    if len(token) <= 2:
+        parts = [part for part in re.split(r"[^A-Z0-9]+", haystack.upper()) if part]
+        return any(part == token or part.startswith(token) for part in parts)
+    return token in haystack.upper()
+
+
+async def _probe_candidate(table: str, column: str) -> tuple[bool, str]:
+    sql = (
+        f"SELECT TOP 1 {_quote_col(column)} AS [{column}] "
+        f"FROM {table} WITH (NOLOCK) "
+        f"WHERE {_quote_col(column)} IS NOT NULL"
+    )
+    try:
+        result = await asyncio.wait_for(execute_sql(sql, limit=1), timeout=4)
+    except asyncio.TimeoutError:
+        return False, "DB 확인 타임아웃"
+    except Exception as exc:
+        return False, f"DB 확인 실패: {exc}"
+
+    rows = result.get("rows") or []
+    if not rows:
+        return False, "최근 후보값 없음"
+    row = rows[0]
+    value = row.get(column) if isinstance(row, dict) else row[0] if row else None
+    return True, f"DB 값 존재 예: {value}"
+
+
+async def _build_dynamic_candidates(
+    question: str,
+    user_role: str,
+    schema_context: str,
+    db_context: str,
+    conversation_context: list[str] | None,
+    max_terms: int = 3,
+    max_candidates_per_term: int = 8,
+) -> tuple[str, dict[str, list[dict[str, Any]]]]:
+    schema = _load_schema()
+    detected_terms = _detected_ambiguous_terms(question)[:max_terms]
+    if not detected_terms:
+        return "(동적 후보 생성 대상 모호어 없음)", {}
+
+    context_tables = set(_schema_tables_from_context(schema_context))
+    question_tokens = _keyword_tokens(question, conversation_context)
+    role_tokens = ROLE_BIAS_TOKENS.get((user_role or "general").lower(), ())
+    upper_db_context = (db_context or "").upper()
+    output: dict[str, list[dict[str, Any]]] = {}
+
+    for term in detected_terms:
+        search_tokens = set(TERM_SEARCH_HINTS.get(term, ())) | question_tokens
+        candidates: list[dict[str, Any]] = []
+        for table, info in schema.items():
+            table_score_bonus = 2 if table in context_tables else 0
+            for col in info.get("columns", []):
+                name = str(col.get("name", ""))
+                desc = str(col.get("description", ""))
+                haystack = f"{table} {info.get('description', '')} {name} {desc}".upper()
+                matched = [token for token in search_tokens if token and _token_matches(token, haystack)]
+                if not matched:
+                    continue
+                role_hits = [token for token in role_tokens if _token_matches(token, haystack)]
+                score = len(matched) * 2 + len(role_hits) * 2 + table_score_bonus
+                if table in upper_db_context:
+                    score += 1
+                if name.upper() in upper_db_context:
+                    score += 1
+                candidates.append(
+                    {
+                        "term": term,
+                        "table": table,
+                        "column": name,
+                        "column_ref": f"{table}.{name}",
+                        "kind": _candidate_kind(name, desc),
+                        "score": score,
+                        "matched_tokens": matched[:5],
+                        "role_bias_tokens": role_hits[:5],
+                        "description": desc,
+                    }
+                )
+
+        candidates.sort(key=lambda item: item["score"], reverse=True)
+        deduped: list[dict[str, Any]] = []
+        seen: set[str] = set()
+        for candidate in candidates:
+            key = candidate["column_ref"].upper()
+            if key in seen:
+                continue
+            seen.add(key)
+            deduped.append(candidate)
+            if len(deduped) >= max_candidates_per_term:
+                break
+
+        for candidate in deduped[:5]:
+            has_value, evidence = await _probe_candidate(candidate["table"], candidate["column"])
+            candidate["db_has_value"] = has_value
+            candidate["db_evidence"] = evidence
+            if has_value:
+                candidate["score"] += 2
+
+        deduped.sort(key=lambda item: item["score"], reverse=True)
+        output[term] = deduped
+
+    lines: list[str] = []
+    for term, candidates in output.items():
+        if not candidates:
+            lines.append(f"- {term}: 스키마/실데이터에서 후보를 찾지 못함")
+            continue
+        lines.append(f"- {term}:")
+        for c in candidates[:max_candidates_per_term]:
+            role_text = f", 역할근거={','.join(c['role_bias_tokens'])}" if c.get("role_bias_tokens") else ""
+            lines.append(
+                f"  - {c['column_ref']} [{c['kind']}] score={c['score']}, "
+                f"탐색근거={','.join(c['matched_tokens'])}{role_text}, {c.get('db_evidence', '')}"
+            )
+    return "\n".join(lines), output
+
+
 def _build_column_inventory(
     question: str,
     schema_context: str,
@@ -283,6 +449,13 @@ async def resolve_ambiguous_terms(
     normalized_role = (user_role or "general").lower()
     normalized_view = (current_view or "chat").lower()
     column_inventory = _build_column_inventory(question, schema_context, conversation_context)
+    dynamic_candidates_text, dynamic_candidates = await _build_dynamic_candidates(
+        question=question,
+        user_role=normalized_role,
+        schema_context=schema_context,
+        db_context=db_context,
+        conversation_context=conversation_context,
+    )
     previous_context = "\n".join(f"- {text}" for text in (conversation_context or [])[-4:]) or "(없음)"
     detected_terms = _detected_ambiguous_terms(question)
     detected_terms_text = ", ".join(detected_terms) if detected_terms else "(질문에서 명확한 후보 없음. 그래도 모호어가 있는지 판단)"
@@ -295,6 +468,7 @@ async def resolve_ambiguous_terms(
         detected_terms=detected_terms_text,
         schema_context=_clip(schema_context or "(스키마 컨텍스트 없음)", 2800),
         db_context=_clip(db_context or "(실제 DB 탐색 결과 없음)", 1200),
+        dynamic_candidates=_clip(dynamic_candidates_text, 1800),
         column_inventory=_clip(column_inventory, 1800),
     )
 
@@ -313,7 +487,8 @@ async def resolve_ambiguous_terms(
     resolution["user_role_label"] = ROLE_LABELS.get(normalized_role, normalized_role)
     resolution["current_view"] = normalized_view
     resolution["current_view_label"] = VIEW_LABELS.get(normalized_view, normalized_view)
-    resolution["mode"] = "dynamic_llm_schema_db"
+    resolution["dynamic_candidates"] = dynamic_candidates
+    resolution["mode"] = "dynamic_schema_db_candidate_generation"
     return _append_column_validation(resolution)
 
 
@@ -335,6 +510,12 @@ def format_term_resolution_for_prompt(resolution: dict[str, Any] | None) -> str:
         columns = item.get("validated_columns") or item.get("selected_columns") or []
         if columns:
             lines.append("  우선 컬럼: " + ", ".join(str(col) for col in columns[:6]))
+        candidates = (resolution.get("dynamic_candidates") or {}).get(term) or []
+        if candidates:
+            lines.append(
+                "  DB 동적 후보: "
+                + ", ".join(str(c.get("column_ref", "")) for c in candidates[:4] if c.get("column_ref"))
+            )
         evidence = item.get("evidence") or []
         if evidence:
             lines.append("  근거: " + " / ".join(str(reason) for reason in evidence[:5]))
