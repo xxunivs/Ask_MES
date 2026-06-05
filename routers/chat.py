@@ -233,7 +233,7 @@ def _semantic_sql_errors(question: str, sql: str, term_resolution: dict[str, Any
 
 
 async def _llm_sql_from_prompt(prompt: str) -> tuple[str, str]:
-    raw_response = await llm_generate(prompt, temperature=0.05, max_tokens=384)
+    raw_response = await llm_generate(prompt, temperature=0.05, max_tokens=256)
     sql, description = _parse_llm_json(raw_response)
     if not sql:
         raise HTTPException(status_code=500, detail="SQL 생성 실패 — LLM 응답을 파싱할 수 없습니다.")
