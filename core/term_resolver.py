@@ -463,17 +463,17 @@ async def resolve_ambiguous_terms(
     prompt = TERM_RESOLUTION_PROMPT.format(
         user_role_label=ROLE_LABELS.get(normalized_role, normalized_role),
         current_view_label=VIEW_LABELS.get(normalized_view, normalized_view),
-        conversation_context=_clip(previous_context, 600),
+        conversation_context=_clip(previous_context, 300),
         question=question,
         detected_terms=detected_terms_text,
-        schema_context=_clip(schema_context or "(스키마 컨텍스트 없음)", 2800),
-        db_context=_clip(db_context or "(실제 DB 탐색 결과 없음)", 1200),
-        dynamic_candidates=_clip(dynamic_candidates_text, 1800),
-        column_inventory=_clip(column_inventory, 1800),
+        schema_context=_clip(schema_context or "(스키마 컨텍스트 없음)", 1400),
+        db_context=_clip(db_context or "(실제 DB 탐색 결과 없음)", 500),
+        dynamic_candidates=_clip(dynamic_candidates_text, 1000),
+        column_inventory=_clip(column_inventory, 700),
     )
 
     try:
-        raw = await llm_generate(prompt, temperature=0.0, max_tokens=420)
+        raw = await llm_generate(prompt, temperature=0.0, max_tokens=180)
         resolution = _parse_json_object(raw)
     except Exception as exc:
         print(f"[TERM_RESOLVER] LLM 해석 실패: {exc}")
