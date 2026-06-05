@@ -233,7 +233,7 @@ def _semantic_sql_errors(question: str, sql: str, term_resolution: dict[str, Any
 
 
 async def _llm_sql_from_prompt(prompt: str) -> tuple[str, str]:
-    raw_response = await llm_generate(prompt, temperature=0.05, max_tokens=256)
+    raw_response = await llm_generate(prompt, temperature=0.05, max_tokens=160)
     sql, description = _parse_llm_json(raw_response)
     if not sql:
         raise HTTPException(status_code=500, detail="SQL 생성 실패 — LLM 응답을 파싱할 수 없습니다.")
@@ -406,9 +406,9 @@ async def nl_to_sql(req: NlToSqlRequest):
         term_user_note = format_term_resolution_for_user(term_resolution)
 
         # 4. LLM: SQL 생성
-        prompt_schema_ctx = _clip_prompt_text(schema_ctx, 3200)
-        prompt_db_context = _clip_prompt_text(db_context or "(관련 테이블의 실제 DB 샘플 없음)", 900)
-        prompt_term_context = _clip_prompt_text(term_context, 1400)
+        prompt_schema_ctx = _clip_prompt_text(schema_ctx, 2400)
+        prompt_db_context = _clip_prompt_text(db_context or "(관련 테이블의 실제 DB 샘플 없음)", 600)
+        prompt_term_context = _clip_prompt_text(term_context, 900)
         prompt = NL_TO_SQL_PROMPT.format(
             schema=prompt_schema_ctx,
             db_context=prompt_db_context,
