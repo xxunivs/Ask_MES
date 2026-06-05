@@ -437,6 +437,68 @@ def _append_column_validation(resolution: dict[str, Any]) -> dict[str, Any]:
     return resolution
 
 
+def _candidate_sql_hint(candidate: dict[str, Any]) -> str:
+    column_ref = str(candidate.get("column_ref", ""))
+    kind = str(candidate.get("kind", ""))
+    if not column_ref:
+        return ""
+    if kind == "수량":
+        return f"SUM({column_ref})"
+    return column_ref
+
+
+def _fallback_resolution_from_dynamic_candidates(
+    question: str,
+    user_role: str,
+    current_view: str,
+    dynamic_candidates: dict[str, list[dict[str, Any]]],
+) -> dict[str, Any] | None:
+    detected_terms = _detected_ambiguous_terms(question)
+    resolved_terms: list[dict[str, Any]] = []
+    for term in detected_terms:
+        candidates = dynamic_candidates.get(term) or []
+        if not candidates:
+            continue
+        top = candidates[0]
+        column_ref = str(top.get("column_ref", ""))
+        resolved_terms.append(
+            {
+                "term": term,
+                "selected_meaning": f"{column_ref} 기준 {top.get('kind', '값')}",
+                "sql_hint": _candidate_sql_hint(top),
+                "selected_columns": [column_ref] if column_ref else [],
+                "confidence": 0.55,
+                "evidence": [
+                    "LLM이 명시 해석을 비워 반환하여 DB 동적 후보 중 최고 점수 후보를 사용",
+                    f"탐색근거: {', '.join(top.get('matched_tokens') or [])}",
+                    str(top.get("db_evidence", "")),
+                ],
+                "alternatives": [
+                    {
+                        "meaning": f"{alt.get('column_ref')} 기준 {alt.get('kind', '값')}",
+                        "sql_hint": _candidate_sql_hint(alt),
+                        "reason": f"score={alt.get('score')}",
+                    }
+                    for alt in candidates[1:4]
+                ],
+            }
+        )
+
+    if not resolved_terms:
+        return None
+
+    resolution = {
+        "resolved_terms": resolved_terms,
+        "user_role": user_role,
+        "user_role_label": ROLE_LABELS.get(user_role, user_role),
+        "current_view": current_view,
+        "current_view_label": VIEW_LABELS.get(current_view, current_view),
+        "dynamic_candidates": dynamic_candidates,
+        "mode": "dynamic_schema_db_candidate_generation_fallback",
+    }
+    return _append_column_validation(resolution)
+
+
 async def resolve_ambiguous_terms(
     question: str,
     user_role: str = "general",
@@ -472,16 +534,23 @@ async def resolve_ambiguous_terms(
         column_inventory=_clip(column_inventory, 700),
     )
 
+    fallback_resolution = _fallback_resolution_from_dynamic_candidates(
+        question=question,
+        user_role=normalized_role,
+        current_view=normalized_view,
+        dynamic_candidates=dynamic_candidates,
+    )
+
     try:
         raw = await llm_generate(prompt, temperature=0.0, max_tokens=180)
         resolution = _parse_json_object(raw)
     except Exception as exc:
         print(f"[TERM_RESOLVER] LLM 해석 실패: {exc}")
-        return None
+        return fallback_resolution
 
     resolved_terms = resolution.get("resolved_terms")
     if not isinstance(resolved_terms, list) or not resolved_terms:
-        return None
+        return fallback_resolution
 
     resolution["user_role"] = normalized_role
     resolution["user_role_label"] = ROLE_LABELS.get(normalized_role, normalized_role)
