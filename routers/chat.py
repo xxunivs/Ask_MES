@@ -21,6 +21,7 @@ from core.db_client import execute_sql
 from core.db_context import build_live_db_context, validate_sql_against_schema
 from core.term_resolver import (
     align_sql_with_live_candidates,
+    detect_ambiguous_terms,
     finalize_term_resolution,
     format_term_resolution_for_prompt,
     format_term_resolution_for_user,
@@ -379,25 +380,32 @@ async def nl_to_sql(req: NlToSqlRequest):
             schema_ctx = "(스키마 정보 조회 실패)"
             print(f"[RAG] 오류: {e}")
 
-        # 2. 실제 DB 탐색과 모호어 후보 생성을 병렬 수행
+        # 2. 모호어가 있을 때만 역할 기반 의미 해석 경로를 활성화
+        ambiguous_terms = detect_ambiguous_terms(req.question)
+
+        # 3. 실제 DB 탐색과 모호어 후보 생성을 병렬 수행
         try:
-            db_context, term_prepared = await asyncio.gather(
-                build_live_db_context(schema_ctx),
-                prepare_term_resolution_context(
-                    question=req.question,
-                    user_role=req.user_role,
-                    current_view=req.current_view,
-                    conversation_context=req.conversation_context,
-                    schema_context=schema_ctx,
-                ),
-            )
+            if ambiguous_terms:
+                db_context, term_prepared = await asyncio.gather(
+                    build_live_db_context(schema_ctx),
+                    prepare_term_resolution_context(
+                        question=req.question,
+                        user_role=req.user_role,
+                        current_view=req.current_view,
+                        conversation_context=req.conversation_context,
+                        schema_context=schema_ctx,
+                    ),
+                )
+            else:
+                db_context = await build_live_db_context(schema_ctx)
+                term_prepared = ("(모호어 없음: 일반 NL2SQL 경로 사용)", None)
         except Exception as e:
             db_context = "(실제 MES DB 탐색 실패)"
             term_prepared = ("(모호어 후보 생성 실패)", None)
             print(f"[CONTEXT] 오류: {e}")
         term_context, term_fallback = term_prepared
 
-        # 3. 단일 LLM 호출: 역할별 의미 해석 + SQL 생성
+        # 4. 단일 LLM 호출: 모호어가 있을 때만 역할 기반 의미 해석 반영
         prompt_schema_ctx = _clip_prompt_text(schema_ctx, 450)
         prompt_db_context = _clip_prompt_text(db_context or "(관련 테이블의 실제 DB 샘플 없음)", 120)
         prompt_term_context = _clip_prompt_text(term_context, 220)
@@ -414,15 +422,20 @@ async def nl_to_sql(req: NlToSqlRequest):
         except Exception as e:
             raise HTTPException(status_code=503, detail=f"LLM 연결 오류: {e}")
 
-        sql, alignment_notes = align_sql_with_live_candidates(sql, term_fallback)
-        term_resolution = finalize_term_resolution(
-            resolved_terms,
-            term_fallback,
-            sql,
-            alignment_notes,
-        )
-        term_context = format_term_resolution_for_prompt(term_resolution)
-        term_user_note = format_term_resolution_for_user(term_resolution)
+        if ambiguous_terms:
+            sql, alignment_notes = align_sql_with_live_candidates(sql, term_fallback)
+            term_resolution = finalize_term_resolution(
+                resolved_terms,
+                term_fallback,
+                sql,
+                alignment_notes,
+            )
+            term_context = format_term_resolution_for_prompt(term_resolution)
+            term_user_note = format_term_resolution_for_user(term_resolution)
+        else:
+            term_resolution = None
+            term_context = format_term_resolution_for_prompt(None)
+            term_user_note = ""
         if not description:
             description = f'"{req.question}" 조회 결과'
         generated_by_llm = True

@@ -58,13 +58,24 @@ AMBIGUOUS_TERM_HINTS = (
     "불량",
     "완료",
     "실적",
-    "생산",
     "정지",
     "가동",
     "지연",
     "효율",
     "수율",
     "손실",
+)
+
+NON_AMBIGUOUS_PHRASES = (
+    "생산량",
+    "생산건수",
+    "불량률",
+    "불량수량",
+    "수율",
+    "효율",
+    "가동률",
+    "정지시간",
+    "실적률",
 )
 
 TERM_SEARCH_HINTS = {
@@ -234,7 +245,15 @@ def _keyword_tokens(question: str, conversation_context: list[str] | None) -> se
 
 def _detected_ambiguous_terms(question: str) -> list[str]:
     compact = question.replace(" ", "")
-    return [term for term in AMBIGUOUS_TERM_HINTS if term in compact]
+    masked = compact
+    for phrase in NON_AMBIGUOUS_PHRASES:
+        masked = masked.replace(phrase, "")
+    return [term for term in AMBIGUOUS_TERM_HINTS if term in masked]
+
+
+def detect_ambiguous_terms(question: str) -> list[str]:
+    """Public helper so callers can decide whether to enable role-aware resolution."""
+    return _detected_ambiguous_terms(question)
 
 
 def _quote_col(column: str) -> str:
@@ -653,6 +672,10 @@ async def prepare_term_resolution_context(
     schema_context: str = "",
 ) -> tuple[str, dict[str, Any] | None]:
     """Build role/context/live-candidate evidence without a separate LLM call."""
+    detected_terms = _detected_ambiguous_terms(question)
+    if not detected_terms:
+        return "(모호어 없음: 일반 NL2SQL 경로 사용)", None
+
     normalized_role = (user_role or "general").lower()
     normalized_view = (current_view or "chat").lower()
     _, dynamic_candidates = await _build_dynamic_candidates(
@@ -672,6 +695,7 @@ async def prepare_term_resolution_context(
     lines = [
         f"- 역할={ROLE_LABELS.get(normalized_role, normalized_role)}, 화면={VIEW_LABELS.get(normalized_view, normalized_view)}",
         f"- 이전 대화={_clip(previous, 70)}",
+        f"- 감지 모호어={', '.join(detected_terms)}",
     ]
     for term, candidates in dynamic_candidates.items():
         compact_candidates = []
