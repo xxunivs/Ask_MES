@@ -94,6 +94,7 @@ TERM_RESOLUTION_PROMPT = """당신은 MES 자연어 질의를 SQL 의미로 해�
 중요:
 - 고정 규칙표처럼 기계적으로 판단하지 마세요.
 - 미리 정의된 의미 사전을 고르는 것이 아니라, 아래 "DB에서 동적 생성된 SQL 의미 후보" 중에서 질문 맥락상 가장 적절한 의미를 고르세요.
+- 실제 DB 값이 확인된 후보가 하나라도 있으면 값이 없는 후보는 선택하지 마세요.
 - 사용자 역할, 현재 화면/공정 맥락, 이전 대화, 검색된 스키마, 실제 DB 탐색 결과를 모두 근거로 삼으세요.
 - 같은 단어라도 역할과 공정 맥락에 따라 다른 SQL 의미가 될 수 있습니다.
 - SQL 생성에 직접 쓸 수 있는 테이블/컬럼/집계 힌트를 제시하세요.
@@ -280,6 +281,16 @@ async def _probe_candidate(table: str, column: str) -> tuple[bool, str]:
     return True, f"DB 값 존재 예: {value}"
 
 
+def _candidate_sort_key(candidate: dict[str, Any]) -> tuple[int, int, int]:
+    has_value = candidate.get("db_has_value")
+    data_rank = 2 if has_value is True else 1 if has_value is None else 0
+    return (
+        data_rank,
+        len(candidate.get("role_bias_tokens") or []),
+        int(candidate.get("score", 0)),
+    )
+
+
 async def _build_dynamic_candidates(
     question: str,
     user_role: str,
@@ -344,14 +355,17 @@ async def _build_dynamic_candidates(
             if len(deduped) >= max_candidates_per_term:
                 break
 
-        for candidate in deduped[:5]:
-            has_value, evidence = await _probe_candidate(candidate["table"], candidate["column"])
+        probed_candidates = deduped[:5]
+        probe_results = await asyncio.gather(
+            *(_probe_candidate(candidate["table"], candidate["column"]) for candidate in probed_candidates)
+        )
+        for candidate, (has_value, evidence) in zip(probed_candidates, probe_results):
             candidate["db_has_value"] = has_value
             candidate["db_evidence"] = evidence
             if has_value:
                 candidate["score"] += 2
 
-        deduped.sort(key=lambda item: item["score"], reverse=True)
+        deduped.sort(key=_candidate_sort_key, reverse=True)
         output[term] = deduped
 
     lines: list[str] = []
@@ -362,9 +376,17 @@ async def _build_dynamic_candidates(
         lines.append(f"- {term}:")
         for c in candidates[:max_candidates_per_term]:
             role_text = f", 역할근거={','.join(c['role_bias_tokens'])}" if c.get("role_bias_tokens") else ""
+            data_status = (
+                "값 확인"
+                if c.get("db_has_value") is True
+                else "값 없음"
+                if c.get("db_has_value") is False
+                else "미확인"
+            )
             lines.append(
                 f"  - {c['column_ref']} [{c['kind']}] score={c['score']}, "
-                f"탐색근거={','.join(c['matched_tokens'])}{role_text}, {c.get('db_evidence', '')}"
+                f"실데이터={data_status}, 탐색근거={','.join(c['matched_tokens'])}"
+                f"{role_text}, {c.get('db_evidence', '')}"
             )
     return "\n".join(lines), output
 
@@ -447,6 +469,47 @@ def _candidate_sql_hint(candidate: dict[str, Any]) -> str:
     return column_ref
 
 
+def _prefer_candidates_with_data(
+    resolution: dict[str, Any],
+    dynamic_candidates: dict[str, list[dict[str, Any]]],
+) -> dict[str, Any]:
+    for item in resolution.get("resolved_terms", []) or []:
+        term = str(item.get("term", ""))
+        candidates = dynamic_candidates.get(term) or []
+        available = [candidate for candidate in candidates if candidate.get("db_has_value") is True]
+        if not available:
+            continue
+
+        selected_columns = {
+            str(column).upper()
+            for column in (item.get("selected_columns") or [])
+            if isinstance(column, str)
+        }
+        selected_candidate = next(
+            (
+                candidate
+                for candidate in candidates
+                if str(candidate.get("column_ref", "")).upper() in selected_columns
+            ),
+            None,
+        )
+        if selected_candidate is not None and selected_candidate.get("db_has_value") is True:
+            continue
+
+        replacement = available[0]
+        column_ref = str(replacement.get("column_ref", ""))
+        item["selected_meaning"] = f"{column_ref} 기준 {replacement.get('kind', '값')}"
+        item["sql_hint"] = _candidate_sql_hint(replacement)
+        item["selected_columns"] = [column_ref] if column_ref else []
+        evidence = item.get("evidence")
+        if not isinstance(evidence, list):
+            evidence = []
+        evidence.insert(0, "실제 DB 값이 확인된 후보를 우선 선택")
+        evidence.insert(1, str(replacement.get("db_evidence", "")))
+        item["evidence"] = evidence[:8]
+    return resolution
+
+
 def _fallback_resolution_from_dynamic_candidates(
     question: str,
     user_role: str,
@@ -496,6 +559,7 @@ def _fallback_resolution_from_dynamic_candidates(
         "dynamic_candidates": dynamic_candidates,
         "mode": "dynamic_schema_db_candidate_generation_fallback",
     }
+    resolution = _prefer_candidates_with_data(resolution, dynamic_candidates)
     return _append_column_validation(resolution)
 
 
@@ -558,6 +622,7 @@ async def resolve_ambiguous_terms(
     resolution["current_view_label"] = VIEW_LABELS.get(normalized_view, normalized_view)
     resolution["dynamic_candidates"] = dynamic_candidates
     resolution["mode"] = "dynamic_schema_db_candidate_generation"
+    resolution = _prefer_candidates_with_data(resolution, dynamic_candidates)
     return _append_column_validation(resolution)
 
 
