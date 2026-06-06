@@ -173,7 +173,7 @@ def _parse_llm_json(raw: str) -> tuple[str, str]:
 
 
 def _clip_prompt_text(text: str, max_chars: int) -> str:
-    """Keep prompts below the 4096-token vLLM context limit."""
+    """Conservatively keep Korean-heavy prompts below the 2048-token limit."""
     if not text or len(text) <= max_chars:
         return text
     return text[:max_chars].rstrip() + "\n... (컨텍스트 길이 제한으로 일부 생략)"
@@ -406,14 +406,14 @@ async def nl_to_sql(req: NlToSqlRequest):
         term_user_note = format_term_resolution_for_user(term_resolution)
 
         # 4. LLM: SQL 생성
-        prompt_schema_ctx = _clip_prompt_text(schema_ctx, 2400)
-        prompt_db_context = _clip_prompt_text(db_context or "(관련 테이블의 실제 DB 샘플 없음)", 600)
-        prompt_term_context = _clip_prompt_text(term_context, 900)
+        prompt_schema_ctx = _clip_prompt_text(schema_ctx, 600)
+        prompt_db_context = _clip_prompt_text(db_context or "(관련 테이블의 실제 DB 샘플 없음)", 180)
+        prompt_term_context = _clip_prompt_text(term_context, 280)
         prompt = NL_TO_SQL_PROMPT.format(
             schema=prompt_schema_ctx,
             db_context=prompt_db_context,
             term_context=prompt_term_context,
-            question=req.question,
+            question=_clip_prompt_text(req.question, 200),
         )
         try:
             sql, description = await _llm_sql_from_prompt(prompt)
@@ -439,12 +439,12 @@ async def nl_to_sql(req: NlToSqlRequest):
                 break
 
             repair_prompt = SQL_REPAIR_PROMPT.format(
-                schema=_clip_prompt_text(schema_ctx, 4200),
-                db_context=_clip_prompt_text(db_context or "(관련 테이블의 실제 DB 샘플 없음)", 1400),
-                term_context=_clip_prompt_text(term_context, 1000),
-                question=req.question,
-                sql=sql,
-                error=db_error,
+                schema=_clip_prompt_text(schema_ctx, 500),
+                db_context=_clip_prompt_text(db_context or "(관련 테이블의 실제 DB 샘플 없음)", 150),
+                term_context=_clip_prompt_text(term_context, 250),
+                question=_clip_prompt_text(req.question, 200),
+                sql=_clip_prompt_text(sql, 600),
+                error=_clip_prompt_text(db_error, 300),
             )
             try:
                 repaired_sql, repaired_description = await _llm_sql_from_prompt(repair_prompt)
@@ -473,12 +473,12 @@ async def nl_to_sql(req: NlToSqlRequest):
                 break
 
             repair_prompt = SQL_REPAIR_PROMPT.format(
-                schema=_clip_prompt_text(schema_ctx, 4200),
-                db_context=_clip_prompt_text(db_context or "(관련 테이블의 실제 DB 샘플 없음)", 1400),
-                term_context=_clip_prompt_text(term_context, 1000),
-                question=req.question,
-                sql=sql,
-                error=db_error,
+                schema=_clip_prompt_text(schema_ctx, 500),
+                db_context=_clip_prompt_text(db_context or "(관련 테이블의 실제 DB 샘플 없음)", 150),
+                term_context=_clip_prompt_text(term_context, 250),
+                question=_clip_prompt_text(req.question, 200),
+                sql=_clip_prompt_text(sql, 600),
+                error=_clip_prompt_text(db_error, 300),
             )
             try:
                 repaired_sql, repaired_description = await _llm_sql_from_prompt(repair_prompt)

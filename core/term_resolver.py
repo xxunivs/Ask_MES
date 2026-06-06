@@ -590,13 +590,13 @@ async def resolve_ambiguous_terms(
     prompt = TERM_RESOLUTION_PROMPT.format(
         user_role_label=ROLE_LABELS.get(normalized_role, normalized_role),
         current_view_label=VIEW_LABELS.get(normalized_view, normalized_view),
-        conversation_context=_clip(previous_context, 300),
-        question=question,
+        conversation_context=_clip(previous_context, 100),
+        question=_clip(question, 200),
         detected_terms=detected_terms_text,
-        schema_context=_clip(schema_context or "(스키마 컨텍스트 없음)", 1400),
-        db_context=_clip(db_context or "(실제 DB 탐색 결과 없음)", 500),
-        dynamic_candidates=_clip(dynamic_candidates_text, 1000),
-        column_inventory=_clip(column_inventory, 700),
+        schema_context=_clip(schema_context or "(스키마 컨텍스트 없음)", 400),
+        db_context=_clip(db_context or "(실제 DB 탐색 결과 없음)", 150),
+        dynamic_candidates=_clip(dynamic_candidates_text, 400),
+        column_inventory=_clip(column_inventory, 180),
     )
 
     fallback_resolution = _fallback_resolution_from_dynamic_candidates(
