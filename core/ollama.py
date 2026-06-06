@@ -48,25 +48,28 @@ async def _ollama_generate(prompt: str, temperature: float, max_tokens: int) -> 
 
 
 async def _vllm_generate(prompt: str, temperature: float, max_tokens: int) -> str:
-    """vLLM OpenAI-compatible /completions 호출"""
+    """vLLM/OpenAI-compatible chat completions 호출."""
     payload = {
         "model": LLM_MODEL,
-        "prompt": prompt,
+        "messages": [{"role": "user", "content": prompt}],
         "temperature": temperature,
         "max_tokens": max_tokens,
-        "stop": ["\n\n사용자 질문:", "\n사용자 질문:", "\n\nJSON 응답:", "\nJSON 응답:"],
     }
+    if LLM_PROVIDER == "vllm":
+        # Qwen thinking mode is unnecessary for structured SQL output and
+        # otherwise consumes most of the latency/token budget.
+        payload["chat_template_kwargs"] = {"enable_thinking": False}
     headers = {"Authorization": f"Bearer {VLLM_API_KEY}"}
     try:
         async with httpx.AsyncClient(timeout=180.0) as client:
             resp = await client.post(
-                f"{VLLM_API_URL.rstrip('/')}/completions",
+                f"{VLLM_API_URL.rstrip('/')}/chat/completions",
                 json=payload,
                 headers=headers,
             )
             resp.raise_for_status()
             data = resp.json()
-            return data["choices"][0]["text"].strip()
+            return data["choices"][0]["message"]["content"].strip()
     except httpx.ReadTimeout:
         raise RuntimeError("vLLM 응답 타임아웃 (180초 초과) — 모델 로딩 중이거나 과부하 상태")
     except httpx.ConnectError:

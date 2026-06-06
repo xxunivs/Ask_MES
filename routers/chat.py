@@ -4,6 +4,9 @@
   POST /chat/analyze     : 조회된 데이터에 대한 분석 질문
   GET  /chat/health      : LLM 연결 상태 확인
 """
+from __future__ import annotations
+
+import asyncio
 import json
 import re
 
@@ -17,9 +20,11 @@ from core.retriever import retrieve_context
 from core.db_client import execute_sql
 from core.db_context import build_live_db_context, validate_sql_against_schema
 from core.term_resolver import (
+    align_sql_with_live_candidates,
+    finalize_term_resolution,
     format_term_resolution_for_prompt,
     format_term_resolution_for_user,
-    resolve_ambiguous_terms,
+    prepare_term_resolution_context,
 )
 
 router = APIRouter()
@@ -45,63 +50,37 @@ class AnalyzeRequest(BaseModel):
 # 프롬프트 템플릿
 # ─────────────────────────────────────────────
 
-NL_TO_SQL_PROMPT = """당신은 MES(제조실행시스템) 전문 SQL 생성 어시스턴트입니다.
-아래 MES 스키마 정보를 참고하여 사용자의 자연어 질문을 MS SQL Server SELECT 쿼리로 변환하세요.
+NL_TO_SQL_PROMPT = """MES 질문을 간결한 MS SQL Server SELECT로 변환하세요.
 
-## MES 스키마 정보
+## 스키마
 {schema}
 
-## 실제 MES DB 탐색 결과
+## 실제 DB
 {db_context}
 
-## 모호 제조 용어 해석
+## 역할·문맥·모호어 후보
 {term_context}
 
 ## 규칙
-1. SELECT 문만 생성 (INSERT/UPDATE/DELETE/DROP/EXEC 절대 금지)
-2. MS SQL Server 문법 사용. WITH (NOLOCK) 힌트를 모든 테이블에 적용하세요.
-3. 컬럼/테이블명은 반드시 스키마에 있는 이름 그대로 사용 (존재하지 않는 컬럼 사용 금지)
-4. 실제 MES DB 탐색 결과에 샘플값/날짜범위/주요값이 있으면 그 값을 우선 참고하세요.
-5. 모호 제조 용어 해석 결과가 있으면 해당 의미와 SQL 힌트를 우선 적용하세요.
+1. SELECT만 생성하고 모든 테이블에 WITH (NOLOCK)을 사용합니다.
+2. 제공된 실제 테이블·컬럼·JOIN만 사용합니다.
+3. 모호어는 역할·대화·실데이터를 함께 판단합니다. 반드시 아래 후보 중 값있음 후보를 SQL에 사용하고 후보 밖의 유사 컬럼은 쓰지 않습니다.
+4. 날짜 미지정/상대 날짜의 기준은 1년 전 GETDATE()이며, 명시 날짜는 리터럴을 사용합니다. 범위는 >=, <로 작성합니다.
+5. 생산량은 CIM_LOT.QTY 합계, 생산건수는 COUNT(*), 일별 추이는 CONVERT(date,...), 설비 추이는 CIM_LOT.TRACKINTIME/EQUIPMENTID를 사용합니다.
+6. 비율은 * 100하고 0 나눗셈을 방지합니다. alias에 DATE, TIME, NAME, VALUE, COUNT, STATE, TYPE, DATA, KEY, INDEX, ORDER를 쓰지 않습니다.
 
-## 날짜 규칙
-6. [중요] 기본 기준일은 항상 1년 전이다. 사용자가 날짜를 별도로 지정하지 않으면 DATEADD(year, -1, GETDATE())를 기준으로 사용하라.
-   - "오늘" / 날짜 미지정 → DATEADD(year, -1, GETDATE())
-   - "어제" → DATEADD(day, -1, DATEADD(year, -1, CAST(GETDATE() AS date)))
-   - "이번 달" → 1년 전 같은 달: YEAR(DATEADD(year,-1,GETDATE())), MONTH(DATEADD(year,-1,GETDATE()))
-   - "이번 주" → DATEADD(year,-1,GETDATE()) 기준 해당 주
-   - "최근 N일" → DATEADD(day, -N, DATEADD(year, -1, GETDATE())) ~ DATEADD(year, -1, GETDATE())
-7. 특정 연도/월이 명시된 경우 (예: "2025년 12월") → 리터럴 날짜 사용 (GETDATE() 계산 금지)
-   예시: TRACKINTIME >= '2025-12-01' AND TRACKINTIME < '2026-01-01'
-8. 날짜 범위 필터는 BETWEEN보다 >= AND < 형식 사용
+7. 불필요한 컬럼과 JOIN을 추가하지 말고 TOP 20 이하의 짧은 SQL을 만듭니다.
 
-## 집계/추이 규칙
-9. 일별 추이 집계 시 날짜 컬럼은 CONVERT(date, 날짜컬럼) 사용
-10. 설비 가동 횟수 추이 → CIM_LOT 테이블의 TRACKINTIME + EQUIPMENTID로 COUNT(*) 집계
-    (CIM_EQUIPMENT.RUNCOUNT는 현재 누적값이므로 추이 분석에 사용 금지)
-11. 불량률 계산 → SUM(LOSSQTY) / NULLIF(SUM(ORIGINALQTY), 0) * 100
-12. 생산량/생산 실적 질문은 CIM_LOT를 기준 사실 테이블로 사용하세요.
-    - 생산량: SUM(CIM_LOT.QTY)
-    - 생산건수: COUNT(*)
-    - 설비별 생산량: CIM_LOT.EQUIPMENTID 기준 집계 후 CIM_EQUIPMENT와 JOIN해 설비명을 표시
-    - 제품별 생산량: CIM_LOT.PRODUCTDEFINITIONID 기준 집계 후 CIM_PRODUCTDEFINITION과 JOIN해 제품명을 표시
+첫 글자부터 한 줄 JSON만 응답하고 사고과정·설명·마크다운은 출력하지 마세요:
+{{"sql":"SELECT ...","term_choices":{{"모호어":"TABLE.COLUMN"}}}}
 
-## alias 규칙
-13. 컬럼 alias에 SQL 예약어 사용 금지: DATE, TIME, NAME, VALUE, COUNT, STATE, TYPE, DATA, KEY, INDEX, ORDER
-    예시: AS DATE (X) → AS 작업일자 (O), AS COUNT (X) → AS 건수 (O)
-
-## 응답 형식
-반드시 아래 JSON 형식으로만 응답 (마크다운 코드블록 없이):
-{{"sql": "SELECT ...", "description": "한국어로 쿼리 설명"}}
-
-## 사용자 질문
+## 질문
 {question}
 
 JSON 응답:"""
 
 
-SQL_REPAIR_PROMPT = """당신은 MES(제조실행시스템) 전문 SQL 수정 어시스턴트입니다.
-아래 SQL은 실제 MES DB에서 실행 실패했습니다. 오류와 실제 DB 탐색 결과를 참고해 실행 가능한 MS SQL Server SELECT 쿼리로 고치세요.
+SQL_REPAIR_PROMPT = """아래 SQL을 오류 한 가지만 반영해 간결한 MS SQL Server SELECT로 수정하세요.
 
 ## MES 스키마 정보
 {schema}
@@ -121,16 +100,11 @@ SQL_REPAIR_PROMPT = """당신은 MES(제조실행시스템) 전문 SQL 수정 �
 ## DB 오류
 {error}
 
-## 규칙
-1. SELECT 문만 생성하세요.
-2. WITH (NOLOCK)을 모든 테이블에 적용하세요.
-3. 스키마/실제 DB 탐색 결과에 없는 테이블명과 컬럼명을 만들지 마세요.
-4. 오류 원인을 반영해 JOIN, 컬럼명, 날짜 조건, 집계식을 수정하세요.
+SELECT만 사용하고 모든 테이블에 WITH (NOLOCK)을 적용하세요. 제공된 스키마에 없는 이름을 만들지 말고 불필요한 컬럼/JOIN을 제거하세요.
 
-반드시 아래 JSON 형식으로만 응답하세요:
-{{"sql": "SELECT ...", "description": "한국어로 수정 내용 설명"}}
-
-JSON 응답:"""
+첫 글자부터 한 줄 JSON만 응답:
+{{"sql":"SELECT ..."}}
+"""
 
 
 ANALYZE_PROMPT = """당신은 MES 데이터 분석 전문가입니다.
@@ -152,8 +126,8 @@ ANALYZE_PROMPT = """당신은 MES 데이터 분석 전문가입니다.
 # 유틸리티
 # ─────────────────────────────────────────────
 
-def _parse_llm_json(raw: str) -> tuple[str, str]:
-    """LLM 응답에서 sql, description 추출. 실패 시 raw 그대로 반환"""
+def _parse_llm_json(raw: str) -> dict[str, Any]:
+    """LLM 응답에서 첫 JSON 객체를 추출."""
     # 마크다운 코드블록 제거
     raw = re.sub(r"```(?:json)?", "", raw).strip().rstrip("`").strip()
 
@@ -162,14 +136,33 @@ def _parse_llm_json(raw: str) -> tuple[str, str]:
     for match in re.finditer(r"\{", raw):
         try:
             obj, _ = decoder.raw_decode(raw[match.start():])
-            return obj.get("sql", ""), obj.get("description", "")
+            if isinstance(obj, dict):
+                return obj
         except json.JSONDecodeError:
             continue
 
     # Fallback: SELECT 구문 직접 추출
     sql_match = re.search(r'(SELECT\s.+?)(?:;|$)', raw, re.DOTALL | re.IGNORECASE)
     sql = sql_match.group(1).strip() if sql_match else raw
-    return sql, ""
+    return {"sql": sql, "description": "", "resolved_terms": []}
+
+
+def _resolved_terms_from_choices(parsed: dict[str, Any]) -> list[dict[str, Any]]:
+    choices = parsed.get("term_choices")
+    if not isinstance(choices, dict):
+        resolved_terms = parsed.get("resolved_terms")
+        return resolved_terms if isinstance(resolved_terms, list) else []
+
+    return [
+        {
+            "term": str(term),
+            "selected_columns": [str(column)],
+            "confidence": 0.7,
+            "evidence": ["역할, 대화 맥락 및 실제 DB 후보를 함께 비교"],
+        }
+        for term, column in choices.items()
+        if term and column
+    ]
 
 
 def _clip_prompt_text(text: str, max_chars: int) -> str:
@@ -189,7 +182,7 @@ def _sql_contains_column(sql: str, column_ref: str) -> bool:
 
 
 def _term_resolution_sql_errors(sql: str, term_resolution: dict[str, Any] | None) -> list[str]:
-    if not term_resolution:
+    if not term_resolution or term_resolution.get("mode") != "single_pass_role_context_db_resolution":
         return []
 
     errors: list[str] = []
@@ -232,14 +225,18 @@ def _semantic_sql_errors(question: str, sql: str, term_resolution: dict[str, Any
     return errors
 
 
-async def _llm_sql_from_prompt(prompt: str) -> tuple[str, str]:
-    raw_response = await llm_generate(prompt, temperature=0.05, max_tokens=256)
-    sql, description = _parse_llm_json(raw_response)
+async def _llm_sql_from_prompt(prompt: str, max_tokens: int = 256) -> tuple[str, str, list[dict[str, Any]]]:
+    raw_response = await llm_generate(prompt, temperature=0.05, max_tokens=max_tokens)
+    parsed = _parse_llm_json(raw_response)
+    sql = str(parsed.get("sql", ""))
+    description = str(parsed.get("description", ""))
+    resolved_terms = _resolved_terms_from_choices(parsed)
     if not sql:
+        print(f"[LLM_SQL_RAW] {raw_response[:800]}")
         raise HTTPException(status_code=500, detail="SQL 생성 실패 — LLM 응답을 파싱할 수 없습니다.")
     if not re.match(r"^\s*SELECT\b", sql, re.IGNORECASE):
         raise HTTPException(status_code=500, detail=f"SQL 생성 실패 — SELECT 문이 아닙니다: {sql[:120]}")
-    return sql, description
+    return sql, description, resolved_terms
 
 
 def _rows_to_text(columns: list, rows: list, max_rows: int = 20) -> str:
@@ -382,30 +379,25 @@ async def nl_to_sql(req: NlToSqlRequest):
             schema_ctx = "(스키마 정보 조회 실패)"
             print(f"[RAG] 오류: {e}")
 
-        # 2. 실제 DB 탐색: 관련 테이블의 샘플/날짜범위/주요값 확인
+        # 2. 실제 DB 탐색과 모호어 후보 생성을 병렬 수행
         try:
-            db_context = await build_live_db_context(schema_ctx)
-        except Exception as e:
-            db_context = "(실제 MES DB 탐색 실패)"
-            print(f"[DB_CONTEXT] 오류: {e}")
-
-        # 3. 모호 제조 용어 해석: 역할/맥락 + RAG 스키마 + 실제 DB 탐색 결과 기반 동적 판단
-        try:
-            term_resolution = await resolve_ambiguous_terms(
-                question=req.question,
-                user_role=req.user_role,
-                current_view=req.current_view,
-                conversation_context=req.conversation_context,
-                schema_context=schema_ctx,
-                db_context=db_context,
+            db_context, term_prepared = await asyncio.gather(
+                build_live_db_context(schema_ctx),
+                prepare_term_resolution_context(
+                    question=req.question,
+                    user_role=req.user_role,
+                    current_view=req.current_view,
+                    conversation_context=req.conversation_context,
+                    schema_context=schema_ctx,
+                ),
             )
         except Exception as e:
-            term_resolution = None
-            print(f"[TERM_RESOLVER] 오류: {e}")
-        term_context = format_term_resolution_for_prompt(term_resolution)
-        term_user_note = format_term_resolution_for_user(term_resolution)
+            db_context = "(실제 MES DB 탐색 실패)"
+            term_prepared = ("(모호어 후보 생성 실패)", None)
+            print(f"[CONTEXT] 오류: {e}")
+        term_context, term_fallback = term_prepared
 
-        # 4. LLM: SQL 생성
+        # 3. 단일 LLM 호출: 역할별 의미 해석 + SQL 생성
         prompt_schema_ctx = _clip_prompt_text(schema_ctx, 450)
         prompt_db_context = _clip_prompt_text(db_context or "(관련 테이블의 실제 DB 샘플 없음)", 120)
         prompt_term_context = _clip_prompt_text(term_context, 220)
@@ -416,12 +408,21 @@ async def nl_to_sql(req: NlToSqlRequest):
             question=_clip_prompt_text(req.question, 150),
         )
         try:
-            sql, description = await _llm_sql_from_prompt(prompt)
+            sql, description, resolved_terms = await _llm_sql_from_prompt(prompt, max_tokens=240)
         except HTTPException:
             raise
         except Exception as e:
             raise HTTPException(status_code=503, detail=f"LLM 연결 오류: {e}")
 
+        sql, alignment_notes = align_sql_with_live_candidates(sql, term_fallback)
+        term_resolution = finalize_term_resolution(
+            resolved_terms,
+            term_fallback,
+            sql,
+            alignment_notes,
+        )
+        term_context = format_term_resolution_for_prompt(term_resolution)
+        term_user_note = format_term_resolution_for_user(term_resolution)
         if not description:
             description = f'"{req.question}" 조회 결과'
         generated_by_llm = True
@@ -429,7 +430,7 @@ async def nl_to_sql(req: NlToSqlRequest):
     # 4. DB 실행 (mes-api 위임). LLM 생성 SQL은 실패 시 오류를 넣어 재시도.
     db_data = None
     db_error = None
-    max_attempts = 3 if generated_by_llm else 1
+    max_attempts = 2 if generated_by_llm else 1
     for attempt in range(max_attempts):
         preflight_errors = validate_sql_against_schema(sql) + _semantic_sql_errors(req.question, sql, term_resolution)
         if preflight_errors:
@@ -447,7 +448,7 @@ async def nl_to_sql(req: NlToSqlRequest):
                 error=_clip_prompt_text(db_error, 300),
             )
             try:
-                repaired_sql, repaired_description = await _llm_sql_from_prompt(repair_prompt)
+                repaired_sql, repaired_description, _ = await _llm_sql_from_prompt(repair_prompt, max_tokens=280)
                 sql = repaired_sql
                 if repaired_description:
                     description = repaired_description
@@ -481,7 +482,7 @@ async def nl_to_sql(req: NlToSqlRequest):
                 error=_clip_prompt_text(db_error, 300),
             )
             try:
-                repaired_sql, repaired_description = await _llm_sql_from_prompt(repair_prompt)
+                repaired_sql, repaired_description, _ = await _llm_sql_from_prompt(repair_prompt, max_tokens=280)
                 sql = repaired_sql
                 if repaired_description:
                     description = repaired_description

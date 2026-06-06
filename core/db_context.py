@@ -6,9 +6,11 @@ checks those tables against the real MES API with small, read-only probes.
 """
 from __future__ import annotations
 
+import asyncio
 import json
 import os
 import re
+import time
 from typing import Any
 
 from core.db_client import execute_sql
@@ -17,6 +19,8 @@ _BASE_DIR = os.path.dirname(__file__)
 SCHEMA_PATH = os.path.join(_BASE_DIR, "../data/mes_schema.json")
 
 _SCHEMA_CACHE: dict[str, dict[str, Any]] | None = None
+_LIVE_CONTEXT_CACHE: dict[tuple[str, ...], tuple[float, str]] = {}
+_LIVE_CONTEXT_TTL = 60.0
 
 DATE_HINTS = ("TIME", "DATE")
 VALUE_HINTS = (
@@ -234,20 +238,20 @@ async def build_live_db_context(schema_context: str, max_tables: int = 3) -> str
     tables = extract_context_tables(schema_context, max_tables=max_tables)
     if not tables:
         return ""
+    cache_key = tuple(tables)
+    cached = _LIVE_CONTEXT_CACHE.get(cache_key)
+    if cached and time.monotonic() - cached[0] < _LIVE_CONTEXT_TTL:
+        return cached[1]
 
-    sections: list[str] = []
-    for table in tables:
+    async def probe_table(table: str) -> str:
         lines = [f"### {table}"]
+        probes: list[tuple[str, Any]] = []
 
         sample_cols = _choose_sample_columns(table)
         if sample_cols:
             col_sql = ", ".join(_quote_col(col) for col in sample_cols)
             sql = f"SELECT TOP 3 {col_sql} FROM {table} WITH (NOLOCK)"
-            try:
-                result = await execute_sql(sql, limit=3)
-                lines.append(f"- 샘플: {_format_rows(result, max_rows=3)}")
-            except Exception as exc:
-                lines.append(f"- 샘플 조회 실패: {exc}")
+            probes.append(("sample", execute_sql(sql, limit=3)))
 
         date_cols = _date_columns(table)
         if date_cols:
@@ -256,11 +260,7 @@ async def build_live_db_context(schema_context: str, max_tables: int = 3) -> str
                 exprs.append(f"MIN({_quote_col(col)}) AS [{col}_MIN]")
                 exprs.append(f"MAX({_quote_col(col)}) AS [{col}_MAX]")
             sql = f"SELECT {', '.join(exprs)} FROM {table} WITH (NOLOCK)"
-            try:
-                result = await execute_sql(sql, limit=1)
-                lines.append(f"- 날짜범위: {_format_rows(result, max_rows=1)}")
-            except Exception as exc:
-                lines.append(f"- 날짜범위 조회 실패: {exc}")
+            probes.append(("date", execute_sql(sql, limit=1)))
 
         value_col = _value_column(table)
         if value_col:
@@ -271,12 +271,25 @@ async def build_live_db_context(schema_context: str, max_tables: int = 3) -> str
                 f"WHERE {col} IS NOT NULL AND CONVERT(nvarchar(200), {col}) <> '' "
                 f"GROUP BY {col} ORDER BY [건수] DESC"
             )
-            try:
-                result = await execute_sql(sql, limit=5)
+            probes.append(("value", execute_sql(sql, limit=5)))
+
+        results = await asyncio.gather(
+            *(probe for _, probe in probes),
+            return_exceptions=True,
+        )
+        for (kind, _), result in zip(probes, results):
+            if isinstance(result, Exception):
+                label = "샘플" if kind == "sample" else "날짜범위" if kind == "date" else f"주요값({value_col})"
+                lines.append(f"- {label} 조회 실패: {result}")
+            elif kind == "sample":
+                lines.append(f"- 샘플: {_format_rows(result, max_rows=3)}")
+            elif kind == "date":
+                lines.append(f"- 날짜범위: {_format_rows(result, max_rows=1)}")
+            else:
                 lines.append(f"- 주요값({value_col}): {_format_rows(result, max_rows=5)}")
-            except Exception as exc:
-                lines.append(f"- 주요값 조회 실패({value_col}): {exc}")
+        return "\n".join(lines)
 
-        sections.append("\n".join(lines))
-
-    return "\n\n".join(sections)
+    sections = await asyncio.gather(*(probe_table(table) for table in tables))
+    context = "\n\n".join(sections)
+    _LIVE_CONTEXT_CACHE[cache_key] = (time.monotonic(), context)
+    return context

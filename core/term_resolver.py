@@ -11,6 +11,7 @@ import asyncio
 import json
 import os
 import re
+import time
 from typing import Any
 
 from core.db_client import execute_sql
@@ -150,6 +151,8 @@ TERM_RESOLUTION_PROMPT = """당신은 MES 자연어 질의를 SQL 의미로 해�
 JSON 응답:"""
 
 _SCHEMA_CACHE: dict[str, dict[str, Any]] | None = None
+_CANDIDATE_PROBE_CACHE: dict[tuple[str, str], tuple[float, tuple[bool, str]]] = {}
+_CANDIDATE_PROBE_TTL = 60.0
 
 
 def _clip(text: str, max_chars: int) -> str:
@@ -262,6 +265,11 @@ def _token_matches(token: str, haystack: str) -> bool:
 
 
 async def _probe_candidate(table: str, column: str) -> tuple[bool, str]:
+    cache_key = (table, column)
+    cached = _CANDIDATE_PROBE_CACHE.get(cache_key)
+    if cached and time.monotonic() - cached[0] < _CANDIDATE_PROBE_TTL:
+        return cached[1]
+
     sql = (
         f"SELECT TOP 1 {_quote_col(column)} AS [{column}] "
         f"FROM {table} WITH (NOLOCK) "
@@ -270,23 +278,32 @@ async def _probe_candidate(table: str, column: str) -> tuple[bool, str]:
     try:
         result = await asyncio.wait_for(execute_sql(sql, limit=1), timeout=4)
     except asyncio.TimeoutError:
-        return False, "DB 확인 타임아웃"
+        result = (False, "DB 확인 타임아웃")
+        _CANDIDATE_PROBE_CACHE[cache_key] = (time.monotonic(), result)
+        return result
     except Exception as exc:
-        return False, f"DB 확인 실패: {exc}"
+        result = (False, f"DB 확인 실패: {exc}")
+        _CANDIDATE_PROBE_CACHE[cache_key] = (time.monotonic(), result)
+        return result
 
     rows = result.get("rows") or []
     if not rows:
-        return False, "최근 후보값 없음"
+        result = (False, "최근 후보값 없음")
+        _CANDIDATE_PROBE_CACHE[cache_key] = (time.monotonic(), result)
+        return result
     row = rows[0]
     value = row.get(column) if isinstance(row, dict) else row[0] if row else None
-    return True, f"DB 값 존재 예: {value}"
+    result = (True, f"DB 값 존재 예: {value}")
+    _CANDIDATE_PROBE_CACHE[cache_key] = (time.monotonic(), result)
+    return result
 
 
-def _candidate_sort_key(candidate: dict[str, Any]) -> tuple[int, int, int]:
+def _candidate_sort_key(candidate: dict[str, Any]) -> tuple[int, int, int, int]:
     has_value = candidate.get("db_has_value")
     data_rank = 2 if has_value is True else 1 if has_value is None else 0
     return (
         data_rank,
+        1 if candidate.get("context_table") else 0,
         int(candidate.get("score", 0)),
         len(candidate.get("role_bias_tokens") or []),
     )
@@ -338,6 +355,7 @@ async def _build_dynamic_candidates(
                         "column_ref": f"{table}.{name}",
                         "kind": _candidate_kind(name, desc),
                         "score": score,
+                        "context_table": table in context_tables,
                         "matched_tokens": matched[:5],
                         "role_bias_tokens": role_hits[:5],
                         "description": desc,
@@ -624,6 +642,190 @@ async def resolve_ambiguous_terms(
     resolution["dynamic_candidates"] = dynamic_candidates
     resolution["mode"] = "dynamic_schema_db_candidate_generation"
     resolution = _prefer_candidates_with_data(resolution, dynamic_candidates)
+    return _append_column_validation(resolution)
+
+
+async def prepare_term_resolution_context(
+    question: str,
+    user_role: str = "general",
+    current_view: str = "chat",
+    conversation_context: list[str] | None = None,
+    schema_context: str = "",
+) -> tuple[str, dict[str, Any] | None]:
+    """Build role/context/live-candidate evidence without a separate LLM call."""
+    normalized_role = (user_role or "general").lower()
+    normalized_view = (current_view or "chat").lower()
+    _, dynamic_candidates = await _build_dynamic_candidates(
+        question=question,
+        user_role=normalized_role,
+        schema_context=schema_context,
+        db_context="",
+        conversation_context=conversation_context,
+    )
+    fallback = _fallback_resolution_from_dynamic_candidates(
+        question=question,
+        user_role=normalized_role,
+        current_view=normalized_view,
+        dynamic_candidates=dynamic_candidates,
+    )
+    previous = " / ".join((conversation_context or [])[-2:]) or "(없음)"
+    lines = [
+        f"- 역할={ROLE_LABELS.get(normalized_role, normalized_role)}, 화면={VIEW_LABELS.get(normalized_view, normalized_view)}",
+        f"- 이전 대화={_clip(previous, 70)}",
+    ]
+    for term, candidates in dynamic_candidates.items():
+        compact_candidates = []
+        for candidate in candidates[:3]:
+            value_state = "값있음" if candidate.get("db_has_value") is True else "값없음"
+            compact_candidates.append(
+                f"{candidate.get('column_ref')}({candidate.get('kind')},{value_state})"
+            )
+        lines.append(f"- {term} 후보=" + ", ".join(compact_candidates))
+    if not dynamic_candidates:
+        lines.append("- 모호어 후보 없음")
+    context = "\n".join(lines)
+    return context, fallback
+
+
+def align_sql_with_live_candidates(
+    sql: str,
+    fallback: dict[str, Any] | None,
+) -> tuple[str, dict[str, str]]:
+    """Replace an empty candidate column with a live candidate from the same table."""
+    dynamic_candidates = (fallback or {}).get("dynamic_candidates") or {}
+    aligned_sql = sql
+    notes: dict[str, str] = {}
+
+    for term, candidates in dynamic_candidates.items():
+        upper_sql = aligned_sql.upper()
+        used = next(
+            (
+                candidate
+                for candidate in candidates
+                if str(candidate.get("table", "")).upper() in upper_sql
+                and re.search(
+                    rf"\b{re.escape(str(candidate.get('column', '')).upper())}\b",
+                    upper_sql,
+                )
+            ),
+            None,
+        )
+        if not used or used.get("db_has_value") is not False:
+            continue
+
+        replacement = next(
+            (
+                candidate
+                for candidate in candidates
+                if candidate.get("db_has_value") is True
+                and candidate.get("table") == used.get("table")
+            ),
+            None,
+        )
+        if not replacement:
+            continue
+
+        old_column = str(used.get("column", ""))
+        new_column = str(replacement.get("column", ""))
+        aligned_sql = re.sub(
+            rf"\b{re.escape(old_column)}\b",
+            new_column,
+            aligned_sql,
+            flags=re.IGNORECASE,
+        )
+        notes[term] = (
+            f"실제 DB 값이 없는 {used.get('column_ref')} 대신 "
+            f"값이 확인된 {replacement.get('column_ref')} 사용"
+        )
+
+    return aligned_sql, notes
+
+
+def finalize_term_resolution(
+    resolved_terms: Any,
+    fallback: dict[str, Any] | None,
+    sql: str = "",
+    alignment_notes: dict[str, str] | None = None,
+) -> dict[str, Any] | None:
+    """Reconcile the model's term choice with candidate columns used in its SQL."""
+    dynamic_candidates = (fallback or {}).get("dynamic_candidates") or {}
+    if not dynamic_candidates:
+        return fallback
+
+    returned_by_term = {
+        str(item.get("term", "")): item
+        for item in (resolved_terms or [])
+        if isinstance(item, dict)
+    }
+    upper_sql = sql.upper()
+    normalized_terms: list[dict[str, Any]] = []
+    for term, candidates in dynamic_candidates.items():
+        sql_candidate = next(
+            (
+                candidate
+                for candidate in candidates
+                if str(candidate.get("table", "")).upper() in upper_sql
+                and re.search(
+                    rf"\b{re.escape(str(candidate.get('column', '')).upper())}\b",
+                    upper_sql,
+                )
+            ),
+            None,
+        )
+
+        returned = returned_by_term.get(term) or {}
+        selected = {
+            str(column).upper()
+            for column in (returned.get("selected_columns") or [])
+            if isinstance(column, str)
+        }
+        returned_candidate = next(
+            (
+                candidate
+                for candidate in candidates
+                if str(candidate.get("column_ref", "")).upper() in selected
+            ),
+            None,
+        )
+        candidate = sql_candidate or returned_candidate
+        if not candidate:
+            continue
+
+        column_ref = str(candidate.get("column_ref", ""))
+        evidence = returned.get("evidence")
+        if not isinstance(evidence, list):
+            evidence = []
+        if (alignment_notes or {}).get(term):
+            evidence.insert(0, str(alignment_notes[term]))
+        evidence.insert(
+            0,
+            "생성 SQL에 실제 사용된 동적 후보를 최종 의미로 확정"
+            if sql_candidate
+            else "LLM이 선택한 동적 후보를 최종 의미로 확정",
+        )
+        normalized_terms.append(
+            {
+                "term": term,
+                "selected_meaning": f"{column_ref} 기준 {candidate.get('kind', '값')}",
+                "sql_hint": _candidate_sql_hint(candidate),
+                "selected_columns": [column_ref],
+                "confidence": returned.get("confidence", 0.7),
+                "evidence": evidence[:8],
+            }
+        )
+
+    if not normalized_terms:
+        return fallback
+
+    resolution = {
+        "resolved_terms": normalized_terms,
+        "user_role": (fallback or {}).get("user_role", "general"),
+        "user_role_label": (fallback or {}).get("user_role_label", "일반"),
+        "current_view": (fallback or {}).get("current_view", "chat"),
+        "current_view_label": (fallback or {}).get("current_view_label", "채팅"),
+        "dynamic_candidates": dynamic_candidates,
+        "mode": "single_pass_role_context_db_resolution",
+    }
     return _append_column_validation(resolution)
 
 
