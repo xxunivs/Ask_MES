@@ -97,6 +97,7 @@ TERM_RESOLUTION_PROMPT = """당신은 MES 자연어 질의를 SQL 의미로 해�
 - 실제 DB 값이 확인된 후보가 하나라도 있으면 값이 없는 후보는 선택하지 마세요.
 - 사용자 역할, 현재 화면/공정 맥락, 이전 대화, 검색된 스키마, 실제 DB 탐색 결과를 모두 근거로 삼으세요.
 - 같은 단어라도 역할과 공정 맥락에 따라 다른 SQL 의미가 될 수 있습니다.
+- 질문의 다른 조회 항목과 같은 테이블에 있는 후보를 우선하고, 다른 테이블 후보는 제공된 JOIN 경로가 확인된 경우에만 선택하세요.
 - SQL 생성에 직접 쓸 수 있는 테이블/컬럼/집계 힌트를 제시하세요.
 - selected_columns에는 실제 사용할 후보 컬럼을 `TABLE.COLUMN` 형식으로 넣으세요.
 - 비율/률 계산 SQL 힌트는 반드시 `* 100`을 사용하세요. 임의 숫자를 만들지 마세요.
@@ -286,8 +287,8 @@ def _candidate_sort_key(candidate: dict[str, Any]) -> tuple[int, int, int]:
     data_rank = 2 if has_value is True else 1 if has_value is None else 0
     return (
         data_rank,
-        len(candidate.get("role_bias_tokens") or []),
         int(candidate.get("score", 0)),
+        len(candidate.get("role_bias_tokens") or []),
     )
 
 
