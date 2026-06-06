@@ -69,7 +69,7 @@ NL_TO_SQL_PROMPT = """MES 질문을 간결한 MS SQL Server SELECT로 변환하�
 5. 생산량은 CIM_LOT.QTY 합계, 생산건수는 COUNT(*), 일별 추이는 CONVERT(date,...), 설비 추이는 CIM_LOT.TRACKINTIME/EQUIPMENTID를 사용합니다.
 6. 비율은 * 100하고 0 나눗셈을 방지합니다. alias에 DATE, TIME, NAME, VALUE, COUNT, STATE, TYPE, DATA, KEY, INDEX, ORDER를 쓰지 않습니다.
 
-7. 불필요한 컬럼과 JOIN을 추가하지 말고 TOP 20 이하의 짧은 SQL을 만듭니다.
+7. SELECT 컬럼은 기본 4개 이하, JOIN은 2개 이하로 제한하고 TOP 20 이하의 짧은 SQL을 만듭니다.
 
 첫 글자부터 한 줄 JSON만 응답하고 사고과정·설명·마크다운은 출력하지 마세요:
 {{"sql":"SELECT ...","term_choices":{{"모호어":"TABLE.COLUMN"}}}}
@@ -408,7 +408,7 @@ async def nl_to_sql(req: NlToSqlRequest):
             question=_clip_prompt_text(req.question, 150),
         )
         try:
-            sql, description, resolved_terms = await _llm_sql_from_prompt(prompt, max_tokens=240)
+            sql, description, resolved_terms = await _llm_sql_from_prompt(prompt, max_tokens=320)
         except HTTPException:
             raise
         except Exception as e:
@@ -448,7 +448,7 @@ async def nl_to_sql(req: NlToSqlRequest):
                 error=_clip_prompt_text(db_error, 300),
             )
             try:
-                repaired_sql, repaired_description, _ = await _llm_sql_from_prompt(repair_prompt, max_tokens=280)
+                repaired_sql, repaired_description, _ = await _llm_sql_from_prompt(repair_prompt, max_tokens=320)
                 sql = repaired_sql
                 if repaired_description:
                     description = repaired_description
@@ -482,7 +482,7 @@ async def nl_to_sql(req: NlToSqlRequest):
                 error=_clip_prompt_text(db_error, 300),
             )
             try:
-                repaired_sql, repaired_description, _ = await _llm_sql_from_prompt(repair_prompt, max_tokens=280)
+                repaired_sql, repaired_description, _ = await _llm_sql_from_prompt(repair_prompt, max_tokens=320)
                 sql = repaired_sql
                 if repaired_description:
                     description = repaired_description

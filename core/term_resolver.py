@@ -698,17 +698,19 @@ def align_sql_with_live_candidates(
 
     for term, candidates in dynamic_candidates.items():
         upper_sql = aligned_sql.upper()
-        used = next(
-            (
-                candidate
-                for candidate in candidates
-                if str(candidate.get("table", "")).upper() in upper_sql
-                and re.search(
-                    rf"\b{re.escape(str(candidate.get('column', '')).upper())}\b",
-                    upper_sql,
-                )
-            ),
-            None,
+        used_candidates = [
+            candidate
+            for candidate in candidates
+            if str(candidate.get("table", "")).upper() in upper_sql
+            and re.search(
+                rf"\b{re.escape(str(candidate.get('column', '')).upper())}\b",
+                upper_sql,
+            )
+        ]
+        used = max(
+            used_candidates,
+            key=lambda candidate: int(candidate.get("score", 0)),
+            default=None,
         )
         if not used or used.get("db_has_value") is not False:
             continue
@@ -760,17 +762,19 @@ def finalize_term_resolution(
     upper_sql = sql.upper()
     normalized_terms: list[dict[str, Any]] = []
     for term, candidates in dynamic_candidates.items():
-        sql_candidate = next(
-            (
-                candidate
-                for candidate in candidates
-                if str(candidate.get("table", "")).upper() in upper_sql
-                and re.search(
-                    rf"\b{re.escape(str(candidate.get('column', '')).upper())}\b",
-                    upper_sql,
-                )
-            ),
-            None,
+        sql_candidates = [
+            candidate
+            for candidate in candidates
+            if str(candidate.get("table", "")).upper() in upper_sql
+            and re.search(
+                rf"\b{re.escape(str(candidate.get('column', '')).upper())}\b",
+                upper_sql,
+            )
+        ]
+        sql_candidate = max(
+            sql_candidates,
+            key=lambda candidate: int(candidate.get("score", 0)),
+            default=None,
         )
 
         returned = returned_by_term.get(term) or {}

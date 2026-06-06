@@ -59,6 +59,7 @@ async def _vllm_generate(prompt: str, temperature: float, max_tokens: int) -> st
         # Qwen thinking mode is unnecessary for structured SQL output and
         # otherwise consumes most of the latency/token budget.
         payload["chat_template_kwargs"] = {"enable_thinking": False}
+        payload["seed"] = 0
     headers = {"Authorization": f"Bearer {VLLM_API_KEY}"}
     try:
         async with httpx.AsyncClient(timeout=180.0) as client:
