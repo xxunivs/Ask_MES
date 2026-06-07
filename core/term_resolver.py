@@ -139,6 +139,136 @@ ROLE_BIAS_TOKENS = {
     "general": (),
 }
 
+ROLE_TERM_HINTS = {
+    "quality": {
+        "불량": {"prefer": ("DEFECTQTY", "DEFECT", "NG", "REJECT"), "avoid": ("LOSSQTY", "SCRAP")},
+        "손실": {"prefer": ("DEFECTQTY", "LOSSQTY", "DEFECT"), "avoid": ("TIME", "DATE")},
+        "실적": {"prefer": ("RESULTQTY", "QTY"), "avoid": ("LOSSQTY", "DEFECTQTY")},
+    },
+    "production": {
+        "불량": {"prefer": ("LOSSQTY", "SCRAP", "LOSS"), "avoid": ("TIME", "DATE")},
+        "손실": {"prefer": ("LOSSQTY", "SCRAP", "LOSS"), "avoid": ("DEFECTQTY", "TIME", "DATE")},
+        "실적": {"prefer": ("QTY", "RESULTQTY", "TRACKOUT"), "avoid": ("LOSSQTY", "DEFECTQTY")},
+    },
+    "equipment": {
+        "불량": {"prefer": ("LOSSQTY", "DEFECTQTY", "EQUIPMENT"), "avoid": ("TIME", "DATE")},
+        "손실": {"prefer": ("LOSSQTY", "EQUIPMENT", "STOP", "DOWN"), "avoid": ("DEFECTQTY", "TIME", "DATE")},
+        "실적": {"prefer": ("QTY", "RESULTQTY", "EQUIPMENT"), "avoid": ("LOSSQTY", "DEFECTQTY")},
+    },
+    "management": {
+        "불량": {"prefer": ("LOSSQTY", "DEFECTQTY", "RATE"), "avoid": ("TIME", "DATE")},
+        "손실": {"prefer": ("LOSSQTY", "RATE", "SCRAP"), "avoid": ("TIME", "DATE")},
+        "실적": {"prefer": ("RESULTQTY", "QTY", "RATE"), "avoid": ("LOSSQTY", "DEFECTQTY")},
+    },
+}
+
+ROLE_TERM_KPI_POLICIES = {
+    "production": {
+        "불량": [
+            {"label": "손실 수량", "tables": ("CIM_LOT",), "columns": ("LOSSQTY",), "kind": "수량"},
+            {"label": "불량 수량", "tables": ("CIM_LOT", "CIM_LOTDEFECT"), "columns": ("DEFECTQTY",), "kind": "수량"},
+        ],
+        "손실": [
+            {"label": "손실 수량", "tables": ("CIM_LOT",), "columns": ("LOSSQTY",), "kind": "수량"},
+            {"label": "스크랩 수량", "tables": ("CIM_LOT",), "tokens": ("SCRAP",), "kind": "수량"},
+        ],
+        "실적": [
+            {"label": "생산 수량", "tables": ("CIM_LOT",), "columns": ("QTY",), "kind": "수량"},
+            {"label": "실적 수량", "tables": ("CIM_PRODUCTORDER",), "columns": ("RESULTQTY",), "kind": "수량"},
+        ],
+        "완료": [
+            {"label": "완료 시점", "tables": ("CIM_LOT",), "columns": ("TRACKOUTTIME",), "kind": "시간"},
+            {"label": "완료 상태", "tables": ("CIM_LOT",), "columns": ("STATE",), "tokens": ("FINISH", "COMPLETE"), "kind": "상태"},
+        ],
+        "가동": [
+            {"label": "작업 투입 추이", "tables": ("CIM_LOT",), "columns": ("TRACKINTIME",), "kind": "시간"},
+            {"label": "설비 가동 상태", "tables": ("CIM_EQUIPMENT",), "columns": ("STATE",), "kind": "상태"},
+        ],
+        "정지": [
+            {"label": "설비 정지 상태", "tables": ("CIM_EQUIPMENT",), "columns": ("STATE",), "kind": "상태"},
+            {"label": "설비 정지 시간", "tables": ("CIM_EQUIPMENT",), "columns": ("STATETIME",), "kind": "시간"},
+        ],
+    },
+    "quality": {
+        "불량": [
+            {"label": "불량 수량", "tables": ("CIM_LOT", "CIM_LOTDEFECT"), "columns": ("DEFECTQTY",), "kind": "수량"},
+            {"label": "손실 수량", "tables": ("CIM_LOT",), "columns": ("LOSSQTY",), "kind": "수량"},
+        ],
+        "손실": [
+            {"label": "불량 수량", "tables": ("CIM_LOT", "CIM_LOTDEFECT"), "columns": ("DEFECTQTY",), "kind": "수량"},
+            {"label": "손실 수량", "tables": ("CIM_LOT",), "columns": ("LOSSQTY",), "kind": "수량"},
+        ],
+        "실적": [
+            {"label": "실적 수량", "tables": ("CIM_PRODUCTORDER",), "columns": ("RESULTQTY",), "kind": "수량"},
+            {"label": "생산 수량", "tables": ("CIM_LOT",), "columns": ("QTY",), "kind": "수량"},
+        ],
+        "완료": [
+            {"label": "완료 시점", "tables": ("CIM_LOT", "CIM_PRODUCTORDER"), "columns": ("TRACKOUTTIME", "ENDTIME"), "kind": "시간"},
+            {"label": "완료 상태", "tables": ("CIM_LOT",), "columns": ("STATE",), "tokens": ("FINISH", "COMPLETE"), "kind": "상태"},
+        ],
+        "가동": [
+            {"label": "설비 가동 상태", "tables": ("CIM_EQUIPMENT",), "columns": ("STATE",), "kind": "상태"},
+            {"label": "설비 가동 건수", "tables": ("CIM_EQUIPMENT",), "columns": ("RUNCOUNT",), "kind": "수량"},
+        ],
+        "정지": [
+            {"label": "설비 정지 상태", "tables": ("CIM_EQUIPMENT",), "columns": ("STATE",), "kind": "상태"},
+            {"label": "설비 정지 시간", "tables": ("CIM_EQUIPMENT",), "columns": ("STATETIME",), "kind": "시간"},
+        ],
+    },
+    "equipment": {
+        "불량": [
+            {"label": "손실 수량", "tables": ("CIM_LOT",), "columns": ("LOSSQTY",), "kind": "수량"},
+            {"label": "불량 수량", "tables": ("CIM_LOT", "CIM_LOTDEFECT"), "columns": ("DEFECTQTY",), "kind": "수량"},
+        ],
+        "손실": [
+            {"label": "손실 수량", "tables": ("CIM_LOT",), "columns": ("LOSSQTY",), "kind": "수량"},
+            {"label": "설비 영향 손실", "tables": ("CIM_LOT",), "tokens": ("EQUIPMENT", "LOSS"), "kind": "수량"},
+        ],
+        "실적": [
+            {"label": "생산 수량", "tables": ("CIM_LOT",), "columns": ("QTY",), "kind": "수량"},
+            {"label": "실적 수량", "tables": ("CIM_PRODUCTORDER",), "columns": ("RESULTQTY",), "kind": "수량"},
+        ],
+        "완료": [
+            {"label": "완료 시점", "tables": ("CIM_LOT",), "columns": ("TRACKOUTTIME",), "kind": "시간"},
+            {"label": "완료 상태", "tables": ("CIM_LOT",), "columns": ("STATE",), "tokens": ("FINISH", "COMPLETE"), "kind": "상태"},
+        ],
+        "가동": [
+            {"label": "설비 가동 상태", "tables": ("CIM_EQUIPMENT",), "columns": ("STATE",), "kind": "상태"},
+            {"label": "설비 가동 건수", "tables": ("CIM_EQUIPMENT",), "columns": ("RUNCOUNT",), "kind": "수량"},
+        ],
+        "정지": [
+            {"label": "설비 정지 상태", "tables": ("CIM_EQUIPMENT",), "columns": ("STATE",), "kind": "상태"},
+            {"label": "설비 정지 시간", "tables": ("CIM_EQUIPMENT",), "columns": ("STATETIME",), "kind": "시간"},
+        ],
+    },
+    "management": {
+        "불량": [
+            {"label": "손실 수량", "tables": ("CIM_LOT",), "columns": ("LOSSQTY",), "kind": "수량"},
+            {"label": "불량 수량", "tables": ("CIM_LOT", "CIM_LOTDEFECT"), "columns": ("DEFECTQTY",), "kind": "수량"},
+        ],
+        "손실": [
+            {"label": "손실 수량", "tables": ("CIM_LOT",), "columns": ("LOSSQTY",), "kind": "수량"},
+            {"label": "스크랩 수량", "tables": ("CIM_LOT",), "tokens": ("SCRAP",), "kind": "수량"},
+        ],
+        "실적": [
+            {"label": "실적 수량", "tables": ("CIM_PRODUCTORDER",), "columns": ("RESULTQTY",), "kind": "수량"},
+            {"label": "생산 수량", "tables": ("CIM_LOT",), "columns": ("QTY",), "kind": "수량"},
+        ],
+        "완료": [
+            {"label": "완료 시점", "tables": ("CIM_PRODUCTORDER",), "columns": ("ENDTIME",), "kind": "시간"},
+            {"label": "완료 상태", "tables": ("CIM_LOT",), "columns": ("STATE",), "tokens": ("FINISH", "COMPLETE"), "kind": "상태"},
+        ],
+        "가동": [
+            {"label": "설비 가동 상태", "tables": ("CIM_EQUIPMENT",), "columns": ("STATE",), "kind": "상태"},
+            {"label": "설비 가동 건수", "tables": ("CIM_EQUIPMENT",), "columns": ("RUNCOUNT",), "kind": "수량"},
+        ],
+        "정지": [
+            {"label": "설비 정지 상태", "tables": ("CIM_EQUIPMENT",), "columns": ("STATE",), "kind": "상태"},
+            {"label": "설비 정지 시간", "tables": ("CIM_EQUIPMENT",), "columns": ("STATETIME",), "kind": "시간"},
+        ],
+    },
+}
+
 TERM_RESOLUTION_PROMPT = """당신은 MES 자연어 질의를 SQL 의미로 해석하는 전문가입니다.
 사용자 질문 안에 모호한 제조 용어가 있으면, 그 용어가 이번 질문에서 어떤 SQL 의미인지 결정하세요.
 
@@ -396,23 +526,120 @@ def _term_priority_adjustment(term: str, haystack: str, column_name: str, kind: 
     return score
 
 
+def _role_term_adjustment(user_role: str, term: str, haystack: str, column_name: str) -> int:
+    rules = ROLE_TERM_HINTS.get((user_role or "general").lower(), {}).get(term, {})
+    prefer = rules.get("prefer", ())
+    avoid = rules.get("avoid", ())
+    score = 0
+    for token in prefer:
+        if _token_matches(token, column_name) or _token_matches(token, haystack):
+            score += 6
+    for token in avoid:
+        if _token_matches(token, column_name) or _token_matches(token, haystack):
+            score -= 6
+    return score
+
+
+def _policy_matches_candidate(policy: dict[str, Any], candidate: dict[str, Any]) -> bool:
+    upper_table = str(candidate.get("table", "")).upper()
+    upper_column = str(candidate.get("column", "")).upper()
+    haystack = " ".join(
+        str(candidate.get(key, ""))
+        for key in ("table", "column", "description", "kind")
+    ).upper()
+    wanted_tables = tuple(str(table).upper() for table in (policy.get("tables") or ()))
+    wanted_columns = tuple(str(col).upper() for col in (policy.get("columns") or ()))
+    wanted_tokens = tuple(str(token).upper() for token in (policy.get("tokens") or ()))
+    wanted_kind = str(policy.get("kind", "")).strip()
+    if wanted_tables and upper_table not in wanted_tables:
+        return False
+    if wanted_columns and upper_column not in wanted_columns:
+        return False
+    if wanted_tokens and not any(token in haystack for token in wanted_tokens):
+        return False
+    if wanted_kind and str(candidate.get("kind", "")) != wanted_kind:
+        return False
+    return True
+
+
+def _select_role_kpi_candidate(
+    user_role: str,
+    term: str,
+    candidates: list[dict[str, Any]],
+) -> tuple[dict[str, Any] | None, dict[str, Any] | None]:
+    role = (user_role or "general").lower()
+    policies = ROLE_TERM_KPI_POLICIES.get(role, {}).get(term, [])
+    semantic_candidates = [candidate for candidate in candidates if _candidate_semantic_fit(term, candidate)]
+    role_candidates = [candidate for candidate in semantic_candidates if _candidate_role_fit(role, term, candidate)]
+    pool = role_candidates or semantic_candidates or candidates
+    if not pool:
+        return None, None
+
+    for policy in policies:
+        matched = [candidate for candidate in pool if _policy_matches_candidate(policy, candidate)]
+        if not matched:
+            continue
+        matched.sort(key=_candidate_sort_key, reverse=True)
+        with_value = next((candidate for candidate in matched if candidate.get("db_has_value") is True), None)
+        return with_value or matched[0], policy
+
+    best = sorted(pool, key=_candidate_sort_key, reverse=True)[0]
+    return best, None
+
+
 def _candidate_semantic_fit(term: str, candidate: dict[str, Any]) -> bool:
     haystack = " ".join(
         str(candidate.get(key, ""))
         for key in ("table", "column", "description", "kind")
     ).upper()
+    upper_column = str(candidate.get("column", "")).upper()
+    kind = str(candidate.get("kind", ""))
 
     if term == "손실":
-        return any(token in haystack for token in ("LOSS", "SCRAP"))
+        return (
+            upper_column == "LOSSQTY"
+            or ("LOSS" in haystack or "SCRAP" in haystack) and kind == "수량"
+        )
     if term == "불량":
-        return any(token in haystack for token in ("DEFECT", "LOSS", "NG", "REJECT"))
+        return (
+            upper_column in {"DEFECTQTY", "LOSSQTY"}
+            or any(token in haystack for token in ("DEFECT", "LOSS", "NG", "REJECT")) and kind == "수량"
+        )
     if term == "실적":
         return (
-            any(token in haystack for token in ("RESULT", "QTY", "ACTUAL", "TRACKOUT"))
+            (upper_column in {"QTY", "RESULTQTY"} or any(token in haystack for token in ("RESULT", "QTY", "ACTUAL", "TRACKOUT")))
+            and kind == "수량"
             and not any(token in haystack for token in ("LOSS", "DEFECT"))
         )
     if term == "완료":
         return any(token in haystack for token in ("TRACKOUT", "END", "FINISH", "COMPLETE", "STATE", "RESULT"))
+    if term == "가동":
+        return (
+            upper_column in {"STATE", "RUNCOUNT", "OPERATIONMODE", "TRACKINTIME"}
+            or any(token in haystack for token in ("RUN", "OPERAT", "TRACK")) and (
+                "EQUIPMENT" in haystack or "LOT" in haystack
+            )
+        )
+    if term == "정지":
+        return (
+            upper_column in {"STATE", "STATETIME", "PREVSTATE"}
+            or any(token in haystack for token in ("STOP", "DOWN", "REPAIR", "MAINT"))
+        ) and "EQUIPMENT" in haystack
+    return True
+
+
+def _candidate_role_fit(user_role: str, term: str, candidate: dict[str, Any]) -> bool:
+    rules = ROLE_TERM_HINTS.get((user_role or "general").lower(), {}).get(term)
+    if not rules:
+        return True
+    haystack = " ".join(
+        str(candidate.get(key, ""))
+        for key in ("table", "column", "description", "kind")
+    ).upper()
+    prefer = rules.get("prefer", ())
+    avoid = rules.get("avoid", ())
+    if any(token in haystack for token in avoid) and not any(token in haystack for token in prefer):
+        return False
     return True
 
 
@@ -451,6 +678,7 @@ async def _build_dynamic_candidates(
                 role_hits = [token for token in role_tokens if _token_matches(token, haystack)]
                 score = len(matched) * 2 + len(role_hits) * 2 + table_score_bonus
                 score += _term_priority_adjustment(term, haystack, name, _candidate_kind(name, desc))
+                score += _role_term_adjustment(user_role, term, haystack, name)
                 if table in upper_db_context:
                     score += 1
                 if name.upper() in upper_db_context:
@@ -603,10 +831,8 @@ def _prefer_candidates_with_data(
     for item in resolution.get("resolved_terms", []) or []:
         term = str(item.get("term", ""))
         candidates = dynamic_candidates.get(term) or []
-        semantic_candidates = [candidate for candidate in candidates if _candidate_semantic_fit(term, candidate)]
-        pool = semantic_candidates or candidates
-        available = [candidate for candidate in pool if candidate.get("db_has_value") is True]
-        if not available:
+        replacement, policy = _select_role_kpi_candidate(str(resolution.get("user_role", "general")), term, candidates)
+        if not replacement:
             continue
 
         selected_columns = {
@@ -622,19 +848,25 @@ def _prefer_candidates_with_data(
             ),
             None,
         )
-        if selected_candidate is not None and selected_candidate.get("db_has_value") is True:
-            continue
+        if selected_candidate is not None and str(selected_candidate.get("column_ref", "")).upper() == str(replacement.get("column_ref", "")).upper():
+            if selected_candidate.get("db_has_value") is True:
+                if policy and policy.get("label"):
+                    item["kpi_label"] = str(policy["label"])
+                continue
 
-        replacement = available[0]
         column_ref = str(replacement.get("column_ref", ""))
         item["selected_meaning"] = f"{column_ref} 기준 {replacement.get('kind', '값')}"
         item["sql_hint"] = _candidate_sql_hint(replacement)
         item["selected_columns"] = [column_ref] if column_ref else []
+        if policy and policy.get("label"):
+            item["kpi_label"] = str(policy["label"])
         evidence = item.get("evidence")
         if not isinstance(evidence, list):
             evidence = []
-        evidence.insert(0, "실제 DB 값이 확인된 후보를 우선 선택")
-        evidence.insert(1, str(replacement.get("db_evidence", "")))
+        evidence.insert(0, "팀별 KPI 후보와 실제 DB 값을 함께 고려해 우선 후보를 선택")
+        if policy and policy.get("label"):
+            evidence.insert(1, f"KPI 후보: {policy['label']}")
+        evidence.insert(2, str(replacement.get("db_evidence", "")))
         item["evidence"] = evidence[:8]
     return resolution
 
@@ -651,9 +883,9 @@ def _fallback_resolution_from_dynamic_candidates(
         candidates = dynamic_candidates.get(term) or []
         if not candidates:
             continue
-        semantic_candidates = [candidate for candidate in candidates if _candidate_semantic_fit(term, candidate)]
-        top_pool = semantic_candidates or candidates
-        top = next((candidate for candidate in top_pool if candidate.get("db_has_value") is True), None) or top_pool[0]
+        top, policy = _select_role_kpi_candidate(user_role, term, candidates)
+        if not top:
+            continue
         column_ref = str(top.get("column_ref", ""))
         resolved_terms.append(
             {
@@ -661,9 +893,11 @@ def _fallback_resolution_from_dynamic_candidates(
                 "selected_meaning": f"{column_ref} 기준 {top.get('kind', '값')}",
                 "sql_hint": _candidate_sql_hint(top),
                 "selected_columns": [column_ref] if column_ref else [],
+                "kpi_label": str(policy.get("label", "")) if policy else "",
                 "confidence": 0.55,
                 "evidence": [
-                    "LLM이 명시 해석을 비워 반환하여 DB 동적 후보 중 최고 점수 후보를 사용",
+                    "LLM이 명시 해석을 비워 반환하여 팀별 KPI 후보 기반 fallback을 사용",
+                    f"KPI 후보: {policy['label']}" if policy and policy.get("label") else "",
                     f"탐색근거: {', '.join(top.get('matched_tokens') or [])}",
                     str(top.get("db_evidence", "")),
                 ],
@@ -673,8 +907,9 @@ def _fallback_resolution_from_dynamic_candidates(
                         "sql_hint": _candidate_sql_hint(alt),
                         "reason": f"score={alt.get('score')}",
                     }
-                    for alt in top_pool[1:4]
-                ],
+                    for alt in sorted(candidates, key=_candidate_sort_key, reverse=True)
+                    if str(alt.get("column_ref", "")).upper() != column_ref.upper()
+                ][:3],
             }
         )
 
@@ -930,6 +1165,7 @@ def finalize_term_resolution(
                 "selected_meaning": f"{column_ref} 기준 {candidate.get('kind', '값')}",
                 "sql_hint": _candidate_sql_hint(candidate),
                 "selected_columns": [column_ref],
+                "kpi_label": returned.get("kpi_label", ""),
                 "confidence": returned.get("confidence", 0.7),
                 "evidence": evidence[:8],
             }
@@ -955,32 +1191,36 @@ def format_term_resolution_for_prompt(resolution: dict[str, Any] | None) -> str:
         return "(감지된 모호 제조 용어 없음)"
 
     lines = [
-        f"- 해석 방식: {resolution.get('mode', 'dynamic')}",
-        f"- 사용자 역할: {resolution.get('user_role_label', '일반')}",
-        f"- 현재 맥락: {resolution.get('current_view_label', '채팅')}",
+        f"- 역할: {resolution.get('user_role_label', '일반')} / 화면: {resolution.get('current_view_label', '채팅')}",
     ]
     for item in resolution.get("resolved_terms", []):
         term = item.get("term", "")
-        meaning = item.get("selected_meaning", "")
         sql_hint = item.get("sql_hint", "")
-        confidence = item.get("confidence", "")
-        lines.append(f"- '{term}' → '{meaning}'로 해석(confidence={confidence}). SQL 힌트: {sql_hint}")
         columns = item.get("validated_columns") or item.get("selected_columns") or []
+        kpi_label = item.get("kpi_label", "")
+        label_str = f"({kpi_label})" if kpi_label else ""
         if columns:
-            lines.append("  우선 컬럼: " + ", ".join(str(col) for col in columns[:6]))
+            col_str = columns[0]
+            lines.append(
+                f"- [필수] '{term}' = {col_str}{label_str}. "
+                f"반드시 이 컬럼을 SQL에 사용할 것. SQL: {sql_hint}"
+            )
+        else:
+            lines.append(f"- '{term}' → {sql_hint}")
         candidates = (resolution.get("dynamic_candidates") or {}).get(term) or []
         if candidates:
             lines.append(
-                "  DB 동적 후보: "
-                + ", ".join(str(c.get("column_ref", "")) for c in candidates[:4] if c.get("column_ref"))
+                "  후보: "
+                + ", ".join(str(c.get("column_ref", "")) for c in candidates[:3] if c.get("column_ref"))
             )
-        evidence = item.get("evidence") or []
-        if evidence:
-            lines.append("  근거: " + " / ".join(str(reason) for reason in evidence[:5]))
     return "\n".join(lines)
 
 
 def _friendly_selected_meaning(item: dict[str, Any]) -> str:
+    kpi_label = str(item.get("kpi_label", "")).strip()
+    if kpi_label:
+        return kpi_label
+
     columns = item.get("validated_columns") or item.get("selected_columns") or []
     column_ref = str(columns[0]) if columns else ""
     upper = column_ref.upper()
@@ -1003,6 +1243,12 @@ def _friendly_selected_meaning(item: dict[str, Any]) -> str:
         return "종료 시점"
     if upper.endswith(".STATE"):
         return "상태값"
+    if upper.endswith(".RUNCOUNT"):
+        return "가동 건수"
+    if upper.endswith(".STATETIME"):
+        return "상태 변경 시각"
+    if upper.endswith(".TRACKINTIME"):
+        return "작업 투입 시점"
 
     meaning = str(item.get("selected_meaning", "")).strip()
     return meaning or "관련 지표"

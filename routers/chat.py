@@ -291,7 +291,10 @@ def _measure_expression(term: str, question: str, table: str, alias: str, column
     upper_column = column.upper()
 
     if term in {"불량", "손실", "실적"}:
-        if any(token in upper_column for token in ("QTY", "COUNT", "CNT", "LOSS", "DEFECT", "RESULT")) or kind == "수량":
+        # kind는 selected_meaning 전체 문자열 ("CIM_LOT.LOSSQTY 기준 수량") — "수량" 포함 여부로 체크
+        is_qty_kind = "수량" in kind
+        is_qty_col = any(token in upper_column for token in ("QTY", "COUNT", "CNT", "LOSS", "DEFECT", "RESULT"))
+        if is_qty_kind or is_qty_col:
             return f"SUM(ISNULL({col}, 0))"
         return None
 
@@ -301,9 +304,178 @@ def _measure_expression(term: str, question: str, table: str, alias: str, column
     return None
 
 
+def _enforce_kpi_columns_in_sql(
+    sql: str,
+    term_resolution: dict[str, Any] | None,
+) -> tuple[str, list[str]]:
+    """
+    LLM 생성 SQL에 역할 KPI 컬럼이 없으면 강제 교체.
+    같은 테이블에서 다른 QTY 계열 컬럼을 사용한 경우에만 교체 (테이블 구조 변경 없이).
+    """
+    if not term_resolution:
+        return sql, []
+
+    QTY_TOKENS = ("QTY", "LOSS", "DEFECT", "RESULT", "COUNT", "CNT")
+    patches: list[str] = []
+
+    for item in term_resolution.get("resolved_terms", []) or []:
+        term = str(item.get("term", ""))
+        if term not in {"불량", "손실", "실적"}:
+            continue  # 수량 KPI만 교체 대상
+
+        resolved_cols = item.get("validated_columns") or item.get("selected_columns") or []
+        if not resolved_cols:
+            continue
+
+        wanted_ref = str(resolved_cols[0])
+        match = re.match(r"^\s*(CIM_[A-Z0-9_]+)\.([A-Z0-9_]+)\s*$", wanted_ref.upper())
+        if not match:
+            continue
+        wanted_table, wanted_col = match.groups()
+
+        # 이미 SQL에 있으면 패스
+        if wanted_col in sql.upper() and wanted_table in sql.upper():
+            continue
+
+        # 같은 테이블에서 QTY 계열 컬럼을 찾아 교체
+        if wanted_table not in sql.upper():
+            continue  # 테이블 자체가 없으면 교체 불가 (구조 변경 필요 → 스킵)
+
+        candidates = (term_resolution.get("dynamic_candidates") or {}).get(term) or []
+        for cand in candidates:
+            cand_table = str(cand.get("table", "")).upper()
+            cand_col = str(cand.get("column", "")).upper()
+            if (
+                cand_table == wanted_table
+                and cand_col != wanted_col
+                and any(tok in cand_col for tok in QTY_TOKENS)
+                and re.search(rf"\b{re.escape(cand_col)}\b", sql.upper())
+            ):
+                sql = re.sub(
+                    rf"\b{re.escape(cand_col)}\b",
+                    wanted_col,
+                    sql,
+                    flags=re.IGNORECASE,
+                )
+                patches.append(f"[역할 KPI 강제 적용] {term}: {cand_col} → {wanted_col}")
+                break
+
+    return sql, patches
+
+
 def _deterministic_sql_description(question: str, term_resolution: dict[str, Any]) -> str:
     term = ((term_resolution.get("resolved_terms") or [{}])[0]).get("term", "모호어")
     return f'"{question}" 질문에서 {term} 해석을 고정한 검증 SQL입니다.'
+
+
+def _build_completion_sql(question: str, table: str, column: str) -> str | None:
+    """완료 KPI: 시간 컬럼이면 일별 완료 추이, STATE면 상태별 건수."""
+    alias = "L"
+    upper_col = column.upper()
+    anchor = "DATEADD(year, -1, GETDATE())"
+
+    if upper_col in {"TRACKOUTTIME", "ENDTIME", "LOTFINISHEDTIME"}:
+        time_col = _qualified_ref(table, alias, column)
+        time_filter = _time_window_clause(question, table, alias, column)
+        if not time_filter:
+            time_filter = f"{time_col} >= DATEADD(day, -7, {anchor}) AND {time_col} < {anchor}"
+        date_expr = f"CONVERT(date, {time_col})"
+        dimension = _dimension_expression(question, table, alias)
+
+        if dimension:
+            qty_part = f", SUM(ISNULL({alias}.[QTY], 0)) AS [완료수량]" if table == "CIM_LOT" else ""
+            sql = (
+                f"SELECT TOP 20 {dimension[0]} AS [{dimension[2]}], "
+                f"COUNT(*) AS [완료건수]{qty_part} "
+                f"FROM {table} {alias} WITH (NOLOCK) "
+                f"WHERE {time_filter} "
+                f"GROUP BY {dimension[1]} "
+                f"ORDER BY [완료건수] DESC"
+            )
+        else:
+            qty_part = f", SUM(ISNULL({alias}.[QTY], 0)) AS [완료수량]" if table == "CIM_LOT" else ""
+            sql = (
+                f"SELECT TOP 20 {date_expr} AS [완료일자], "
+                f"COUNT(*) AS [완료건수]{qty_part} "
+                f"FROM {table} {alias} WITH (NOLOCK) "
+                f"WHERE {time_filter} "
+                f"GROUP BY {date_expr} "
+                f"ORDER BY [완료일자] ASC"
+            )
+        return sql
+
+    if upper_col == "STATE":
+        time_column = _preferred_time_column(table)
+        time_filter = _time_window_clause(question, table, alias, time_column)
+        qty_part = f", SUM(ISNULL({alias}.[QTY], 0)) AS [수량]" if table == "CIM_LOT" else ""
+        where_clause = f" WHERE {time_filter}" if time_filter else ""
+        sql = (
+            f"SELECT TOP 20 {alias}.[STATE] AS [상태], COUNT(*) AS [건수]{qty_part} "
+            f"FROM {table} {alias} WITH (NOLOCK){where_clause} "
+            f"GROUP BY {alias}.[STATE] "
+            f"ORDER BY [건수] DESC"
+        )
+        return sql
+
+    return None
+
+
+def _build_operation_sql(question: str, table: str, column: str) -> str | None:
+    """가동 KPI: CIM_EQUIPMENT이면 설비 상태/건수, CIM_LOT이면 일별 투입 추이."""
+    upper_col = column.upper()
+    anchor = "DATEADD(year, -1, GETDATE())"
+
+    if table == "CIM_EQUIPMENT":
+        # 예상 외 컬럼이어도 CIM_EQUIPMENT 가동 현황 SQL로 처리
+        # RUNCOUNT는 샘플 DB에 값이 없으므로 STATE/STATETIME 기반으로만 조회
+        sql = (
+            "SELECT TOP 20 E.[EQUIPMENTID], E.[STATE] AS [가동상태], "
+            "E.[STATETIME] AS [상태변경시각] "
+            "FROM CIM_EQUIPMENT E WITH (NOLOCK) "
+            "WHERE E.[STATE] IS NOT NULL "
+            "ORDER BY E.[STATETIME] DESC"
+        )
+        return sql
+
+    if table == "CIM_LOT":
+        # TRACKINTIME/TRACKOUTTIME 또는 예상 외 컬럼이어도 LOT 기반 투입 추이로 처리
+        time_col_name = column if upper_col in {"TRACKINTIME", "TRACKOUTTIME"} else "TRACKINTIME"
+        alias = "L"
+        time_col = _qualified_ref(table, alias, time_col_name)
+        time_filter = _time_window_clause(question, table, alias, time_col_name)
+        if not time_filter:
+            time_filter = (
+                f"{time_col} >= DATEADD(month, -1, {anchor}) "
+                f"AND {time_col} < {anchor}"
+            )
+        date_expr = f"CONVERT(date, {time_col})"
+        sql = (
+            f"SELECT TOP 20 {date_expr} AS [작업일자], "
+            f"COUNT(*) AS [가동건수], SUM(ISNULL({alias}.[QTY], 0)) AS [처리수량] "
+            f"FROM {table} {alias} WITH (NOLOCK) "
+            f"WHERE {time_filter} "
+            f"GROUP BY {date_expr} "
+            f"ORDER BY [작업일자] ASC"
+        )
+        return sql
+
+    return None
+
+
+def _build_downtime_sql(question: str, table: str, column: str) -> str | None:
+    """정지 KPI: CIM_EQUIPMENT 기반 정지 현황."""
+    if table == "CIM_EQUIPMENT":
+        # 예상 외 컬럼이어도 CIM_EQUIPMENT 정지 현황 SQL로 처리
+        sql = (
+            "SELECT TOP 20 E.[EQUIPMENTID], E.[STATE] AS [현재상태], "
+            "E.[PREVSTATE] AS [이전상태], E.[STATETIME] AS [상태변경시각] "
+            "FROM CIM_EQUIPMENT E WITH (NOLOCK) "
+            "WHERE E.[STATE] IS NOT NULL "
+            "ORDER BY E.[STATETIME] DESC"
+        )
+        return sql
+
+    return None
 
 
 def _build_deterministic_sql(
@@ -319,7 +491,7 @@ def _build_deterministic_sql(
 
     item = resolved_terms[0]
     term = str(item.get("term", ""))
-    if term not in {"불량", "손실", "실적"}:
+    if term not in {"불량", "손실", "실적", "완료", "가동", "정지"}:
         return None
 
     chosen_columns = item.get("validated_columns") or item.get("selected_columns") or []
@@ -329,6 +501,16 @@ def _build_deterministic_sql(
         return None
 
     table, column = parts
+
+    # 완료/가동/정지: KPI 전용 빌더로 위임
+    if term == "완료":
+        return _build_completion_sql(question, table, column)
+    if term == "가동":
+        return _build_operation_sql(question, table, column)
+    if term == "정지":
+        return _build_downtime_sql(question, table, column)
+
+    # 수량 KPI (불량/손실/실적)
     alias = "L"
     kind = str(item.get("selected_meaning", ""))
     measure_expr = _measure_expression(term, question, table, alias, column, kind)
@@ -455,6 +637,10 @@ def _semantic_sql_errors(question: str, sql: str, term_resolution: dict[str, Any
         errors.append("설비별 생산 질문은 EQUIPMENTID 기준으로 그룹화해야 합니다.")
     if "제품별" in q and "생산" in q and "PRODUCTDEFINITIONID" not in upper_sql:
         errors.append("제품별 생산 질문은 PRODUCTDEFINITIONID 기준으로 그룹화해야 합니다.")
+    if any(token in q for token in ("가동", "정지")) and "CIM_EQUIPMENT" not in upper_sql and "CIM_LOT" not in upper_sql:
+        errors.append("가동/정지 질문은 CIM_EQUIPMENT 또는 CIM_LOT 테이블을 사용해야 합니다.")
+    if "완료" in q and "완료" not in "생산완료설비완료" and "CIM_LOT" not in upper_sql and "CIM_PRODUCTORDER" not in upper_sql:
+        errors.append("완료 현황 질문은 CIM_LOT(TRACKOUTTIME) 또는 CIM_PRODUCTORDER(ENDTIME)를 사용해야 합니다.")
 
     errors.extend(_term_resolution_sql_errors(sql, term_resolution))
     return errors
@@ -681,6 +867,10 @@ async def nl_to_sql(req: NlToSqlRequest):
                     raise HTTPException(status_code=503, detail=f"LLM 연결 오류: {e}")
 
                 sql, alignment_notes = align_sql_with_live_candidates(sql, term_fallback)
+                # LLM이 역할 KPI 컬럼을 무시했을 경우 강제 교체
+                sql, kpi_patches = _enforce_kpi_columns_in_sql(sql, term_resolution or term_fallback)
+                if kpi_patches:
+                    print(f"[KPI_ENFORCE] {kpi_patches}")
                 term_resolution = finalize_term_resolution(
                     resolved_terms,
                     term_fallback,
