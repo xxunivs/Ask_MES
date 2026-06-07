@@ -92,6 +92,45 @@ TERM_SEARCH_HINTS = {
     "손실": ("LOSS", "SCRAP", "DEFECT", "QTY"),
 }
 
+TERM_PRIORITY_HINTS = {
+    "불량": {
+        "prefer": ("DEFECTQTY", "DEFECT", "LOSSQTY", "NG", "REJECT"),
+        "avoid": ("TIME", "DATE"),
+    },
+    "완료": {
+        "prefer": ("TRACKOUT", "ENDTIME", "FINISH", "COMPLETE", "STATE", "RESULT"),
+        "avoid": ("TRACKIN", "CREATED"),
+    },
+    "실적": {
+        "prefer": ("RESULTQTY", "RESULT", "QTY", "ACTUAL", "TRACKOUT"),
+        "avoid": ("LOSSQTY", "DEFECTQTY", "DEFECT", "LOSS", "TIME", "DATE"),
+    },
+    "정지": {
+        "prefer": ("STOP", "DOWN", "REPAIR", "STATE"),
+        "avoid": ("QTY", "RESULT"),
+    },
+    "가동": {
+        "prefer": ("RUN", "OPERAT", "TRACK", "STATE"),
+        "avoid": ("LOSS", "DEFECT"),
+    },
+    "지연": {
+        "prefer": ("DELAY", "DUEDATE", "DELIVERYDATE", "ENDTIME"),
+        "avoid": ("QTY", "DEFECT"),
+    },
+    "효율": {
+        "prefer": ("EFF", "RATE", "RESULT", "QTY"),
+        "avoid": ("LOSSQTY", "DEFECTQTY", "TIME"),
+    },
+    "수율": {
+        "prefer": ("YIELD", "QTY", "ORIGINALQTY", "LOSSQTY"),
+        "avoid": ("TIME", "DATE"),
+    },
+    "손실": {
+        "prefer": ("LOSSQTY", "LOSS", "SCRAP"),
+        "avoid": ("DEFECTQTY", "DEFECT", "TIME", "DATE"),
+    },
+}
+
 ROLE_BIAS_TOKENS = {
     "quality": ("DEFECT", "NG", "FAIL", "INSPECT", "QUALITY", "REJECT"),
     "production": ("QTY", "LOT", "RESULT", "TRACK", "LOSS", "SCRAP"),
@@ -328,6 +367,55 @@ def _candidate_sort_key(candidate: dict[str, Any]) -> tuple[int, int, int, int]:
     )
 
 
+def _term_priority_adjustment(term: str, haystack: str, column_name: str, kind: str) -> int:
+    rules = TERM_PRIORITY_HINTS.get(term, {})
+    prefer = rules.get("prefer", ())
+    avoid = rules.get("avoid", ())
+    score = 0
+
+    for token in prefer:
+        if _token_matches(token, column_name) or _token_matches(token, haystack):
+            score += 3
+    for token in avoid:
+        if _token_matches(token, column_name) or _token_matches(token, haystack):
+            score -= 3
+
+    upper_column = column_name.upper()
+    if term in {"손실", "불량", "실적"} and kind == "수량":
+        score += 2
+    if term == "실적" and upper_column == "QTY":
+        score += 4
+    if term == "실적" and upper_column == "RESULTQTY":
+        score += 5
+    if term == "손실" and upper_column == "LOSSQTY":
+        score += 5
+    if term == "불량" and upper_column == "DEFECTQTY":
+        score += 5
+    if kind == "시간" and term in {"불량", "손실", "실적"}:
+        score -= 4
+    return score
+
+
+def _candidate_semantic_fit(term: str, candidate: dict[str, Any]) -> bool:
+    haystack = " ".join(
+        str(candidate.get(key, ""))
+        for key in ("table", "column", "description", "kind")
+    ).upper()
+
+    if term == "손실":
+        return any(token in haystack for token in ("LOSS", "SCRAP"))
+    if term == "불량":
+        return any(token in haystack for token in ("DEFECT", "LOSS", "NG", "REJECT"))
+    if term == "실적":
+        return (
+            any(token in haystack for token in ("RESULT", "QTY", "ACTUAL", "TRACKOUT"))
+            and not any(token in haystack for token in ("LOSS", "DEFECT"))
+        )
+    if term == "완료":
+        return any(token in haystack for token in ("TRACKOUT", "END", "FINISH", "COMPLETE", "STATE", "RESULT"))
+    return True
+
+
 async def _build_dynamic_candidates(
     question: str,
     user_role: str,
@@ -362,6 +450,7 @@ async def _build_dynamic_candidates(
                     continue
                 role_hits = [token for token in role_tokens if _token_matches(token, haystack)]
                 score = len(matched) * 2 + len(role_hits) * 2 + table_score_bonus
+                score += _term_priority_adjustment(term, haystack, name, _candidate_kind(name, desc))
                 if table in upper_db_context:
                     score += 1
                 if name.upper() in upper_db_context:
@@ -514,7 +603,9 @@ def _prefer_candidates_with_data(
     for item in resolution.get("resolved_terms", []) or []:
         term = str(item.get("term", ""))
         candidates = dynamic_candidates.get(term) or []
-        available = [candidate for candidate in candidates if candidate.get("db_has_value") is True]
+        semantic_candidates = [candidate for candidate in candidates if _candidate_semantic_fit(term, candidate)]
+        pool = semantic_candidates or candidates
+        available = [candidate for candidate in pool if candidate.get("db_has_value") is True]
         if not available:
             continue
 
@@ -560,7 +651,9 @@ def _fallback_resolution_from_dynamic_candidates(
         candidates = dynamic_candidates.get(term) or []
         if not candidates:
             continue
-        top = candidates[0]
+        semantic_candidates = [candidate for candidate in candidates if _candidate_semantic_fit(term, candidate)]
+        top_pool = semantic_candidates or candidates
+        top = next((candidate for candidate in top_pool if candidate.get("db_has_value") is True), None) or top_pool[0]
         column_ref = str(top.get("column_ref", ""))
         resolved_terms.append(
             {
@@ -580,7 +673,7 @@ def _fallback_resolution_from_dynamic_candidates(
                         "sql_hint": _candidate_sql_hint(alt),
                         "reason": f"score={alt.get('score')}",
                     }
-                    for alt in candidates[1:4]
+                    for alt in top_pool[1:4]
                 ],
             }
         )

@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import asyncio
 import json
+import os
 import re
 
 from fastapi import APIRouter, HTTPException
@@ -26,9 +27,13 @@ from core.term_resolver import (
     format_term_resolution_for_prompt,
     format_term_resolution_for_user,
     prepare_term_resolution_context,
+    resolve_ambiguous_terms,
 )
 
 router = APIRouter()
+_BASE_DIR = os.path.dirname(__file__)
+_SCHEMA_PATH = os.path.join(_BASE_DIR, "../data/mes_schema.json")
+_SCHEMA_CACHE: dict[str, dict[str, Any]] | None = None
 
 # ─────────────────────────────────────────────
 # 요청/응답 모델
@@ -148,6 +153,27 @@ def _parse_llm_json(raw: str) -> dict[str, Any]:
     return {"sql": sql, "description": "", "resolved_terms": []}
 
 
+def _load_schema() -> dict[str, dict[str, Any]]:
+    global _SCHEMA_CACHE
+    if _SCHEMA_CACHE is not None:
+        return _SCHEMA_CACHE
+
+    with open(_SCHEMA_PATH, encoding="utf-8") as f:
+        raw = json.load(f)
+
+    tables: dict[str, dict[str, Any]] = {}
+    for table in raw.get("tables", []):
+        name = str(table.get("name", "")).upper()
+        if not name:
+            continue
+        tables[name] = {
+            "description": table.get("description", ""),
+            "columns": table.get("columns", []),
+        }
+    _SCHEMA_CACHE = tables
+    return tables
+
+
 def _resolved_terms_from_choices(parsed: dict[str, Any]) -> list[dict[str, Any]]:
     choices = parsed.get("term_choices")
     if not isinstance(choices, dict):
@@ -164,6 +190,214 @@ def _resolved_terms_from_choices(parsed: dict[str, Any]) -> list[dict[str, Any]]
         for term, column in choices.items()
         if term and column
     ]
+
+
+def _columns_for_table(table: str) -> list[str]:
+    schema = _load_schema()
+    return [str(col.get("name", "")).upper() for col in schema.get(table.upper(), {}).get("columns", [])]
+
+
+def _qualified_ref(table: str, alias: str, column: str) -> str:
+    return f"{alias}.[{column}]"
+
+
+def _split_column_ref(column_ref: str) -> tuple[str, str] | None:
+    match = re.match(r"^\s*(CIM_[A-Z0-9_]+)\.([A-Z0-9_]+)\s*$", column_ref.upper())
+    if not match:
+        return None
+    return match.group(1), match.group(2)
+
+
+def _preferred_time_column(table: str) -> str | None:
+    columns = _columns_for_table(table)
+    for name in ("LASTEVENTTIME", "TRACKINTIME", "CREATEDTIME", "ENDTIME", "DELIVERYDATE", "DUEDATE"):
+        if name in columns:
+            return name
+    return None
+
+
+def _dimension_expression(question: str, table: str, alias: str) -> tuple[str, str, str] | None:
+    columns = _columns_for_table(table)
+    compact = question.replace(" ", "")
+
+    if "라인별" in compact or "공정별" in compact:
+        if "PROCESSSEGMENTID" in columns or "PROCESSNODEID" in columns:
+            left = _qualified_ref(table, alias, "PROCESSSEGMENTID") if "PROCESSSEGMENTID" in columns else "''"
+            right = _qualified_ref(table, alias, "PROCESSNODEID") if "PROCESSNODEID" in columns else "''"
+            expr = f"COALESCE(NULLIF({left}, ''), NULLIF({right}, ''), '미지정')"
+            return expr, expr, "공정"
+
+    if "설비별" in compact and "EQUIPMENTID" in columns:
+        expr = _qualified_ref(table, alias, "EQUIPMENTID")
+        return expr, expr, "설비"
+
+    if "제품별" in compact:
+        for name in ("PRODUCTDEFINITIONID", "PRODUCTID"):
+            if name in columns:
+                expr = _qualified_ref(table, alias, name)
+                return expr, expr, "제품"
+
+    if "작업자별" in compact:
+        user_cols = [name for name in ("TRACKOUTUSERNAME", "TRACKOUTUSER", "TRACKINUSERNAME", "TRACKINUSER") if name in columns]
+        if user_cols:
+            expr = "COALESCE(" + ", ".join(f"NULLIF({_qualified_ref(table, alias, name)}, '')" for name in user_cols) + ", '미지정')"
+            return expr, expr, "작업자"
+
+    return None
+
+
+def _time_window_clause(question: str, table: str, alias: str, time_column: str | None) -> str:
+    if not time_column:
+        return ""
+
+    col = _qualified_ref(table, alias, time_column)
+    anchor = "DATEADD(year, -1, GETDATE())"
+    compact = question.replace(" ", "")
+
+    if "최근7일" in compact or "7일간" in compact:
+        return f"{col} >= DATEADD(day, -7, {anchor}) AND {col} < {anchor}"
+    if "최근30일" in compact or "30일간" in compact:
+        return f"{col} >= DATEADD(day, -30, {anchor}) AND {col} < {anchor}"
+    if "오늘" in compact:
+        start = f"CAST({anchor} AS date)"
+        return f"{col} >= {start} AND {col} < DATEADD(day, 1, {start})"
+    if "이번주" in compact:
+        start = f"DATEADD(week, DATEDIFF(week, 0, {anchor}), 0)"
+        end = f"DATEADD(week, DATEDIFF(week, 0, {anchor}) + 1, 0)"
+        return f"{col} >= {start} AND {col} < {end}"
+    if "이번달" in compact:
+        start = f"DATEADD(month, DATEDIFF(month, 0, {anchor}), 0)"
+        end = f"DATEADD(month, DATEDIFF(month, 0, {anchor}) + 1, 0)"
+        return f"{col} >= {start} AND {col} < {end}"
+    if "지난달" in compact:
+        start = f"DATEADD(month, DATEDIFF(month, 0, DATEADD(month, -1, {anchor})), 0)"
+        end = f"DATEADD(month, DATEDIFF(month, 0, {anchor}), 0)"
+        return f"{col} >= {start} AND {col} < {end}"
+    return f"{col} >= DATEADD(day, -7, {anchor}) AND {col} < {anchor}"
+
+
+def _wants_date_trend(question: str) -> bool:
+    compact = question.replace(" ", "")
+    if "일별" in compact or "추이" in compact:
+        return True
+    if "현황" in compact and not any(token in compact for token in ("설비별", "제품별", "공정별", "라인별", "작업자별")):
+        return True
+    return False
+
+
+def _measure_expression(term: str, question: str, table: str, alias: str, column: str, kind: str) -> str | None:
+    col = _qualified_ref(table, alias, column)
+    compact = question.replace(" ", "")
+    upper_column = column.upper()
+
+    if term in {"불량", "손실", "실적"}:
+        if any(token in upper_column for token in ("QTY", "COUNT", "CNT", "LOSS", "DEFECT", "RESULT")) or kind == "수량":
+            return f"SUM(ISNULL({col}, 0))"
+        return None
+
+    if "생산량" in compact and column.upper() == "QTY":
+        return f"SUM(ISNULL({col}, 0))"
+
+    return None
+
+
+def _deterministic_sql_description(question: str, term_resolution: dict[str, Any]) -> str:
+    term = ((term_resolution.get("resolved_terms") or [{}])[0]).get("term", "모호어")
+    return f'"{question}" 질문에서 {term} 해석을 고정한 검증 SQL입니다.'
+
+
+def _build_deterministic_sql(
+    question: str,
+    term_resolution: dict[str, Any] | None,
+) -> str | None:
+    if not term_resolution:
+        return None
+
+    resolved_terms = term_resolution.get("resolved_terms") or []
+    if not resolved_terms:
+        return None
+
+    item = resolved_terms[0]
+    term = str(item.get("term", ""))
+    if term not in {"불량", "손실", "실적"}:
+        return None
+
+    chosen_columns = item.get("validated_columns") or item.get("selected_columns") or []
+    column_ref = next((str(col) for col in chosen_columns if isinstance(col, str)), "")
+    parts = _split_column_ref(column_ref)
+    if not parts:
+        return None
+
+    table, column = parts
+    alias = "L"
+    kind = str(item.get("selected_meaning", ""))
+    measure_expr = _measure_expression(term, question, table, alias, column, kind)
+    if not measure_expr:
+        return None
+
+    time_column = _preferred_time_column(table)
+    time_filter = _time_window_clause(question, table, alias, time_column)
+    dimension = _dimension_expression(question, table, alias)
+    wants_date = bool(time_column) and _wants_date_trend(question)
+
+    select_parts: list[str] = []
+    group_parts: list[str] = []
+    order_clause = "값 DESC"
+
+    if dimension:
+        select_parts.append(f"{dimension[0]} AS [{dimension[2]}]")
+        group_parts.append(dimension[1])
+        order_clause = "값 DESC"
+    elif wants_date and time_column:
+        date_expr = f"CONVERT(date, {_qualified_ref(table, alias, time_column)})"
+        select_parts.append(f"{date_expr} AS [작업일자]")
+        group_parts.append(date_expr)
+        order_clause = "[작업일자] ASC"
+
+    select_parts.append(f"{measure_expr} AS [값]")
+
+    sql = f"SELECT TOP 20 {', '.join(select_parts)} FROM {table} {alias} WITH (NOLOCK)"
+    if time_filter:
+        sql += f" WHERE {time_filter}"
+    if group_parts:
+        sql += f" GROUP BY {', '.join(group_parts)}"
+    sql += f" ORDER BY {order_clause}"
+    return sql
+
+
+def _advance_term_resolution_candidate(term_resolution: dict[str, Any] | None) -> dict[str, Any] | None:
+    if not term_resolution:
+        return None
+
+    resolved_terms = term_resolution.get("resolved_terms") or []
+    if not resolved_terms:
+        return None
+
+    item = resolved_terms[0]
+    term = str(item.get("term", ""))
+    current_cols = {str(col).upper() for col in (item.get("selected_columns") or []) if isinstance(col, str)}
+    candidates = (term_resolution.get("dynamic_candidates") or {}).get(term) or []
+    replacement = next(
+        (
+            candidate for candidate in candidates
+            if candidate.get("db_has_value") is True
+            and str(candidate.get("column_ref", "")).upper() not in current_cols
+        ),
+        None,
+    )
+    if not replacement:
+        return None
+
+    cloned = json.loads(json.dumps(term_resolution))
+    target = cloned["resolved_terms"][0]
+    column_ref = str(replacement.get("column_ref", ""))
+    target["selected_meaning"] = f"{column_ref} 기준 {replacement.get('kind', '값')}"
+    target["selected_columns"] = [column_ref]
+    target["validated_columns"] = [column_ref]
+    evidence = target.get("evidence") or []
+    evidence.insert(0, f"빈 결과 재시도: {column_ref} 후보로 교체")
+    target["evidence"] = evidence[:8]
+    return cloned
 
 
 def _clip_prompt_text(text: str, max_chars: int) -> str:
@@ -366,6 +600,8 @@ async def nl_to_sql(req: NlToSqlRequest):
     term_resolution = None
     term_context = format_term_resolution_for_prompt(None)
     term_user_note = ""
+    term_fallback = None
+    deterministic_sql = None
 
     if preset:
         sql, description = preset
@@ -405,34 +641,71 @@ async def nl_to_sql(req: NlToSqlRequest):
             print(f"[CONTEXT] 오류: {e}")
         term_context, term_fallback = term_prepared
 
-        # 4. 단일 LLM 호출: 모호어가 있을 때만 역할 기반 의미 해석 반영
-        prompt_schema_ctx = _clip_prompt_text(schema_ctx, 450)
-        prompt_db_context = _clip_prompt_text(db_context or "(관련 테이블의 실제 DB 샘플 없음)", 120)
-        prompt_term_context = _clip_prompt_text(term_context, 220)
-        prompt = NL_TO_SQL_PROMPT.format(
-            schema=prompt_schema_ctx,
-            db_context=prompt_db_context,
-            term_context=prompt_term_context,
-            question=_clip_prompt_text(req.question, 150),
-        )
-        try:
-            sql, description, resolved_terms = await _llm_sql_from_prompt(prompt, max_tokens=320)
-        except HTTPException:
-            raise
-        except Exception as e:
-            raise HTTPException(status_code=503, detail=f"LLM 연결 오류: {e}")
-
         if ambiguous_terms:
-            sql, alignment_notes = align_sql_with_live_candidates(sql, term_fallback)
-            term_resolution = finalize_term_resolution(
-                resolved_terms,
-                term_fallback,
-                sql,
-                alignment_notes,
-            )
+            try:
+                term_resolution = await resolve_ambiguous_terms(
+                    question=req.question,
+                    user_role=req.user_role,
+                    current_view=req.current_view,
+                    conversation_context=req.conversation_context,
+                    schema_context=schema_ctx,
+                    db_context=db_context,
+                )
+            except Exception as e:
+                print(f"[TERM_RESOLUTION] 오류: {e}")
+                term_resolution = term_fallback
+
+            deterministic_sql = _build_deterministic_sql(req.question, term_resolution)
+            if deterministic_sql:
+                sql = deterministic_sql
+                description = _deterministic_sql_description(req.question, term_resolution)
+                resolved_terms = []
+            else:
+                prompt_schema_ctx = _clip_prompt_text(schema_ctx, 450)
+                prompt_db_context = _clip_prompt_text(db_context or "(관련 테이블의 실제 DB 샘플 없음)", 120)
+                prompt_term_context = _clip_prompt_text(
+                    format_term_resolution_for_prompt(term_resolution or term_fallback),
+                    220,
+                )
+                prompt = NL_TO_SQL_PROMPT.format(
+                    schema=prompt_schema_ctx,
+                    db_context=prompt_db_context,
+                    term_context=prompt_term_context,
+                    question=_clip_prompt_text(req.question, 150),
+                )
+                try:
+                    sql, description, resolved_terms = await _llm_sql_from_prompt(prompt, max_tokens=320)
+                except HTTPException:
+                    raise
+                except Exception as e:
+                    raise HTTPException(status_code=503, detail=f"LLM 연결 오류: {e}")
+
+                sql, alignment_notes = align_sql_with_live_candidates(sql, term_fallback)
+                term_resolution = finalize_term_resolution(
+                    resolved_terms,
+                    term_fallback,
+                    sql,
+                    alignment_notes,
+                )
+
             term_context = format_term_resolution_for_prompt(term_resolution)
             term_user_note = format_term_resolution_for_user(term_resolution)
         else:
+            prompt_schema_ctx = _clip_prompt_text(schema_ctx, 450)
+            prompt_db_context = _clip_prompt_text(db_context or "(관련 테이블의 실제 DB 샘플 없음)", 120)
+            prompt_term_context = _clip_prompt_text(term_context, 220)
+            prompt = NL_TO_SQL_PROMPT.format(
+                schema=prompt_schema_ctx,
+                db_context=prompt_db_context,
+                term_context=prompt_term_context,
+                question=_clip_prompt_text(req.question, 150),
+            )
+            try:
+                sql, description, resolved_terms = await _llm_sql_from_prompt(prompt, max_tokens=320)
+            except HTTPException:
+                raise
+            except Exception as e:
+                raise HTTPException(status_code=503, detail=f"LLM 연결 오류: {e}")
             term_resolution = None
             term_context = format_term_resolution_for_prompt(None)
             term_user_note = ""
@@ -478,6 +751,22 @@ async def nl_to_sql(req: NlToSqlRequest):
                 "rows": db_result.get("rows", []),   # [{col: val, ...}]
                 "count": db_result.get("count", 0),
             }
+            if (
+                deterministic_sql
+                and term_resolution
+                and db_data.get("count", 0) == 0
+                and attempt < max_attempts - 1
+            ):
+                next_resolution = _advance_term_resolution_candidate(term_resolution)
+                if next_resolution:
+                    term_resolution = next_resolution
+                    term_context = format_term_resolution_for_prompt(term_resolution)
+                    term_user_note = format_term_resolution_for_user(term_resolution)
+                    rebuilt_sql = _build_deterministic_sql(req.question, term_resolution)
+                    if rebuilt_sql and rebuilt_sql != sql:
+                        sql = rebuilt_sql
+                        description = _deterministic_sql_description(req.question, term_resolution)
+                        continue
             db_error = None
             break
         except Exception as e:
