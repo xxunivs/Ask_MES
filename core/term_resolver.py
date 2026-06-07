@@ -980,17 +980,46 @@ def format_term_resolution_for_prompt(resolution: dict[str, Any] | None) -> str:
     return "\n".join(lines)
 
 
+def _friendly_selected_meaning(item: dict[str, Any]) -> str:
+    columns = item.get("validated_columns") or item.get("selected_columns") or []
+    column_ref = str(columns[0]) if columns else ""
+    upper = column_ref.upper()
+
+    if upper.endswith(".DEFECTQTY"):
+        return "불량 수량"
+    if upper.endswith(".LOSSQTY"):
+        return "손실 수량"
+    if upper.endswith(".QTY"):
+        return "생산 수량"
+    if upper.endswith(".RESULTQTY"):
+        return "실적 수량"
+    if upper.endswith(".ORIGINALQTY"):
+        return "기준 수량"
+    if upper.endswith(".TRACKOUTTIME"):
+        return "완료 시점"
+    if upper.endswith(".TRACKINTIME"):
+        return "작업 시작 시점"
+    if upper.endswith(".ENDTIME"):
+        return "종료 시점"
+    if upper.endswith(".STATE"):
+        return "상태값"
+
+    meaning = str(item.get("selected_meaning", "")).strip()
+    return meaning or "관련 지표"
+
+
 def format_term_resolution_for_user(resolution: dict[str, Any] | None) -> str:
     if not resolution:
         return ""
 
+    role_label = str(resolution.get("user_role_label", "일반")).strip()
+    view_label = str(resolution.get("current_view_label", "채팅")).strip()
     parts: list[str] = []
     for item in resolution.get("resolved_terms", []):
         term = item.get("term", "")
-        meaning = item.get("selected_meaning", "")
-        confidence = item.get("confidence")
-        evidence = item.get("evidence") or []
-        reason = str(evidence[0]) if evidence else "역할, 맥락, 스키마/DB 상태를 기준으로 판단"
-        suffix = f", 신뢰도 {confidence}" if confidence not in (None, "") else ""
-        parts.append(f"'{term}'은 {meaning}로 해석했습니다{suffix}. ({reason})")
+        meaning = _friendly_selected_meaning(item)
+        if view_label and view_label != "채팅":
+            parts.append(f"'{term}'은 {role_label} 질문과 {view_label} 맥락을 기준으로 {meaning}으로 해석했습니다.")
+        else:
+            parts.append(f"'{term}'은 {role_label} 질문 기준으로 {meaning}으로 해석했습니다.")
     return "\n".join(parts)
