@@ -293,3 +293,7 @@ async def build_live_db_context(schema_context: str, max_tables: int = 3) -> str
     context = "\n\n".join(sections)
     _LIVE_CONTEXT_CACHE[cache_key] = (time.monotonic(), context)
     return context
+
+
+# eval/ 벤치마크는 이 모듈이 core/db_context.py 이던 시절의 이름을 부른다.
+build_db_context = build_live_db_context
