@@ -1,5 +1,5 @@
 """
-core/ontology_loader.py
+app/core/ontology_loader.py
 ========================
 OWL/Turtle 온톨로지(mes_ontology.ttl)를 로드해서 두 가지 역할을 수행:
 
@@ -41,7 +41,7 @@ except ImportError:
 MFG = Namespace("http://neurofactory.skku.ac.kr/mes#") if RDFLIB_OK else None
 
 _BASE_DIR     = os.path.dirname(__file__)
-ONTOLOGY_PATH = os.path.join(_BASE_DIR, "../data/mes_ontology.ttl")
+ONTOLOGY_PATH = os.path.join(_BASE_DIR, "../../data/mes_ontology.ttl")
 
 
 # ──────────────────────────────────────────────────────────────────
@@ -308,7 +308,7 @@ def get_concept_engine(ttl_path: str = None, json_path: str = None):
         return get_ontology(ttl_path)
     else:
         if json_path is None:
-            json_path = os.path.join(_BASE_DIR, "../data/mes_concept_map.json")
+            json_path = os.path.join(_BASE_DIR, "../../data/mes_concept_map.json")
         print("[OntologyLoader] rdflib 없음 → JSON 폴백 모드")
         return FallbackConceptMapper(json_path)
 
@@ -320,7 +320,7 @@ def get_concept_engine(ttl_path: str = None, json_path: str = None):
 if __name__ == "__main__":
     import sys
 
-    ttl = os.path.join(os.path.dirname(__file__), "../data/mes_ontology.ttl")
+    ttl = os.path.join(os.path.dirname(__file__), "../../data/mes_ontology.ttl")
     if not os.path.exists(ttl):
         ttl = "data/mes_ontology.ttl"
 

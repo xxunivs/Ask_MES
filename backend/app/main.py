@@ -1,8 +1,8 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
-from routers import chat
-from core.retriever import init_chroma
+from app.routers import chat
+from app.core.retriever import init_chroma
 
 
 @asynccontextmanager

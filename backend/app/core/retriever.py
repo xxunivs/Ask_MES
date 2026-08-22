@@ -1,5 +1,5 @@
 """
-core/retriever.py  (v2 — Ontology-Guided Hybrid RAG)
+app/core/retriever.py  (v2 — Ontology-Guided Hybrid RAG)
 =====================================================
 v1 대비 변경사항:
   1. FKPathResolver 통합 → ChromaDB가 찾은 테이블 간 JOIN 경로 자동 계산
@@ -29,17 +29,17 @@ from typing import Optional
 import chromadb
 from chromadb.utils import embedding_functions
 
-from core.config import CHROMA_PATH, RAG_TOP_K
-from core.fk_resolver import FKPathResolver, get_resolver
-from core.ontology_loader import get_concept_engine
+from app.core.config import CHROMA_PATH, RAG_TOP_K
+from app.core.fk_resolver import FKPathResolver, get_resolver
+from app.core.ontology_loader import get_concept_engine
 
 # ──────────────────────────────────────────────────────────────────
 # 경로 설정
 # ──────────────────────────────────────────────────────────────────
 
 _BASE_DIR       = os.path.dirname(__file__)
-SCHEMA_PATH     = os.path.join(_BASE_DIR, "../data/mes_schema.json")
-CONCEPT_PATH    = os.path.join(_BASE_DIR, "../data/mes_concept_map.json")
+SCHEMA_PATH     = os.path.join(_BASE_DIR, "../../data/mes_schema.json")
+CONCEPT_PATH    = os.path.join(_BASE_DIR, "../../data/mes_concept_map.json")
 COLLECTION_NAME = "mes_schema"
 HASH_FILE       = os.path.join(CHROMA_PATH, ".schema_hash")
 

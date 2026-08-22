@@ -15,12 +15,12 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
 from typing import Optional, Any
 
-from core.ollama import llm_generate, check_ollama
-from core.config import LLM_MODEL, LLM_PROVIDER
-from core.retriever import retrieve_context
-from core.db_client import execute_sql
-from core.db_context import build_live_db_context, validate_sql_against_schema
-from core.term_resolver import (
+from app.core.llm import llm_generate, check_ollama
+from app.core.config import LLM_MODEL, LLM_PROVIDER
+from app.core.retriever import retrieve_context
+from app.core.sql_executor import execute_sql
+from app.core.live_sample import build_live_db_context, validate_sql_against_schema
+from app.core.term_resolver import (
     ROLE_TERM_KPI_POLICIES,
     align_sql_with_live_candidates,
     detect_ambiguous_terms,
@@ -33,7 +33,7 @@ from core.term_resolver import (
 
 router = APIRouter()
 _BASE_DIR = os.path.dirname(__file__)
-_SCHEMA_PATH = os.path.join(_BASE_DIR, "../data/mes_schema.json")
+_SCHEMA_PATH = os.path.join(_BASE_DIR, "../../data/mes_schema.json")
 _SCHEMA_CACHE: dict[str, dict[str, Any]] | None = None
 
 # 데모용 날짜 앵커 — DB 최신 데이터 기준일로 고정 (실제 운영 시 "'GETDATE()'" 으로 변경)

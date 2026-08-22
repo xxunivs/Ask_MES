@@ -3,7 +3,7 @@ LLM REST API 클라이언트.
 기본은 Ollama이고, LLM_PROVIDER=vllm이면 OpenAI-compatible vLLM API를 호출합니다.
 """
 import httpx
-from core.config import (
+from app.core.config import (
     LLM_PROVIDER,
     LLM_MODEL,
     OLLAMA_URL,

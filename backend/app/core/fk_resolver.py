@@ -1,5 +1,5 @@
 """
-core/fk_resolver.py
+app/core/fk_resolver.py
 ====================
 MES 스키마 FK 관계를 방향 그래프로 모델링하고
 Dijkstra 알고리즘으로 테이블 간 최단 JOIN 경로를 계산합니다.
@@ -246,7 +246,7 @@ def get_resolver(schema_path: str = None) -> FKPathResolver:
     if _resolver_instance is None:
         if schema_path is None:
             schema_path = os.path.join(
-                os.path.dirname(__file__), "../data/mes_schema.json"
+                os.path.dirname(__file__), "../../data/mes_schema.json"
             )
         _resolver_instance = FKPathResolver(schema_path)
     return _resolver_instance
@@ -259,7 +259,7 @@ def get_resolver(schema_path: str = None) -> FKPathResolver:
 if __name__ == "__main__":
     import sys
 
-    schema = os.path.join(os.path.dirname(__file__), "../data/mes_schema.json")
+    schema = os.path.join(os.path.dirname(__file__), "../../data/mes_schema.json")
     if not os.path.exists(schema):
         schema = "data/mes_schema.json"
 

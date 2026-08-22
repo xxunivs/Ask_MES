@@ -22,34 +22,42 @@ NeuroFactory/
 
 ```
 backend/
-├── main.py                    FastAPI 진입점 (기동 시 ChromaDB 시딩)
-├── requirements.txt
-├── Dockerfile                 ← 배포 시 이 폴더에서 빌드
-├── .env                       환경 설정 (git 제외)
-├── .env.example
-├── convert_ontology.py        온톨로지 JSON → data/mes_schema.json 변환 도구
+├── app/                       서버가 실행하는 코드 전부
+│   ├── main.py                FastAPI 진입점 (기동 시 ChromaDB 시딩)
+│   ├── core/
+│   │   ├── config.py          .env 값 로딩
+│   │   ├── llm.py             LLM 호출 (Ollama / vLLM 전환)
+│   │   ├── sql_executor.py    생성된 SQL을 MES API 로 보내 실행
+│   │   ├── retriever.py       ChromaDB 검색 — 질문에 맞는 테이블 선별
+│   │   ├── ontology_loader.py 온톨로지 기반 개념어 인식, JOIN 힌트 추출
+│   │   ├── fk_resolver.py     FK 그래프 + Dijkstra 최단 JOIN 경로 계산
+│   │   ├── live_sample.py     실 DB 샘플 조회로 컨텍스트 보강, SQL 검증
+│   │   └── term_resolver.py   모호어 해석 — 역할·맥락 기반 컬럼 선택
+│   └── routers/
+│       └── chat.py            API 엔드포인트, 프롬프트, SQL 재시도 루프
 │
-├── data/
+├── data/                      코드가 읽어들이는 입력 데이터
 │   ├── mes_schema.json        MES 테이블·컬럼·FK 정의. 모든 모듈의 기준 파일
 │   │                          ※ 바뀌면 서버 재시작 시 자동 재시딩
 │   ├── mes_ontology.ttl       개념어 ↔ 테이블 매핑, JOIN 조건 (OWL/Turtle)
 │   └── mes_concept_map.json   온톨로지 로딩 실패 시 쓰는 폴백 매핑
 │
-├── core/
-│   ├── config.py              .env 값 로딩
-│   ├── ollama.py              LLM 호출 (Ollama / vLLM 전환)
-│   ├── db_client.py           SQL 실행 위임 클라이언트
-│   ├── retriever.py           ChromaDB 검색 — 질문에 맞는 테이블 선별
-│   ├── ontology_loader.py     온톨로지 기반 개념어 인식, JOIN 힌트 추출
-│   ├── fk_resolver.py         FK 그래프 + Dijkstra 최단 JOIN 경로 계산
-│   ├── db_context.py          실 DB 샘플 조회로 컨텍스트 보강, SQL 검증
-│   └── term_resolver.py       모호어 해석 — 역할·맥락 기반 컬럼 선택
-│
-├── routers/
-│   └── chat.py                API 엔드포인트, 프롬프트, SQL 재시도 루프
-│
-└── chroma_db/                 벡터 DB (자동 생성, 삭제해도 재시딩됨)
+├── chroma_db/                 벡터 DB (기동 시 자동 생성, 삭제해도 재시딩됨)
+├── convert_ontology.py        온톨로지 JSON → data/mes_schema.json 변환 도구
+├── Dockerfile                 배포 시 이 폴더에서 빌드
+├── requirements.txt
+├── .env                       환경 설정 (git 제외)
+└── .env.example
 ```
+
+네 층으로 나뉩니다.
+
+```
+convert_ontology.py  →  data/  →  chroma_db/  →  app/ 이 사용
+    (생성 도구)         (입력)     (자동 생성)      (실행 코드)
+```
+
+`Dockerfile`, `requirements.txt`, `.env` 는 그 바깥의 설정입니다.
 
 ### 처리 흐름
 
@@ -60,11 +68,11 @@ retriever      어느 테이블인가        (ontology_loader, fk_resolver 협�
    ↓
 term_resolver  모호어를 어느 컬럼으로 볼 것인가
    ↓
-db_context     실제 DB에 그 값이 있는가
+live_sample    실제 DB에 그 값이 있는가
    ↓
-ollama         SQL 생성 (실패 시 오류를 되먹여 재시도)
+llm            SQL 생성 (실패 시 오류를 되먹여 재시도)
    ↓
-db_client      SQL 실행 → 결과 반환
+sql_executor   SQL 실행 → 결과 반환
 ```
 
 ---
@@ -89,7 +97,7 @@ cd backend
 cp .env.example .env          # 최초 1회. MES_API_URL, MES_API_KEY 채우기
 python3 -m venv venv
 ./venv/bin/pip install -r requirements.txt
-./venv/bin/uvicorn main:app --port 8001 --reload
+./venv/bin/uvicorn app.main:app --port 8001 --reload
 ```
 
 최초 실행 시 ChromaDB 임베딩 모델(약 90MB)을 내려받고 MES 스키마를 시딩합니다.

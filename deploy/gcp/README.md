@@ -64,7 +64,7 @@ VITE_LLM_API_URL=https://api.neurofactory.cloud
 2. Billing 예산 알림 설정
 3. LLM 준비 — Ollama 호스트를 띄우고 `OLLAMA_URL` 확보
    (vLLM 으로 갈 경우: GPU quota 확인 → `vllm/Dockerfile` 로 서버 실행 → `GET /v1/models` 확인)
-4. 백엔드 Cloud Run 배포 — **`backend/` 디렉터리에서 빌드한다.** `Dockerfile` 과 `.dockerignore` 가 그 안에 있다.
+4. 백엔드 Cloud Run 배포 — **`backend/` 디렉터리에서 빌드한다.** `Dockerfile` 과 `.dockerignore` 가 그 안에 있고, 실행 대상은 `app.main:app` 이다.
 5. `GET /chat/health` 로 LLM·DB 연결 확인
 6. 프론트 배포 (`UI/`, `cloudbuild.yaml` 의 `_VITE_LLM_API_URL` 에 백엔드 주소 전달)
 7. 웹에서 역할 선택 후 질문 테스트

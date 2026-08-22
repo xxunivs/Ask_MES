@@ -13,10 +13,10 @@ import re
 import time
 from typing import Any
 
-from core.db_client import execute_sql
+from app.core.sql_executor import execute_sql
 
 _BASE_DIR = os.path.dirname(__file__)
-SCHEMA_PATH = os.path.join(_BASE_DIR, "../data/mes_schema.json")
+SCHEMA_PATH = os.path.join(_BASE_DIR, "../../data/mes_schema.json")
 
 _SCHEMA_CACHE: dict[str, dict[str, Any]] | None = None
 _LIVE_CONTEXT_CACHE: dict[tuple[str, ...], tuple[float, str]] = {}

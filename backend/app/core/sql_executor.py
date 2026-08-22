@@ -7,7 +7,7 @@ POST /api/mes/query 를 호출했으나, 해당 서비스는 더 이상 없다.
 응답 형태({success, columns, rows, count})는 양쪽이 동일하다.
 """
 import httpx
-from core.config import MES_API_URL, MES_API_KEY
+from app.core.config import MES_API_URL, MES_API_KEY
 
 # 서버가 python 계열 기본 User-Agent 를 봇으로 보고 403 을 준다.
 _HEADERS = {
