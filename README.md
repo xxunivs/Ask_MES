@@ -4,18 +4,7 @@
 
 ---
 
-## 구성
-
-```
-NeuroFactory/
-├── backend/          FastAPI 서버 (NL→SQL 파이프라인)
-├── UI/               React + Vite 웹 화면
-├── deploy/gcp/       Google Cloud 배포 메모, vLLM 서버 설정
-├── docs/             특허·논문 자료, 시연 영상 (로컬 전용, git 제외)
-└── README.md
-```
-
-### backend/
+## backend/
 
 ```
 backend/
@@ -47,16 +36,16 @@ backend/
 └── .env.example
 ```
 
-네 층으로 나뉩니다.
+네 층으로 나뉨.
 
 ```
 convert_ontology.py  →  data/  →  chroma_db/  →  app/ 이 사용
     (생성 도구)         (입력)     (자동 생성)      (실행 코드)
 ```
 
-`Dockerfile`, `requirements.txt`, `.env` 는 그 바깥의 설정입니다.
+`Dockerfile`, `requirements.txt`, `.env` 는 그 바깥의 설정.
 
-### UI/
+## UI/
 
 ```
 UI/src/
@@ -89,7 +78,7 @@ sql_executor   SQL 실행 → 결과 반환
 
 ## 로컬 실행
 
-Python 3.11 이상, Node.js, Ollama가 필요합니다.
+Python 3.11 이상, Node.js, Ollama 필요.
 
 ```bash
 ollama pull qwen2.5:7b
@@ -105,7 +94,7 @@ python3 -m venv venv
 ./venv/bin/uvicorn app.main:app --port 8001 --reload
 ```
 
-최초 실행 시 ChromaDB 임베딩 모델(약 90MB)을 내려받고 MES 스키마를 시딩합니다.
+최초 실행 시 ChromaDB 임베딩 모델(약 90MB)을 내려받고 MES 스키마를 시딩.
 
 정상 기동:
 
@@ -117,7 +106,7 @@ python3 -m venv venv
 [Startup] 완료 — MES LLM API 준비됨
 ```
 
-API 문서는 http://localhost:8001/docs 에서 확인합니다.
+API 문서: http://localhost:8001/docs
 
 ### 프론트
 
@@ -127,4 +116,4 @@ npm install
 npm run dev
 ```
 
-`UI/.env` 의 `VITE_LLM_API_URL` 이 백엔드 주소를 가리켜야 합니다.
+`UI/.env` 의 `VITE_LLM_API_URL` 이 백엔드 주소를 가리켜야 함.
