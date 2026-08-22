@@ -18,14 +18,23 @@ backend/
 │   │   ├── ontology_loader.py 온톨로지 기반 개념어 인식, JOIN 힌트 추출
 │   │   ├── fk_resolver.py     FK 그래프 + Dijkstra 최단 JOIN 경로 계산
 │   │   ├── live_sample.py     실 DB 샘플 조회로 컨텍스트 보강, SQL 검증
-│   │   └── term_resolver.py   모호어 해석 — 역할·맥락 기반 컬럼 선택
+│   │   ├── term_resolver.py   모호어 해석 — 역할·맥락 기반 컬럼 선택
+│   │   ├── role_pipeline.py   역할별 KPI 정책으로 SQL 확정 (플래그로 on/off)
+│   │   ├── sql_validator.py   생성된 SQL 의 스키마·코드값 검증
+│   │   ├── code_values.py     컬럼별 허용 코드값 사전
+│   │   ├── concept_alignment.py  개념어 ↔ 컬럼 정렬 규칙
+│   │   └── date_policy.py     날짜 표현 해석 규칙
 │   └── routers/
 │       └── chat.py            API 엔드포인트, 프롬프트, SQL 재시도 루프
 │
 ├── data/                      코드가 읽어들이는 입력 데이터
 │   ├── mes_schema.json        MES 테이블·컬럼·FK 정의. 모든 모듈의 기준 파일
 │   │                          ※ 바뀌면 서버 재시작 시 자동 재시딩
-│   └── mes_ontology.ttl       개념어 ↔ 테이블 매핑, JOIN 조건 (OWL/Turtle)
+│   ├── mes_ontology.ttl       개념어 ↔ 테이블 매핑, JOIN 조건 (OWL/Turtle)
+│   ├── mes_code_values.json   컬럼별 허용 코드값
+│   └── benchmark/             벤치마크 정답셋 (50문항, v1·v2)
+│
+├── eval/                      벤치마크 실행·채점·ablation, 논문 원고
 │
 ├── vector_index/              벡터 DB (기동 시 자동 생성, 삭제해도 재시딩됨)
 ├── Dockerfile                 배포 시 이 폴더에서 빌드
@@ -63,14 +72,20 @@ UI/src/
    ↓
 retriever      어느 테이블인가        (ontology_loader, fk_resolver 협업)
    ↓
-term_resolver  모호어를 어느 컬럼으로 볼 것인가
+term_resolver  모호어를 어느 컬럼으로 볼 것인가   ┐ USE_ROLE_RESOLUTION
+role_pipeline  역할 KPI 정책으로 SQL 확정        ┘ 이 켜졌을 때만
    ↓
 live_sample    실제 DB에 그 값이 있는가
    ↓
 llm            SQL 생성 (실패 시 오류를 되먹여 재시도)
    ↓
+sql_validator  스키마·코드값 검증
+   ↓
 sql_executor   SQL 실행 → 결과 반환
 ```
+
+`USE_ROLE_RESOLUTION` 을 끄면 역할 해석 두 단계를 건너뛴 일반 NL2SQL 로 동작한다.
+논문 실험(Ollama Qwen2.5:7b, 50문항)은 이 꺼진 구성을 기준으로 측정했다.
 
 ---
 
