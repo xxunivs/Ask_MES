@@ -1,0 +1,19 @@
+{
+  "_comment": "운영 DB DISTINCT 수집 결과. collect_code_values.py 로 갱신. 수동 시드는 collected_at=null",
+  "collected_at": null,
+  "source": "seed",
+  "columns": {
+    "CIM_LOT.ISHOLD": {
+      "label": "홀드 여부",
+      "values": ["Y", "N"],
+      "forbidden_literals": ["TRUE", "FALSE", "true", "false"],
+      "forbid_numeric": true
+    },
+    "CIM_LOT.ISREWORK": {
+      "label": "재작업 여부",
+      "values": ["Y", "N"],
+      "forbidden_literals": ["TRUE", "FALSE", "true", "false"],
+      "forbid_numeric": true
+    }
+  }
+}

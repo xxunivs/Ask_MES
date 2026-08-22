@@ -25,3 +25,6 @@ Thumbs.db
 
 # 특허·논문 자료, 시연 영상 (용량 크고 비공개)
 docs/
+
+# 벤치마크 실행 결과 (재생성 가능)
+backend/eval/results/

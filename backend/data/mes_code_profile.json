@@ -1,0 +1,14 @@
+{
+  "_comment": "DISTINCT 수집 대상 컬럼. scripts/collect_code_values.py 가 MES API로 조회 후 mes_code_values.json 갱신",
+  "columns": [
+    {"table": "CIM_LOT", "column": "ISHOLD", "label": "홀드 여부"},
+    {"table": "CIM_LOT", "column": "ISREWORK", "label": "재작업 여부"},
+    {"table": "CIM_LOT", "column": "STATE", "label": "LOT 상태"},
+    {"table": "CIM_PRODUCTORDER", "column": "STATE", "label": "작업지시 상태"},
+    {"table": "CIM_PRODUCTORDER", "column": "DELAYFLAG", "label": "지연 여부"},
+    {"table": "CIM_PRODUCTORDER", "column": "FIRMFLAG", "label": "확정 여부"},
+    {"table": "CIM_BATCH", "column": "STATE", "label": "배치 상태"},
+    {"table": "CIM_MATERIALLOT", "column": "STATE", "label": "자재 LOT 상태"},
+    {"table": "CIM_EQUIPMENT", "column": "STATE", "label": "설비 상태"}
+  ]
+}
