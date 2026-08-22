@@ -1,7 +1,7 @@
 # NeuroFactory
 
 자연어 질문을 SQL로 바꿔 MES(제조실행시스템) DB를 조회하는 시스템입니다.
-같은 표현이라도 질문자의 역할(품질팀/생산팀/설비팀/관리팀)에 따라 다른 의미로 해석합니다.
+같은 표현이라도 질문자의 역할(품질팀 / 생산팀 / 설비팀 / 관리팀)에 따라 다른 의미로 해석합니다.
 
 FastAPI + ChromaDB + OWL 온톨로지 + Ollama
 
@@ -59,7 +59,20 @@ convert_ontology.py  →  data/  →  chroma_db/  →  app/ 이 사용
 
 `Dockerfile`, `requirements.txt`, `.env` 는 그 바깥의 설정입니다.
 
-### 처리 흐름
+### UI/
+
+```
+UI/src/
+├── main.jsx / App.jsx         진입점, 채팅·분석 페이지 전환
+├── components/Chat/           ChatPage, ChatMessage, ChatInput, FrequentQueries
+├── components/Analysis/       AnalysisPage, StatisticsView
+├── utils/nlToSql.js           백엔드 /chat/* 호출
+└── data/mockData.js           추천 질문 목록
+```
+
+---
+
+## 처리 흐름
 
 ```
 질문 + 역할
@@ -77,18 +90,13 @@ sql_executor   SQL 실행 → 결과 반환
 
 ---
 
-## 사전 요구사항
-
-- Python 3.11 이상
-- Node.js (UI 실행 시)
-- Ollama — https://ollama.com/download
-  ```bash
-  ollama pull qwen2.5:7b
-  ```
-
----
-
 ## 로컬 실행
+
+Python 3.11 이상, Node.js, Ollama가 필요합니다.
+
+```bash
+ollama pull qwen2.5:7b
+```
 
 ### 백엔드
 
@@ -112,6 +120,8 @@ python3 -m venv venv
 [Startup] 완료 — MES LLM API 준비됨
 ```
 
+API 문서는 http://localhost:8001/docs 에서 확인합니다.
+
 ### 프론트
 
 ```bash
@@ -121,115 +131,3 @@ npm run dev
 ```
 
 `UI/.env` 의 `VITE_LLM_API_URL` 이 백엔드 주소를 가리켜야 합니다.
-
----
-
-## 접속 주소
-
-| 용도 | URL |
-|---|---|
-| Swagger UI | http://localhost:8001/docs |
-| 서버 상태 | http://localhost:8001/health |
-| LLM·DB 연결 확인 | http://localhost:8001/chat/health |
-
-배포본은 `deploy/gcp/README.md` 참고.
-
----
-
-## API
-
-### 자연어 → SQL 조회
-
-`POST /chat/nl-to-sql`
-
-```json
-{
-  "question": "이번 달 불량 보여줘",
-  "limit": 100,
-  "user_role": "quality",
-  "current_view": "chat",
-  "conversation_context": []
-}
-```
-
-`user_role`: `quality` | `production` | `equipment` | `management` | `general`
-
-```json
-{
-  "success": true,
-  "sql": "SELECT TOP 20 SUM(ISNULL(L.[DEFECTQTY], 0)) AS [값] FROM CIM_LOTDEFECT L WITH (NOLOCK) WHERE ...",
-  "description": "\"이번 달 불량 보여줘\" 질문에서 불량 해석을 고정한 검증 SQL입니다.",
-  "data": { "columns": ["값"], "rows": [{ "값": 160.0 }], "count": 1 },
-  "db_error": null,
-  "term_note": "...",
-  "term_resolution": {
-    "resolved_terms": [
-      {
-        "term": "불량",
-        "selected_meaning": "CIM_LOTDEFECT.DEFECTQTY 기준 수량",
-        "selected_columns": ["CIM_LOTDEFECT.DEFECTQTY"],
-        "confidence": 0.55
-      }
-    ]
-  }
-}
-```
-
-`term_resolution` 은 모호어를 어떤 근거로 어느 컬럼에 대응시켰는지 담습니다.
-
-### 데이터 분석
-
-`POST /chat/analyze`
-
-```json
-{
-  "question": "불량률이 높은 원인이 뭔지 분석해줘",
-  "data": { "columns": ["LOTID", "LOSSQTY"], "rows": [] }
-}
-```
-
----
-
-## 테스트 질문
-
-역할에 따라 해석이 갈리는지 확인하는 질문:
-
-```
-품질팀 / 생산팀 / 관리팀 : 이번 달 불량 보여줘
-생산팀 : 완료된 작업지시 실적 보여줘
-설비팀 : 지난달 설비 가동 추이 알려줘
-```
-
-일반 조회:
-
-```
-홀드 상태인 LOT 목록 보여줘
-설비 유형별 설비 수를 보여줘
-완료 상태가 아닌 작업지시 목록 보여줘
-자재 LOT 중 현재 수량이 0인 것 보여줘
-공정 세그먼트 전체 목록과 소요시간을 보여줘
-```
-
----
-
-## 자주 발생하는 오류
-
-| 오류 | 원인 | 해결 |
-|---|---|---|
-| `Ollama 연결 실패` | Ollama 미실행 | Ollama 앱 실행 후 `ollama list` 확인 |
-| `401 Unauthorized` | MES API 키·주소 오류 | `.env` 의 `MES_API_URL`, `MES_API_KEY` 확인 |
-| `500 Internal Server Error` | 생성된 SQL이 없는 컬럼 참조 | 질문을 더 구체적으로 바꿔 재시도 |
-| `Ollama 타임아웃` | 모델 처리 과부하 | 잠시 후 재시도 |
-
----
-
-## 스키마 갱신
-
-MES 테이블·컬럼이 바뀐 경우, 온톨로지 JSON을 갱신한 뒤 변환합니다.
-
-```bash
-cd backend
-./venv/bin/python convert_ontology.py mes_ontology_fk.json data/mes_schema.json
-```
-
-`data/mes_schema.json` 이 바뀌면 서버 재시작 시 ChromaDB가 자동으로 재시딩합니다.
