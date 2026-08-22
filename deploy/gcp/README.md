@@ -48,7 +48,7 @@ LLM_MODEL=<모델명>
 OLLAMA_URL=<ollama 주소>
 MES_API_URL=https://api.neurofactory.cloud
 MES_API_KEY=<mes-api-key>
-CHROMA_PATH=./chroma_db
+CHROMA_PATH=./vector_index
 RAG_TOP_K=6
 ```
 

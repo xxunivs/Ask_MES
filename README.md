@@ -25,22 +25,20 @@ backend/
 ├── data/                      코드가 읽어들이는 입력 데이터
 │   ├── mes_schema.json        MES 테이블·컬럼·FK 정의. 모든 모듈의 기준 파일
 │   │                          ※ 바뀌면 서버 재시작 시 자동 재시딩
-│   ├── mes_ontology.ttl       개념어 ↔ 테이블 매핑, JOIN 조건 (OWL/Turtle)
-│   └── mes_concept_map.json   온톨로지 로딩 실패 시 쓰는 폴백 매핑
+│   └── mes_ontology.ttl       개념어 ↔ 테이블 매핑, JOIN 조건 (OWL/Turtle)
 │
-├── chroma_db/                 벡터 DB (기동 시 자동 생성, 삭제해도 재시딩됨)
-├── convert_ontology.py        온톨로지 JSON → data/mes_schema.json 변환 도구
+├── vector_index/              벡터 DB (기동 시 자동 생성, 삭제해도 재시딩됨)
 ├── Dockerfile                 배포 시 이 폴더에서 빌드
 ├── requirements.txt
 ├── .env                       환경 설정 (git 제외)
 └── .env.example
 ```
 
-네 층으로 나뉨.
+세 층으로 나뉨.
 
 ```
-convert_ontology.py  →  data/  →  chroma_db/  →  app/ 이 사용
-    (생성 도구)         (입력)     (자동 생성)      (실행 코드)
+data/  →  vector_index/  →  app/ 이 사용
+(입력)     (자동 생성)      (실행 코드)
 ```
 
 `Dockerfile`, `requirements.txt`, `.env` 는 그 바깥의 설정.

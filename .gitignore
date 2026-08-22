@@ -10,7 +10,7 @@ __pycache__/
 .env
 
 # ChromaDB (자동 재생성됨)
-chroma_db/
+vector_index/
 
 # Frontend local files
 UI/.env

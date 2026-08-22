@@ -39,7 +39,6 @@ from app.core.ontology_loader import get_concept_engine
 
 _BASE_DIR       = os.path.dirname(__file__)
 SCHEMA_PATH     = os.path.join(_BASE_DIR, "../../data/mes_schema.json")
-CONCEPT_PATH    = os.path.join(_BASE_DIR, "../../data/mes_concept_map.json")
 COLLECTION_NAME = "mes_schema"
 HASH_FILE       = os.path.join(CHROMA_PATH, ".schema_hash")
 

@@ -5,7 +5,7 @@ OWL/Turtle 온톨로지(mes_ontology.ttl)를 로드해서 두 가지 역할을 �
 
   1. 개념 검색 (ConceptResolver)
      자연어 쿼리에서 skos:altLabel 매핑으로 관련 테이블/컬럼 식별
-     → mes_concept_map.json의 기능을 OWL 기반으로 격상
+     → 자연어 개념어를 OWL 기반으로 테이블·컬럼에 매핑
 
   2. JOIN 힌트 추출 (OntologyJoinHinter)
      mfg:joinCondition 어노테이션에서 JOIN ON 절 직접 추출
@@ -236,81 +236,9 @@ def get_ontology(ttl_path: str = None) -> OntologyEngine:
     return _engine_instance
 
 
-# ──────────────────────────────────────────────────────────────────
-# Fallback: rdflib 없을 때 JSON 기반 대체
-# ──────────────────────────────────────────────────────────────────
-
-class FallbackConceptMapper:
-    """
-    rdflib 미설치 시 mes_concept_map.json 기반 동작.
-    OntologyEngine과 동일한 인터페이스 유지.
-    """
-    def __init__(self, json_path: str):
-        import json
-        with open(json_path, encoding="utf-8") as f:
-            data = json.load(f)
-        self._at: dict[str, list[str]] = {}
-        self._ac: dict[str, list[str]] = {}
-        for concept, info in data.get("concepts", {}).items():
-            for alias in info.get("aliases", []) + [concept]:
-                key = alias.lower()
-                for t in info.get("tables", []):
-                    self._at.setdefault(key, [])
-                    if t not in self._at[key]:
-                        self._at[key].append(t)
-                for c in info.get("key_columns", []):
-                    self._ac.setdefault(key, [])
-                    if c not in self._ac[key]:
-                        self._ac[key].append(c)
-        print(f"[FallbackMapper] JSON 로드 완료: {len(data.get('concepts', {}))} 개념")
-
-    def find_tables(self, q: str) -> list[str]:
-        q = q.lower()
-        found = []
-        for alias, tables in self._at.items():
-            if alias in q:
-                for t in tables:
-                    if t not in found:
-                        found.append(t)
-        return found
-
-    def find_columns(self, q: str) -> list[str]:
-        q = q.lower()
-        found = []
-        for alias, cols in self._ac.items():
-            if alias in q:
-                for c in cols:
-                    if c not in found:
-                        found.append(c)
-        return found
-
-    def get_concept_hint(self, q: str) -> str:
-        tables  = self.find_tables(q)
-        columns = self.find_columns(q)
-        lines   = []
-        if tables:  lines.append(f"관련 테이블: {', '.join(tables)}")
-        if columns: lines.append(f"관련 컬럼: {', '.join(columns)}")
-        return "\n".join(lines)
-
-    def get_join_hint(self, tables: list[str]) -> str:
-        return ""  # FKPathResolver가 처리
-
-    def stats(self) -> dict:
-        return {"mode": "fallback_json"}
-
-
-def get_concept_engine(ttl_path: str = None, json_path: str = None):
-    """
-    rdflib 가능 → OntologyEngine
-    rdflib 없음 → FallbackConceptMapper
-    """
-    if RDFLIB_OK:
-        return get_ontology(ttl_path)
-    else:
-        if json_path is None:
-            json_path = os.path.join(_BASE_DIR, "../../data/mes_concept_map.json")
-        print("[OntologyLoader] rdflib 없음 → JSON 폴백 모드")
-        return FallbackConceptMapper(json_path)
+def get_concept_engine(ttl_path: str = None):
+    """온톨로지(.ttl) 기반 개념 엔진을 반환한다."""
+    return get_ontology(ttl_path)
 
 
 # ──────────────────────────────────────────────────────────────────
