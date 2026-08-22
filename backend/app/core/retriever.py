@@ -26,6 +26,8 @@ import json
 import os
 from typing import Optional
 
+from dataclasses import dataclass
+
 import chromadb
 from chromadb.utils import embedding_functions
 
@@ -51,7 +53,26 @@ _fk_resolver:    Optional[FKPathResolver]       = None
 _concept_engine = None
 
 
-# ConceptMapper 제거 → core.ontology_loader.get_concept_engine() 으로 대체
+@dataclass(frozen=True)
+class RetrievalConfig:
+    """벤치마크 ablation용 RAG 구성."""
+    use_rag: bool = True
+    use_ontology: bool = True
+    use_fk: bool = True
+
+    @classmethod
+    def from_preset(cls, name: str) -> "RetrievalConfig":
+        presets = {
+            "B0": cls(use_rag=False, use_ontology=False, use_fk=False),
+            "B1": cls(use_rag=True, use_ontology=False, use_fk=False),
+            "B2": cls(use_rag=True, use_ontology=False, use_fk=True),
+            "B3": cls(use_rag=True, use_ontology=True, use_fk=False),
+            "FULL": cls(use_rag=True, use_ontology=True, use_fk=True),
+        }
+        key = name.upper()
+        if key not in presets:
+            raise ValueError(f"Unknown preset: {name}. Use one of {list(presets)}")
+        return presets[key]
 
 
 # ──────────────────────────────────────────────────────────────────
@@ -172,7 +193,23 @@ def _seed_schema():
 # 핵심 함수: Ontology-Guided Hybrid RAG 컨텍스트 생성
 # ──────────────────────────────────────────────────────────────────
 
-def retrieve_context(query: str, n: int = None) -> str:
+def minimal_schema_context(max_tables: int = 40) -> str:
+    """B0 베이스라인: 테이블·PK 목록만 제공."""
+    with open(SCHEMA_PATH, encoding="utf-8") as f:
+        schema = json.load(f)
+    lines = ["[MES 스키마 요약 — 테이블 목록만]"]
+    for table in schema["tables"][:max_tables]:
+        tname = table["name"]
+        pk = ", ".join(table.get("pk") or [])
+        lines.append(f"- {tname}" + (f" (PK: {pk})" if pk else ""))
+    return "\n".join(lines)
+
+
+def retrieve_context(
+    query: str,
+    n: int = None,
+    config: Optional[RetrievalConfig] = None,
+) -> str:
     """
     자연어 쿼리에 대한 하이브리드 RAG 컨텍스트 반환.
 
@@ -181,9 +218,17 @@ def retrieve_context(query: str, n: int = None) -> str:
       2. ChromaDB       → 벡터 유사도 top-k 검색
       3. FKPathResolver → 식별된 테이블 간 JOIN 경로 계산
 
+    config: RetrievalConfig — ablation 시 B0~FULL 프리셋 사용.
+            생략하면 세 단계를 모두 사용한다(기존 동작).
+
     Returns:
       프롬프트에 주입할 컨텍스트 문자열
     """
+    cfg = config or RetrievalConfig()
+
+    if not cfg.use_rag and not cfg.use_ontology and not cfg.use_fk:
+        return minimal_schema_context()
+
     if _collection is None:
         init_chroma()
 
@@ -192,21 +237,23 @@ def retrieve_context(query: str, n: int = None) -> str:
     # ── Step 1: 개념어 기반 테이블 식별 (OntologyEngine / JSON 폴백) ──
     concept_tables: list[str] = []
     concept_hint:   str       = ""
-    if _concept_engine:
+    if cfg.use_ontology and _concept_engine:
         concept_tables = _concept_engine.find_tables(query)
         concept_hint   = _concept_engine.get_concept_hint(query)
 
     # ── Step 2: ChromaDB 벡터 검색 ──
-    results  = _collection.query(query_texts=[query], n_results=k)
-    chroma_docs   = results["documents"][0]
-    chroma_metas  = results["metadatas"][0]
-
-    # 검색된 테이블 목록 추출 (순서 유지 dedup)
+    chroma_docs: list[str] = []
     chroma_tables: list[str] = []
-    for m in chroma_metas:
-        t = m.get("table", "")
-        if t and t not in chroma_tables:
-            chroma_tables.append(t)
+    if cfg.use_rag:
+        results  = _collection.query(query_texts=[query], n_results=k)
+        chroma_docs   = results["documents"][0]
+        chroma_metas  = results["metadatas"][0]
+
+        # 검색된 테이블 목록 추출 (순서 유지 dedup)
+        for m in chroma_metas:
+            t = m.get("table", "")
+            if t and t not in chroma_tables:
+                chroma_tables.append(t)
 
     # ConceptMapper + ChromaDB 결과 병합 (중복 제거, 개념 테이블 우선)
     all_tables: list[str] = list(concept_tables)
@@ -216,7 +263,7 @@ def retrieve_context(query: str, n: int = None) -> str:
 
     # ── Step 3: Dijkstra FK-path JOIN 힌트 ──
     join_hint = ""
-    if _fk_resolver and len(all_tables) >= 2:
+    if cfg.use_fk and _fk_resolver and len(all_tables) >= 2:
         join_sql = _fk_resolver.get_join_sql(all_tables[:5], max_hops=4)
         if join_sql:
             join_hint = f"\n\n## JOIN 경로 힌트 (Dijkstra 최단경로)\n{join_sql}"
@@ -224,9 +271,17 @@ def retrieve_context(query: str, n: int = None) -> str:
             _augment_intermediate_tables(join_sql, all_tables)
 
     # ── 컨텍스트 조립 ──
-    schema_ctx = "\n---\n".join(chroma_docs)
+    sections: list[str] = []
+    if chroma_docs:
+        sections.append("\n---\n".join(chroma_docs))
+    elif concept_tables and cfg.use_ontology:
+        sections.append(
+            "[ChromaDB 미사용] 온톨로지로 식별된 테이블: "
+            + ", ".join(concept_tables)
+        )
+    else:
+        sections.append(minimal_schema_context(max_tables=20))
 
-    sections = [schema_ctx]
     if concept_hint:
         sections.append(f"\n## 개념 매핑 (온톨로지)\n{concept_hint}")
     if join_hint:
