@@ -24,3 +24,7 @@ CHROMA_PATH = os.getenv("CHROMA_PATH", "./vector_index")
 
 # RAG 검색 결과 수
 RAG_TOP_K = int(os.getenv("RAG_TOP_K", "6"))
+
+# 역할 기반 모호어 해석 파이프라인 사용 여부.
+# 끄면 app/core/role_pipeline.py 를 타지 않는 일반 NL2SQL 로 동작한다.
+USE_ROLE_RESOLUTION = os.getenv("USE_ROLE_RESOLUTION", "false").strip().lower() in ("1", "true", "yes", "on")
