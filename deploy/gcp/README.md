@@ -1,68 +1,75 @@
 # Google Cloud 배포 메모
 
-목표 구조:
+마지막 확인: 2026-08-22
+
+## 1. 현재 동작 구조
 
 ```text
 사용자 브라우저
--> 프론트 서버
--> FastAPI 백엔드
--> GPU vLLM 서버(Qwen3.5-9B)
--> MES DB API
+-> 프론트 (Cloud Run)
+-> FastAPI 백엔드 (api.neurofactory.cloud)
+-> LLM (Ollama, qwen2.5-coder:32b)
+-> MES DB API (<사내 MES DB>)
 ```
 
-## 1. 권장 1차 구조
+## 2. 현재 배포 주소
 
-- 프론트: Cloud Run 또는 Vercel
-- 백엔드: Cloud Run
-- AI 서버: Google Compute Engine GPU VM 또는 Cloud Run GPU
+```text
+프론트:  https://neurofactory-frontend-<project-number>.us-central1.run.app   (동작 확인)
+백엔드:  https://api.neurofactory.cloud                                    (동작 확인)
+```
 
-처음에는 GPU VM이 디버깅이 쉽다. 테스트할 때만 켜고, 끝나면 중지한다.
+`GET /chat/health` 응답으로 LLM·DB 연결 상태를 확인할 수 있다.
 
-## 2. 필요한 환경변수
+```json
+{"ollama":"ok","model":"qwen2.5-coder:32b","db":"ok","db_server":"<사내 MES DB>"}
+```
 
-백엔드:
+프론트는 빌드 시점에 `VITE_LLM_API_URL`이 고정되므로 백엔드 주소가 바뀌면 재빌드가 필요하다.
+
+## 3. 중단된 구성
+
+아래는 과거에 쓰다가 현재는 꺼져 있다. 되살리려면 주소부터 새로 확보해야 한다.
+
+- GPU VM 위의 vLLM 서버 (`<GPU VM>:8008`, 이전에는 `<GPU VM>:8008`) — 응답 없음
+- 이전 백엔드 Cloud Run 주소 (`neurofactory-backend-<project-number>.us-central1.run.app`) — 응답 없음
+- 팀원 PC 에서 Cloudflare 터널로 띄우던 `mes-api:8000` — 폐지됨.
+  현재 SQL 실행은 백엔드 자신의 `POST /chat/sql-execute` 가 담당한다.
+
+`vllm/Dockerfile` 은 vLLM 서버로 되돌릴 때를 위해 남겨 둔 것이고, 현재 배포에는 쓰이지 않는다.
+
+## 4. 환경변수
+
+백엔드 (`backend/.env`):
 
 ```env
-LLM_PROVIDER=vllm
-LLM_MODEL=qwen35-9b
-VLLM_API_URL=https://<vllm-server-url>/v1
-VLLM_API_KEY=EMPTY
-MES_API_URL=https://<mes-api-url>
+LLM_PROVIDER=ollama          # vllm 로 바꾸면 VLLM_API_URL 을 사용
+LLM_MODEL=<모델명>
+OLLAMA_URL=<ollama 주소>
+MES_API_URL=https://api.neurofactory.cloud
 MES_API_KEY=<mes-api-key>
 CHROMA_PATH=./chroma_db
 RAG_TOP_K=6
 ```
 
-프론트:
+프론트 (`UI/.env`):
 
 ```env
-VITE_LLM_API_URL=https://<backend-url>
+VITE_LLM_API_URL=https://api.neurofactory.cloud
 ```
 
-## 2-1. 현재 배포 주소
-
-```text
-프론트:  https://neurofactory-frontend-<project-number>.us-central1.run.app
-백엔드:  https://neurofactory-backend-<project-number>.us-central1.run.app
-AI 서버: http://<GPU VM>:8008/v1
-```
-
-현재 백엔드는 Cloud Run, AI 서버는 GCP GPU VM에서 동작한다.
-프론트는 빌드 시점에 `VITE_LLM_API_URL`이 고정되므로 백엔드 주소가 바뀌면 재빌드가 필요하다.
-
-## 3. 배포 순서
+## 5. 배포 순서
 
 1. Google Cloud 프로젝트 생성
 2. Billing 예산 알림 설정
-3. GPU quota 확인 또는 요청
-4. GPU VM 또는 Cloud Run GPU로 vLLM 실행
-5. `GET /v1/models`로 `qwen35-9b` 확인
-6. 백엔드 Cloud Run 배포
-7. `GET /chat/health`로 LLM 연결 확인
-8. 프론트 배포
-9. 웹에서 역할 선택 후 질문 테스트
+3. LLM 준비 — Ollama 호스트를 띄우고 `OLLAMA_URL` 확보
+   (vLLM 으로 갈 경우: GPU quota 확인 → `vllm/Dockerfile` 로 서버 실행 → `GET /v1/models` 확인)
+4. 백엔드 Cloud Run 배포 — **`backend/` 디렉터리에서 빌드한다.** `Dockerfile` 과 `.dockerignore` 가 그 안에 있다.
+5. `GET /chat/health` 로 LLM·DB 연결 확인
+6. 프론트 배포 (`UI/`, `cloudbuild.yaml` 의 `_VITE_LLM_API_URL` 에 백엔드 주소 전달)
+7. 웹에서 역할 선택 후 질문 테스트
 
-## 4. 테스트 질문
+## 6. 테스트 질문
 
 - 품질팀: `이번 달 불량 보여줘`
 - 생산팀: `이번 달 불량 보여줘`
