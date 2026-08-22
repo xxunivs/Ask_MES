@@ -21,6 +21,7 @@ from core.retriever import retrieve_context
 from core.db_client import execute_sql
 from core.db_context import build_live_db_context, validate_sql_against_schema
 from core.term_resolver import (
+    ROLE_TERM_KPI_POLICIES,
     align_sql_with_live_candidates,
     detect_ambiguous_terms,
     finalize_term_resolution,
@@ -34,6 +35,9 @@ router = APIRouter()
 _BASE_DIR = os.path.dirname(__file__)
 _SCHEMA_PATH = os.path.join(_BASE_DIR, "../data/mes_schema.json")
 _SCHEMA_CACHE: dict[str, dict[str, Any]] | None = None
+
+# 데모용 날짜 앵커 — DB 최신 데이터 기준일로 고정 (실제 운영 시 "'GETDATE()'" 으로 변경)
+_DATE_ANCHOR = "'2026-05-22'"
 
 # ─────────────────────────────────────────────
 # 요청/응답 모델
@@ -251,7 +255,7 @@ def _time_window_clause(question: str, table: str, alias: str, time_column: str 
         return ""
 
     col = _qualified_ref(table, alias, time_column)
-    anchor = "DATEADD(year, -1, GETDATE())"
+    anchor = _DATE_ANCHOR
     compact = question.replace(" ", "")
 
     if "최근7일" in compact or "7일간" in compact:
@@ -372,7 +376,7 @@ def _build_completion_sql(question: str, table: str, column: str) -> str | None:
     """완료 KPI: 시간 컬럼이면 일별 완료 추이, STATE면 상태별 건수."""
     alias = "L"
     upper_col = column.upper()
-    anchor = "DATEADD(year, -1, GETDATE())"
+    anchor = _DATE_ANCHOR
 
     if upper_col in {"TRACKOUTTIME", "ENDTIME", "LOTFINISHEDTIME"}:
         time_col = _qualified_ref(table, alias, column)
@@ -423,7 +427,7 @@ def _build_completion_sql(question: str, table: str, column: str) -> str | None:
 def _build_operation_sql(question: str, table: str, column: str) -> str | None:
     """가동 KPI: CIM_EQUIPMENT이면 설비 상태/건수, CIM_LOT이면 일별 투입 추이."""
     upper_col = column.upper()
-    anchor = "DATEADD(year, -1, GETDATE())"
+    anchor = _DATE_ANCHOR
 
     if table == "CIM_EQUIPMENT":
         # 예상 외 컬럼이어도 CIM_EQUIPMENT 가동 현황 SQL로 처리
@@ -478,6 +482,56 @@ def _build_downtime_sql(question: str, table: str, column: str) -> str | None:
     return None
 
 
+def _kpi_policy_column_ref(user_role: str, term: str) -> tuple[str, str, str] | None:
+    """ROLE_TERM_KPI_POLICIES 첫 번째 항목에서 (table, column, kind) 직접 반환.
+    LLM term resolution 결과를 무시하고 정책 우선순위를 강제 적용."""
+    role = (user_role or "general").lower()
+    term_policies = ROLE_TERM_KPI_POLICIES.get(role, {}).get(term)
+    if not term_policies:
+        # 역할이 없으면 production fallback
+        term_policies = ROLE_TERM_KPI_POLICIES.get("production", {}).get(term)
+    if not term_policies:
+        return None
+    first = term_policies[0]
+    tables = first.get("tables", ())
+    columns = first.get("columns", ())
+    if not tables or not columns:
+        return None
+    return str(tables[0]), str(columns[0]), str(first.get("kind", "값"))
+
+
+def _patch_term_resolution_with_policy(
+    term_resolution: dict[str, Any] | None,
+    user_role: str,
+) -> None:
+    """_build_deterministic_sql이 정책 컬럼을 사용한 후,
+    term_resolution의 해석 결과도 실제 사용된 컬럼으로 덮어씀.
+    kpi_label까지 덮어써야 format_term_resolution_for_user가 올바른 해석을 표시함."""
+    if not term_resolution:
+        return
+    role = (user_role or "general").lower()
+    for item in (term_resolution.get("resolved_terms") or []):
+        term = str(item.get("term", ""))
+        term_policies = ROLE_TERM_KPI_POLICIES.get(role, {}).get(term)
+        if not term_policies:
+            term_policies = ROLE_TERM_KPI_POLICIES.get("production", {}).get(term)
+        if not term_policies:
+            continue
+        first = term_policies[0]
+        tables = first.get("tables", ())
+        columns = first.get("columns", ())
+        if not tables or not columns:
+            continue
+        table, column = str(tables[0]), str(columns[0])
+        column_ref = f"{table}.{column}"
+        kind = str(first.get("kind", "값"))
+        label = str(first.get("label", ""))
+        item["selected_columns"] = [column_ref]
+        item["validated_columns"] = [column_ref]
+        item["selected_meaning"] = f"{column_ref} 기준 {kind}"
+        item["kpi_label"] = label  # format_term_resolution_for_user가 이 필드를 최우선 사용
+
+
 def _build_deterministic_sql(
     question: str,
     term_resolution: dict[str, Any] | None,
@@ -494,13 +548,12 @@ def _build_deterministic_sql(
     if term not in {"불량", "손실", "실적", "완료", "가동", "정지"}:
         return None
 
-    chosen_columns = item.get("validated_columns") or item.get("selected_columns") or []
-    column_ref = next((str(col) for col in chosen_columns if isinstance(col, str)), "")
-    parts = _split_column_ref(column_ref)
-    if not parts:
+    # 정책에서 직접 (table, column, kind) 결정 — LLM 결과 무시
+    user_role = str(term_resolution.get("user_role", "general"))
+    policy_col = _kpi_policy_column_ref(user_role, term)
+    if not policy_col:
         return None
-
-    table, column = parts
+    table, column, kind = policy_col
 
     # 완료/가동/정지: KPI 전용 빌더로 위임
     if term == "완료":
@@ -512,7 +565,7 @@ def _build_deterministic_sql(
 
     # 수량 KPI (불량/손실/실적)
     alias = "L"
-    kind = str(item.get("selected_meaning", ""))
+    # kind는 정책에서 직접 가져옴 (예: "수량")
     measure_expr = _measure_expression(term, question, table, alias, column, kind)
     if not measure_expr:
         return None
@@ -683,8 +736,8 @@ def _preset_sql(question: str) -> Optional[tuple[str, str]]:
             "SUM(ISNULL(L.QTY, 0)) AS 생산량, "
             "COUNT(*) AS LOT건수 "
             "FROM CIM_LOT L WITH (NOLOCK) "
-            "WHERE L.LASTEVENTTIME >= DATEADD(day, -7, DATEADD(year, -1, GETDATE())) "
-            "AND L.LASTEVENTTIME < DATEADD(year, -1, GETDATE()) "
+            "WHERE L.LASTEVENTTIME >= DATEADD(day, -7, '2026-05-22') "
+            "AND L.LASTEVENTTIME < '2026-05-22' "
             "GROUP BY COALESCE(NULLIF(L.PROCESSSEGMENTID, ''), NULLIF(L.PROCESSNODEID, ''), '미지정') "
             "ORDER BY 생산량 DESC, LOT건수 DESC"
         )
@@ -700,16 +753,16 @@ def _preset_sql(question: str) -> Optional[tuple[str, str]]:
             "SELECT COALESCE(NULLIF(PROCESSSEGMENTID, ''), NULLIF(PROCESSNODEID, ''), '미지정') AS 공정, "
             "SUM(ISNULL(DEFECTQTY, 0)) AS 불량수량 "
             "FROM CIM_LOTDEFECT WITH (NOLOCK) "
-            "WHERE LASTEVENTTIME >= CAST(DATEADD(year, -1, GETDATE()) AS date) "
-            "AND LASTEVENTTIME < DATEADD(day, 1, CAST(DATEADD(year, -1, GETDATE()) AS date)) "
+            "WHERE LASTEVENTTIME >= '2026-05-22' "
+            "AND LASTEVENTTIME < DATEADD(day, 1, '2026-05-22') "
             "GROUP BY COALESCE(NULLIF(PROCESSSEGMENTID, ''), NULLIF(PROCESSNODEID, ''), '미지정')"
             ") D "
             "LEFT JOIN ("
             "SELECT COALESCE(NULLIF(PROCESSSEGMENTID, ''), NULLIF(PROCESSNODEID, ''), '미지정') AS 공정, "
             "SUM(ISNULL(QTY, 0)) AS 생산수량 "
             "FROM CIM_LOT WITH (NOLOCK) "
-            "WHERE LASTEVENTTIME >= CAST(DATEADD(year, -1, GETDATE()) AS date) "
-            "AND LASTEVENTTIME < DATEADD(day, 1, CAST(DATEADD(year, -1, GETDATE()) AS date)) "
+            "WHERE LASTEVENTTIME >= '2026-05-22' "
+            "AND LASTEVENTTIME < DATEADD(day, 1, '2026-05-22') "
             "GROUP BY COALESCE(NULLIF(PROCESSSEGMENTID, ''), NULLIF(PROCESSNODEID, ''), '미지정')"
             ") P ON D.공정 = P.공정 "
             "ORDER BY 불량률 DESC, D.불량수량 DESC"
@@ -722,8 +775,8 @@ def _preset_sql(question: str) -> Optional[tuple[str, str]]:
             "COUNT(*) AS 가동건수, "
             "SUM(ISNULL(L.QTY, 0)) AS 처리수량 "
             "FROM CIM_LOT L WITH (NOLOCK) "
-            "WHERE L.TRACKINTIME >= DATEADD(month, DATEDIFF(month, 0, DATEADD(month, -1, DATEADD(year, -1, GETDATE()))), 0) "
-            "AND L.TRACKINTIME < DATEADD(month, DATEDIFF(month, 0, DATEADD(year, -1, GETDATE())), 0) "
+            "WHERE L.TRACKINTIME >= DATEADD(month, DATEDIFF(month, 0, DATEADD(month, -1, '2026-05-22')), 0) "
+            "AND L.TRACKINTIME < DATEADD(month, DATEDIFF(month, 0, '2026-05-22'), 0) "
             "GROUP BY CONVERT(date, L.TRACKINTIME) "
             "ORDER BY 작업일자 ASC"
         )
@@ -737,8 +790,8 @@ def _preset_sql(question: str) -> Optional[tuple[str, str]]:
             "SUM(ISNULL(L.LOSSQTY, 0)) AS 불량수량, "
             "CAST(SUM(ISNULL(L.LOSSQTY, 0)) * 100.0 / NULLIF(SUM(ISNULL(L.ORIGINALQTY, 0)), 0) AS decimal(18, 2)) AS 불량률 "
             "FROM CIM_LOT L WITH (NOLOCK) "
-            "WHERE L.LASTEVENTTIME >= DATEADD(day, -30, DATEADD(year, -1, GETDATE())) "
-            "AND L.LASTEVENTTIME < DATEADD(year, -1, GETDATE()) "
+            "WHERE L.LASTEVENTTIME >= DATEADD(day, -30, '2026-05-22') "
+            "AND L.LASTEVENTTIME < '2026-05-22' "
             "GROUP BY COALESCE(NULLIF(L.TRACKOUTUSERNAME, ''), NULLIF(L.TRACKOUTUSER, ''), NULLIF(L.TRACKINUSERNAME, ''), NULLIF(L.TRACKINUSER, ''), '미지정') "
             "ORDER BY 생산수량 DESC, 작업건수 DESC"
         )
@@ -751,8 +804,8 @@ def _preset_sql(question: str) -> Optional[tuple[str, str]]:
             "SUM(CASE WHEN PO.DELIVERYDATE IS NOT NULL AND (PO.ENDTIME IS NULL OR PO.ENDTIME > PO.DELIVERYDATE) THEN 1 ELSE 0 END) AS 납기미준수건수, "
             "CAST(SUM(CASE WHEN PO.DELIVERYDATE IS NOT NULL AND PO.ENDTIME IS NOT NULL AND PO.ENDTIME <= PO.DELIVERYDATE THEN 1 ELSE 0 END) * 100.0 / NULLIF(SUM(CASE WHEN PO.DELIVERYDATE IS NOT NULL THEN 1 ELSE 0 END), 0) AS decimal(18, 2)) AS 납기준수율 "
             "FROM CIM_PRODUCTORDER PO WITH (NOLOCK) "
-            "WHERE PO.DELIVERYDATE >= DATEADD(quarter, DATEDIFF(quarter, 0, DATEADD(year, -1, GETDATE())), 0) "
-            "AND PO.DELIVERYDATE < DATEADD(quarter, DATEDIFF(quarter, 0, DATEADD(year, -1, GETDATE())) + 1, 0)"
+            "WHERE PO.DELIVERYDATE >= DATEADD(quarter, DATEDIFF(quarter, 0, '2026-05-22'), 0) "
+            "AND PO.DELIVERYDATE < DATEADD(quarter, DATEDIFF(quarter, 0, '2026-05-22') + 1, 0)"
         )
         return sql, "이번 분기 기준 제품 작업지시의 납기 준수율을 계산합니다."
     if "불량" in q and "유형" in q:
@@ -763,8 +816,8 @@ def _preset_sql(question: str) -> Optional[tuple[str, str]]:
             "COUNT(*) AS 발생건수 "
             "FROM CIM_LOTDEFECT LD WITH (NOLOCK) "
             "LEFT JOIN CIM_DEFECT D WITH (NOLOCK) ON LD.DEFECTID = D.DEFECTID AND LD.SITEID = D.SITEID "
-            "WHERE LD.LASTEVENTTIME >= DATEADD(day, -7, DATEADD(year, -1, GETDATE())) "
-            "AND LD.LASTEVENTTIME < DATEADD(year, -1, GETDATE()) "
+            "WHERE LD.LASTEVENTTIME >= DATEADD(day, -7, '2026-05-22') "
+            "AND LD.LASTEVENTTIME < '2026-05-22' "
             "GROUP BY COALESCE(NULLIF(D.DEFECTTYPENAME, ''), NULLIF(D.DEFECTNAME, ''), LD.DEFECTID) "
             "ORDER BY 불량수량 DESC, 발생건수 DESC"
         )
@@ -844,6 +897,9 @@ async def nl_to_sql(req: NlToSqlRequest):
             deterministic_sql = _build_deterministic_sql(req.question, term_resolution)
             if deterministic_sql:
                 sql = deterministic_sql
+                # term_resolution을 실제 사용된 정책 컬럼으로 업데이트
+                # (LLM이 고른 컬럼과 다를 수 있으므로 해석 노트도 일치시킴)
+                _patch_term_resolution_with_policy(term_resolution, req.user_role)
                 description = _deterministic_sql_description(req.question, term_resolution)
                 resolved_terms = []
             else:

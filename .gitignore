@@ -14,7 +14,6 @@ chroma_db/
 
 # Frontend local files
 UI/.env
-UI/.git/
 UI/.vite/
 UI/node_modules/
 UI/dist/
@@ -23,3 +22,6 @@ UI/dist/
 .DS_Store
 Thumbs.db
 *.log
+
+# 특허·논문 자료, 시연 영상 (용량 크고 비공개)
+docs/

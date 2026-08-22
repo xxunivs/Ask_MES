@@ -165,12 +165,12 @@ ROLE_TERM_HINTS = {
 ROLE_TERM_KPI_POLICIES = {
     "production": {
         "불량": [
+            {"label": "불량 수량 (LOT 기준)", "tables": ("CIM_LOT",), "columns": ("DEFECTQTY",), "kind": "수량"},
             {"label": "손실 수량", "tables": ("CIM_LOT",), "columns": ("LOSSQTY",), "kind": "수량"},
-            {"label": "불량 수량", "tables": ("CIM_LOT", "CIM_LOTDEFECT"), "columns": ("DEFECTQTY",), "kind": "수량"},
         ],
         "손실": [
+            {"label": "불량 수량 (LOT 기준)", "tables": ("CIM_LOT",), "columns": ("DEFECTQTY",), "kind": "수량"},
             {"label": "손실 수량", "tables": ("CIM_LOT",), "columns": ("LOSSQTY",), "kind": "수량"},
-            {"label": "스크랩 수량", "tables": ("CIM_LOT",), "tokens": ("SCRAP",), "kind": "수량"},
         ],
         "실적": [
             {"label": "생산 수량", "tables": ("CIM_LOT",), "columns": ("QTY",), "kind": "수량"},
@@ -191,12 +191,12 @@ ROLE_TERM_KPI_POLICIES = {
     },
     "quality": {
         "불량": [
-            {"label": "불량 수량", "tables": ("CIM_LOT", "CIM_LOTDEFECT"), "columns": ("DEFECTQTY",), "kind": "수량"},
-            {"label": "손실 수량", "tables": ("CIM_LOT",), "columns": ("LOSSQTY",), "kind": "수량"},
+            {"label": "불량 수량 (검사 기록 기준)", "tables": ("CIM_LOTDEFECT",), "columns": ("DEFECTQTY",), "kind": "수량"},
+            {"label": "불량 수량 (LOT 기준)", "tables": ("CIM_LOT",), "columns": ("DEFECTQTY",), "kind": "수량"},
         ],
         "손실": [
-            {"label": "불량 수량", "tables": ("CIM_LOT", "CIM_LOTDEFECT"), "columns": ("DEFECTQTY",), "kind": "수량"},
-            {"label": "손실 수량", "tables": ("CIM_LOT",), "columns": ("LOSSQTY",), "kind": "수량"},
+            {"label": "불량 수량 (검사 기록 기준)", "tables": ("CIM_LOTDEFECT",), "columns": ("DEFECTQTY",), "kind": "수량"},
+            {"label": "불량 수량 (LOT 기준)", "tables": ("CIM_LOT",), "columns": ("DEFECTQTY",), "kind": "수량"},
         ],
         "실적": [
             {"label": "실적 수량", "tables": ("CIM_PRODUCTORDER",), "columns": ("RESULTQTY",), "kind": "수량"},
@@ -217,12 +217,12 @@ ROLE_TERM_KPI_POLICIES = {
     },
     "equipment": {
         "불량": [
+            {"label": "불량 수량 (LOT 기준)", "tables": ("CIM_LOT",), "columns": ("DEFECTQTY",), "kind": "수량"},
             {"label": "손실 수량", "tables": ("CIM_LOT",), "columns": ("LOSSQTY",), "kind": "수량"},
-            {"label": "불량 수량", "tables": ("CIM_LOT", "CIM_LOTDEFECT"), "columns": ("DEFECTQTY",), "kind": "수량"},
         ],
         "손실": [
+            {"label": "불량 수량 (LOT 기준)", "tables": ("CIM_LOT",), "columns": ("DEFECTQTY",), "kind": "수량"},
             {"label": "손실 수량", "tables": ("CIM_LOT",), "columns": ("LOSSQTY",), "kind": "수량"},
-            {"label": "설비 영향 손실", "tables": ("CIM_LOT",), "tokens": ("EQUIPMENT", "LOSS"), "kind": "수량"},
         ],
         "실적": [
             {"label": "생산 수량", "tables": ("CIM_LOT",), "columns": ("QTY",), "kind": "수량"},
@@ -243,12 +243,12 @@ ROLE_TERM_KPI_POLICIES = {
     },
     "management": {
         "불량": [
+            {"label": "불량 수량 (LOT 기준)", "tables": ("CIM_LOT",), "columns": ("DEFECTQTY",), "kind": "수량"},
             {"label": "손실 수량", "tables": ("CIM_LOT",), "columns": ("LOSSQTY",), "kind": "수량"},
-            {"label": "불량 수량", "tables": ("CIM_LOT", "CIM_LOTDEFECT"), "columns": ("DEFECTQTY",), "kind": "수량"},
         ],
         "손실": [
+            {"label": "불량 수량 (LOT 기준)", "tables": ("CIM_LOT",), "columns": ("DEFECTQTY",), "kind": "수량"},
             {"label": "손실 수량", "tables": ("CIM_LOT",), "columns": ("LOSSQTY",), "kind": "수량"},
-            {"label": "스크랩 수량", "tables": ("CIM_LOT",), "tokens": ("SCRAP",), "kind": "수량"},
         ],
         "실적": [
             {"label": "실적 수량", "tables": ("CIM_PRODUCTORDER",), "columns": ("RESULTQTY",), "kind": "수량"},
