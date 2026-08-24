@@ -77,6 +77,8 @@ async def generate_sql(
         schema=schema_ctx,
         db_context=db_ctx,
         question=question,
+        # 벤치마크는 USE_ROLE_RESOLUTION 이 꺼진 구성을 재므로 역할 해석 컨텍스트가 없다.
+        term_context="(모호어 해석 미사용: 기준선 구성)",
         schema_whitelist=allowed_tables_hint(),
         code_values=code_values_prompt_hint() or "(코드값 사전 없음)",
         alignment_rules=alignment_prompt_rules(),
@@ -87,7 +89,10 @@ async def generate_sql(
 
     for attempt in range(SCHEMA_RETRY_MAX + 1):
         raw = await llm_generate(prompt, temperature=0.05, max_tokens=512)
-        sql, desc = _parse_llm_json(raw)
+        # chat._parse_llm_json 은 dict 를 돌려준다 (예전 구현은 (sql, desc) 튜플이었다).
+        parsed = _parse_llm_json(raw)
+        sql = (parsed.get("sql") or "").strip()
+        desc = (parsed.get("description") or "").strip()
         vr = validate_sql(sql or "", question=question)
         schema_valid = vr.ok
         schema_error = vr.error_message()

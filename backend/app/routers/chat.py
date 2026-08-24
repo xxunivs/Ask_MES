@@ -20,6 +20,10 @@ from app.core.config import LLM_MODEL, LLM_PROVIDER, USE_ROLE_RESOLUTION
 from app.core.retriever import retrieve_context
 from app.core.sql_executor import execute_sql
 from app.core.live_sample import build_live_db_context, validate_sql_against_schema
+from app.core.sql_validator import allowed_tables_hint
+from app.core.code_values import code_values_prompt_hint
+from app.core.concept_alignment import alignment_prompt_rules
+from app.core.date_policy import date_rules_for_prompt
 from app.core.role_pipeline import (
     advance_term_resolution_candidate,
     build_deterministic_sql,
@@ -68,6 +72,16 @@ class AnalyzeRequest(BaseModel):
 # 프롬프트 템플릿
 # ─────────────────────────────────────────────
 
+def _static_prompt_hints() -> dict:
+    """이식한 검증 모듈들이 만드는 프롬프트 절. NL_TO_SQL_PROMPT 의 고정 슬롯을 채운다."""
+    return {
+        "date_rules": date_rules_for_prompt(),
+        "schema_whitelist": allowed_tables_hint(),
+        "code_values": code_values_prompt_hint() or "(코드값 사전 없음)",
+        "alignment_rules": alignment_prompt_rules(),
+    }
+
+
 NL_TO_SQL_PROMPT = """MES 질문을 간결한 MS SQL Server SELECT로 변환하세요.
 
 ## 스키마
@@ -80,14 +94,45 @@ NL_TO_SQL_PROMPT = """MES 질문을 간결한 MS SQL Server SELECT로 변환하�
 {term_context}
 
 ## 규칙
-1. SELECT만 생성하고 모든 테이블에 WITH (NOLOCK)을 사용합니다.
-2. 제공된 실제 테이블·컬럼·JOIN만 사용합니다.
-3. 모호어는 역할·대화·실데이터를 함께 판단합니다. 반드시 아래 후보 중 값있음 후보를 SQL에 사용하고 후보 밖의 유사 컬럼은 쓰지 않습니다.
-4. 날짜 미지정/상대 날짜의 기준은 1년 전 GETDATE()이며, 명시 날짜는 리터럴을 사용합니다. 범위는 >=, <로 작성합니다.
-5. 생산량은 CIM_LOT.QTY 합계, 생산건수는 COUNT(*), 일별 추이는 CONVERT(date,...), 설비 추이는 CIM_LOT.TRACKINTIME/EQUIPMENTID를 사용합니다.
-6. 비율은 * 100하고 0 나눗셈을 방지합니다. alias에 DATE, TIME, NAME, VALUE, COUNT, STATE, TYPE, DATA, KEY, INDEX, ORDER를 쓰지 않습니다.
+1. SELECT 문만 생성 (INSERT/UPDATE/DELETE/DROP/EXEC 절대 금지)
+2. MS SQL Server 문법 사용. WITH (NOLOCK) 힌트를 모든 테이블에 적용하세요.
+3. 컬럼/테이블명은 반드시 스키마에 있는 이름 그대로 사용 (존재하지 않는 컬럼 사용 금지)
+4. 모호어는 역할·대화·실데이터를 함께 판단합니다. 반드시 위 후보 중 값있음 후보를 SQL에 사용하고 후보 밖의 유사 컬럼은 쓰지 않습니다.
 
-7. SELECT 컬럼은 기본 4개 이하, JOIN은 2개 이하로 제한하고 TOP 20 이하의 짧은 SQL을 만듭니다.
+## 날짜 규칙
+{date_rules}
+
+## 집계/추이 규칙
+9. 일별 추이 집계 시 날짜 컬럼은 CONVERT(date, 날짜컬럼) 사용
+10. 설비 가동 횟수 추이 → CIM_LOT 테이블의 TRACKINTIME + EQUIPMENTID로 COUNT(*) 집계
+    (CIM_EQUIPMENT.RUNCOUNT는 현재 누적값이므로 추이 분석에 사용 금지)
+11. 불량률 계산 → SUM(LOSSQTY) / NULLIF(SUM(ORIGINALQTY), 0) * 100
+
+## alias 규칙
+12. 컬럼 alias에 SQL 예약어 사용 금지: DATE, TIME, NAME, VALUE, COUNT, STATE, TYPE, DATA, KEY, INDEX, ORDER
+    예시: AS DATE (X) → AS 작업일자 (O), AS COUNT (X) → AS 건수 (O)
+
+## 스키마 화이트리스트 (필수)
+13. 아래에 없는 CIM_* 테이블·컬럼 이름을 만들지 마세요.
+{schema_whitelist}
+
+## 코드값 (DB DISTINCT 기준, WHERE 절 리터럴)
+14. Y/N 플래그는 TRUE/FALSE/1/0 대신 아래 허용 값만 사용.
+{code_values}
+
+## 질의-테이블 매핑
+15. 아래 질의 유형은 지정 테이블을 반드시 사용.
+{alignment_rules}
+
+## 단순 조회 (중요)
+16. 단일 테이블로 답할 수 있는 목록·집계·필터 질의는 **JOIN 하지 마세요**.
+17. SELECT * 금지. 스키마에 있는 컬럼만 명시.
+18. 환각 컬럼 금지: NODENAME→PROCESSNODENAME, SEGMENTNAME→PROCESSSEGMENTNAME, ORDERID→PRODUCTORDERID, SAFETYSTOCKYN→SAFETY_QTY, 자재이름 LOTNAME→MATERIALLOTNAME
+19. **SELECT DISTINCT 금지.** 일부 테이블에서 DB 오류 발생. 대신 SELECT TOP 1000 또는 GROUP BY 사용.
+    예시: SELECT DISTINCT FACILITYID (X) → SELECT TOP 1000 FACILITYID (O)
+20. **컬럼 alias에 작은따옴표(\' \') 사용 금지.** 예: AS \'이름\' (X) → AS 이름 (O)
+21. **테이블 alias는 반드시 WITH (NOLOCK) 앞에 위치.** 예: FROM CIM_LOT WITH(NOLOCK) L (X) → FROM CIM_LOT L WITH(NOLOCK) (O)
+22. **테이블을 괄호로 감싸지 마세요.** 예: FROM (CIM_LOT WITH(NOLOCK)) (X) → FROM CIM_LOT WITH(NOLOCK) (O)
 
 첫 글자부터 한 줄 JSON만 응답하고 사고과정·설명·마크다운은 출력하지 마세요:
 {{"sql":"SELECT ...","term_choices":{{"모호어":"TABLE.COLUMN"}}}}
@@ -439,6 +484,7 @@ async def nl_to_sql(req: NlToSqlRequest):
                     db_context=prompt_db_context,
                     term_context=prompt_term_context,
                     question=_clip_prompt_text(req.question, 150),
+                    **_static_prompt_hints(),
                 )
                 try:
                     sql, description, resolved_terms = await _llm_sql_from_prompt(prompt, max_tokens=320)
@@ -470,6 +516,7 @@ async def nl_to_sql(req: NlToSqlRequest):
                 db_context=prompt_db_context,
                 term_context=prompt_term_context,
                 question=_clip_prompt_text(req.question, 150),
+                **_static_prompt_hints(),
             )
             try:
                 sql, description, resolved_terms = await _llm_sql_from_prompt(prompt, max_tokens=320)

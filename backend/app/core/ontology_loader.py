@@ -12,7 +12,7 @@ OWL/Turtle 온톨로지(mes_ontology.ttl)를 로드해서 두 가지 역할을 �
      → FKPathResolver와 협업 (온톨로지 우선, FK 그래프 보완)
 
 사용법:
-  from core.ontology_loader import get_ontology
+  from app.core.ontology_loader import get_ontology
   onto = get_ontology()
   tables = onto.find_tables("홀드 상태인 LOT")
   join  = onto.get_join_hint(["CIM_LOT", "CIM_EQUIPMENTCLASS"])

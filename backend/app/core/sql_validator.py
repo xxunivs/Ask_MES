@@ -267,7 +267,6 @@ def build_schema_correction_prompt(
     invalid_sql: str,
     validation: ValidationResult,
 ) -> str:
-    from core.concept_alignment import alignment_prompt_rules
     """스키마 오류 시 LLM 재생성용 프롬프트."""
     err = validation.error_message()
     valid_sample = ", ".join(sorted(get_schema_registry().table_names)[:12])
