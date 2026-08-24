@@ -21,6 +21,8 @@ from app.core.retriever import retrieve_context
 from app.core.sql_executor import execute_sql
 from app.core.live_sample import build_live_db_context, validate_sql_against_schema
 from app.core.sql_validator import allowed_tables_hint
+from app.core.query_safety import validate_query
+from app.core.sql_autofix import autofix_sql
 from app.core.code_values import code_values_prompt_hint
 from app.core.concept_alignment import alignment_prompt_rules
 from app.core.date_policy import date_rules_for_prompt
@@ -133,6 +135,11 @@ NL_TO_SQL_PROMPT = """MES 질문을 간결한 MS SQL Server SELECT로 변환하�
 20. **컬럼 alias에 작은따옴표(\' \') 사용 금지.** 예: AS \'이름\' (X) → AS 이름 (O)
 21. **테이블 alias는 반드시 WITH (NOLOCK) 앞에 위치.** 예: FROM CIM_LOT WITH(NOLOCK) L (X) → FROM CIM_LOT L WITH(NOLOCK) (O)
 22. **테이블을 괄호로 감싸지 마세요.** 예: FROM (CIM_LOT WITH(NOLOCK)) (X) → FROM CIM_LOT WITH(NOLOCK) (O)
+23. **목록·조회 질의에는 반드시 행 수를 제한하세요.** WHERE 조건이 없으면 `SELECT TOP 1000` 을 붙입니다.
+    제한 없는 전체 조회는 차단됩니다. 예: SELECT LOTID FROM CIM_LOT WITH(NOLOCK) (X)
+    → SELECT TOP 1000 LOTID FROM CIM_LOT WITH(NOLOCK) (O)
+    (COUNT/SUM 등 집계만 하는 질의는 제한이 필요 없습니다)
+24. **컬럼 alias 에 공백을 쓰지 마세요.** 예: AS LOT 건수 (X) → AS LOT건수 (O)
 
 첫 글자부터 한 줄 JSON만 응답하고 사고과정·설명·마크다운은 출력하지 마세요:
 {{"sql":"SELECT ...","term_choices":{{"모호어":"TABLE.COLUMN"}}}}
@@ -191,8 +198,8 @@ ANALYZE_PROMPT = """당신은 MES 데이터 분석 전문가입니다.
 
 def _parse_llm_json(raw: str) -> dict[str, Any]:
     """LLM 응답에서 첫 JSON 객체를 추출."""
-    # 마크다운 코드블록 제거
-    raw = re.sub(r"```(?:json)?", "", raw).strip().rstrip("`").strip()
+    # 마크다운 코드블록 제거. ```json 뿐 아니라 ```sql, ```tsql 등도 벗긴다.
+    raw = re.sub(r"```[a-zA-Z]*", "", raw).strip().rstrip("`").strip()
 
     # JSON 블록 추출 시도: 모델이 뒤에 예시를 이어 쓰는 경우가 있어 첫 valid object만 사용
     decoder = json.JSONDecoder()
@@ -204,9 +211,11 @@ def _parse_llm_json(raw: str) -> dict[str, Any]:
         except json.JSONDecodeError:
             continue
 
-    # Fallback: SELECT 구문 직접 추출
+    # Fallback: SELECT 구문 직접 추출.
+    # 못 찾으면 빈 문자열을 준다. 예전에는 raw 를 그대로 돌려줘서, 모델이
+    # 코드펜스만 뱉고 끊긴 경우(```sql) 찌꺼기 "sql" 이 SQL 로 실행됐다.
     sql_match = re.search(r'(SELECT\s.+?)(?:;|$)', raw, re.DOTALL | re.IGNORECASE)
-    sql = sql_match.group(1).strip() if sql_match else raw
+    sql = sql_match.group(1).strip() if sql_match else ""
     return {"sql": sql, "description": "", "resolved_terms": []}
 
 
@@ -536,7 +545,14 @@ async def nl_to_sql(req: NlToSqlRequest):
     db_error = None
     max_attempts = (SCHEMA_RETRY_MAX + DB_RETRY_MAX) if generated_by_llm else 1
     for attempt in range(max_attempts):
+        sql, _autofixes = autofix_sql(sql)
+        if _autofixes:
+            print(f"[AUTOFIX] {_autofixes}")
+        safety = validate_query(sql)
         preflight_errors = validate_sql_against_schema(sql) + _semantic_sql_errors(req.question, sql, term_resolution)
+        if not safety.ok:
+            # Query Safety Layer: 파스트리로 DDL/DML·전체 스캔·시스템 테이블을 막는다.
+            preflight_errors = [f"[SafetyLayer] {safety.error_message()}"] + preflight_errors
         if preflight_errors:
             db_error = "SQL 사전 검증 실패: " + "; ".join(preflight_errors)
             print(f"[SQL_SCHEMA] 오류(attempt {attempt + 1}/{max_attempts}): {db_error}")

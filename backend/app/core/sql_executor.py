@@ -23,6 +23,10 @@ async def execute_sql(sql: str, limit: int = 100) -> dict:
     """
     POST {MES_API_URL}/chat/sql-execute 호출
     반환: { success, count, columns, rows }
+
+    DB 가 문법 오류를 돌려줘도 HTTP 는 200 이고 본문이
+    {"success": false, "error": "...", "count": 0} 으로 온다. 그대로 반환하면
+    호출부가 "실행됐는데 결과가 0행"으로 오해하므로 여기서 예외로 올린다.
     """
     async with httpx.AsyncClient(timeout=60.0) as client:
         resp = await client.post(
@@ -31,4 +35,8 @@ async def execute_sql(sql: str, limit: int = 100) -> dict:
             headers=_HEADERS,
         )
         resp.raise_for_status()
-        return resp.json()
+        data = resp.json()
+
+    if isinstance(data, dict) and data.get("success") is False:
+        raise RuntimeError(data.get("error") or "SQL 실행 실패 (원인 미상)")
+    return data

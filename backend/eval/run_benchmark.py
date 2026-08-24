@@ -38,6 +38,8 @@ from app.core.sql_validator import (  # noqa: E402
     allowed_tables_hint,
 )
 from app.core.code_values import code_values_prompt_hint  # noqa: E402
+from app.core.query_safety import validate_query  # noqa: E402
+from app.core.sql_autofix import autofix_sql  # noqa: E402
 from app.core.concept_alignment import alignment_prompt_rules  # noqa: E402
 from app.core.date_policy import date_rules_for_prompt  # noqa: E402
 
@@ -93,12 +95,22 @@ async def generate_sql(
         # chat._parse_llm_json 은 dict 를 돌려준다 (예전 구현은 (sql, desc) 튜플이었다).
         parsed = _parse_llm_json(raw)
         sql = (parsed.get("sql") or "").strip()
+        # 문법이 확정적인 오류는 재생성 대신 코드로 바로잡는다.
+        sql, fixes = autofix_sql(sql)
+        if fixes:
+            print(f"    [autofix] {', '.join(fixes)}")
         desc = (parsed.get("description") or "").strip()
         vr = validate_sql(sql or "", question=question)
         schema_valid = vr.ok
         schema_error = vr.error_message()
         if vr.ok:
-            break
+            # 스키마를 통과해도 Query Safety Layer 를 한 번 더 거친다.
+            safety = validate_query(sql or "")
+            if not safety.ok:
+                schema_valid = False
+                schema_error = f"[SafetyLayer] {safety.error_message()}"
+            else:
+                break
         if attempt < SCHEMA_RETRY_MAX:
             prompt = build_schema_correction_prompt(
                 question, schema_ctx, sql or "", vr
@@ -238,9 +250,21 @@ async def process_item(
                 question, schema_ctx, row["pred_sql"], err
             )
             raw = await llm_generate(prompt, temperature=0.05, max_tokens=512)
-            retry_sql, retry_desc = _parse_llm_json(raw)
-            vr = validate_sql(retry_sql or "", question=question)
+            # dict 를 튜플처럼 언팩하면 값이 아니라 키("sql", "term_choices")가
+            # 들어가서, 문자열 "sql" 이 SQL 로 실행되는 사고가 났었다.
+            retry_parsed = _parse_llm_json(raw)
+            retry_sql = (retry_parsed.get("sql") or "").strip()
+            retry_desc = (retry_parsed.get("description") or "").strip()
+            retry_sql, retry_fixes = autofix_sql(retry_sql)
+            if retry_fixes:
+                print(f"    [autofix/retry] {', '.join(retry_fixes)}")
+            if not retry_sql:
+                break
+            vr = validate_sql(retry_sql, question=question)
             if not vr.ok:
+                break
+            safety = validate_query(retry_sql)
+            if not safety.ok:
                 break
             row["pred_sql"] = retry_sql
             row["description"] = retry_desc or row["description"]

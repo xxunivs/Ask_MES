@@ -31,9 +31,50 @@ from dataclasses import dataclass
 import chromadb
 from chromadb.utils import embedding_functions
 
-from app.core.config import CHROMA_PATH, RAG_TOP_K
+from app.core.config import CHROMA_PATH, RAG_TOP_K, EMBED_MODEL, EMBED_BACKEND, OLLAMA_URL
 from app.core.fk_resolver import FKPathResolver, get_resolver
 from app.core.ontology_loader import get_concept_engine
+
+# ──────────────────────────────────────────────────────────────────
+# 임베딩 함수
+# ──────────────────────────────────────────────────────────────────
+
+
+class OllamaEmbeddingFunction(embedding_functions.EmbeddingFunction):
+    """Ollama /api/embeddings 를 부르는 Chroma 임베딩 함수.
+
+    논문 구성이 bge-m3 이고, 4월 프로토타입도 OllamaEmbeddings(model="bge-m3")
+    를 썼다. Chroma 기본 임베딩(all-MiniLM-L6-v2)은 영어 전용이라 한국어
+    질의에서 검색 품질이 무너진다.
+    """
+
+    def __init__(self, model: str, base_url: str):
+        self._model = model
+        self._base_url = base_url.rstrip("/")
+
+    def name(self) -> str:
+        return f"ollama-{self._model}"
+
+    def __call__(self, input):
+        import httpx
+
+        vectors = []
+        with httpx.Client(timeout=120.0) as client:
+            for text in input:
+                resp = client.post(
+                    f"{self._base_url}/api/embeddings",
+                    json={"model": self._model, "prompt": text},
+                )
+                resp.raise_for_status()
+                vectors.append(resp.json()["embedding"])
+        return vectors
+
+
+def _embedding_function():
+    if EMBED_BACKEND == "ollama":
+        return OllamaEmbeddingFunction(EMBED_MODEL, OLLAMA_URL)
+    return embedding_functions.DefaultEmbeddingFunction()
+
 
 # ──────────────────────────────────────────────────────────────────
 # 경로 설정
@@ -105,7 +146,7 @@ def init_chroma():
 
     # ── ChromaDB ──
     client = chromadb.PersistentClient(path=CHROMA_PATH)
-    ef = embedding_functions.DefaultEmbeddingFunction()
+    ef = _embedding_function()
     current_hash = _schema_hash()
 
     if current_hash != _saved_hash():
@@ -114,11 +155,20 @@ def init_chroma():
             client.delete_collection(COLLECTION_NAME)
         except Exception:
             pass
-        _collection = client.create_collection(name=COLLECTION_NAME, embedding_function=ef)
+        # 논문 구성은 코사인 유사도. Chroma 기본은 L2 라서 명시해야 한다.
+        _collection = client.create_collection(
+            name=COLLECTION_NAME,
+            embedding_function=ef,
+            metadata={"hnsw:space": "cosine"},
+        )
         _seed_schema()
         _save_hash(current_hash)
     else:
-        _collection = client.get_or_create_collection(name=COLLECTION_NAME, embedding_function=ef)
+        _collection = client.get_or_create_collection(
+            name=COLLECTION_NAME,
+            embedding_function=ef,
+            metadata={"hnsw:space": "cosine"},
+        )
         if _collection.count() == 0:
             print("[ChromaDB] 컬렉션 비어 있음 → 시딩 시작...")
             _seed_schema()
