@@ -12,6 +12,7 @@ import argparse
 import asyncio
 import csv
 import json
+import re
 import sys
 from datetime import datetime
 from pathlib import Path
@@ -103,7 +104,69 @@ async def generate_sql(
                 question, schema_ctx, sql or "", vr
             )
 
+    # 설명은 SQL 확정 후 별도 호출로 받는다.
+    # NL_TO_SQL_PROMPT 에 description 슬롯을 넣어 한 번에 받아봤더니 모델이
+    # SQL 까지 장황해져서 EX_exec 가 86.0 -> 74.0 으로 떨어졌다 (2회 재현).
+    # 불필요한 JOIN·컬럼이 붙고 SELECT DISTINCT 금지 규칙을 어겼다.
+    if sql and not desc:
+        desc = await describe_sql(question, sql)
+
     return sql, desc, schema_ctx, schema_valid, schema_error
+
+
+SQL_DESCRIBE_PROMPT = """아래 SQL이 무엇을 조회하는지 한 문장으로 설명하세요.
+
+규칙:
+- 반드시 한국어로만 쓰세요. 한자·중국어·영어 문장을 섞지 마세요.
+  (CIM_LOT 같은 테이블·컬럼 이름은 원문 그대로 두세요.)
+- SQL 을 다시 쓰거나 고치지 말고, 설명 문장 하나만 출력하세요.
+
+예시)
+질문: 홀드 상태인 LOT 목록 보여줘
+SQL: SELECT LOTID, LOTNAME FROM CIM_LOT WITH (NOLOCK) WHERE ISHOLD = 'Y'
+설명: 홀드 상태인 LOT의 ID와 이름을 조회합니다.
+
+## 사용자 질문
+{question}
+
+## SQL
+{sql}
+
+설명:"""
+
+
+_HAN_RE = re.compile(r"[\u4e00-\u9fff]")
+
+
+def _clean_description(raw: str) -> str:
+    """첫 문장만 취하고, 한자가 섞이면 버린다.
+
+    qwen2.5 는 긴 SQL 을 설명할 때 중국어로 코드스위칭하는 경향이 있다
+    (예: "설비의 무게, 설치 위치, ... 및 備注：此处..." ).
+    """
+    text = (raw or "").strip()
+    if not text:
+        return ""
+    text = text.splitlines()[0].strip()
+    head, sep, _ = text.partition("다.")
+    if sep:
+        text = head + sep
+    return "" if _HAN_RE.search(text) else text
+
+
+async def describe_sql(question: str, sql: str) -> str:
+    """확정된 SQL 에 대한 한국어 설명 한 문장."""
+    prompt = SQL_DESCRIBE_PROMPT.format(question=question, sql=sql)
+    for _ in range(2):
+        try:
+            raw = await llm_generate(prompt, temperature=0.05, max_tokens=80)
+        except Exception as e:
+            print(f"[Describe] 오류: {e}")
+            return ""
+        desc = _clean_description(raw)
+        if desc:
+            return desc
+    return f'"{question}" 조회'
 
 
 async def process_item(

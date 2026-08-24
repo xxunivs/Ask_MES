@@ -2,6 +2,8 @@
 LLM REST API 클라이언트.
 기본은 Ollama이고, LLM_PROVIDER=vllm이면 OpenAI-compatible vLLM API를 호출합니다.
 """
+from __future__ import annotations
+
 import httpx
 from app.core.config import (
     LLM_PROVIDER,
@@ -13,23 +15,38 @@ from app.core.config import (
 )
 
 
-async def llm_generate(prompt: str, temperature: float = 0.1, max_tokens: int = 512) -> str:
-    """설정된 LLM provider 호출 → 응답 텍스트 반환"""
+async def llm_generate(
+    prompt: str,
+    temperature: float = 0.1,
+    max_tokens: int = 512,
+    seed: int | None = 0,
+) -> str:
+    """설정된 LLM provider 호출 → 응답 텍스트 반환
+
+    seed 는 재현성을 위한 것으로 기본 0 이다. vLLM 경로는 이미 0 으로 고정돼
+    있었고 Ollama 경로만 빠져 있어서, 같은 프롬프트로도 런마다 다른 SQL 이
+    나왔다. None 을 주면 provider 기본값(비결정적)을 쓴다.
+    """
     if LLM_PROVIDER in {"vllm", "openai"}:
-        return await _vllm_generate(prompt, temperature, max_tokens)
-    return await _ollama_generate(prompt, temperature, max_tokens)
+        return await _vllm_generate(prompt, temperature, max_tokens, seed)
+    return await _ollama_generate(prompt, temperature, max_tokens, seed)
 
 
-async def _ollama_generate(prompt: str, temperature: float, max_tokens: int) -> str:
+async def _ollama_generate(
+    prompt: str, temperature: float, max_tokens: int, seed: int | None = 0
+) -> str:
     """Ollama /api/generate 호출"""
+    options = {
+        "temperature": temperature,
+        "num_predict": max_tokens,
+    }
+    if seed is not None:
+        options["seed"] = seed
     payload = {
         "model": OLLAMA_MODEL,
         "prompt": prompt,
         "stream": False,
-        "options": {
-            "temperature": temperature,
-            "num_predict": max_tokens,
-        },
+        "options": options,
     }
     try:
         async with httpx.AsyncClient(timeout=180.0) as client:
@@ -47,7 +64,9 @@ async def _ollama_generate(prompt: str, temperature: float, max_tokens: int) -> 
         raise RuntimeError(f"Ollama HTTP 오류: {e.response.status_code} — {e.response.text[:200]}")
 
 
-async def _vllm_generate(prompt: str, temperature: float, max_tokens: int) -> str:
+async def _vllm_generate(
+    prompt: str, temperature: float, max_tokens: int, seed: int | None = 0
+) -> str:
     """vLLM/OpenAI-compatible chat completions 호출."""
     payload = {
         "model": LLM_MODEL,
@@ -59,7 +78,8 @@ async def _vllm_generate(prompt: str, temperature: float, max_tokens: int) -> st
         # Qwen thinking mode is unnecessary for structured SQL output and
         # otherwise consumes most of the latency/token budget.
         payload["chat_template_kwargs"] = {"enable_thinking": False}
-        payload["seed"] = 0
+        if seed is not None:
+            payload["seed"] = seed
     headers = {"Authorization": f"Bearer {VLLM_API_KEY}"}
     try:
         async with httpx.AsyncClient(timeout=180.0) as client:
