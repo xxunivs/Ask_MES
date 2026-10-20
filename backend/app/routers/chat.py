@@ -20,7 +20,7 @@ from app.core.config import LLM_MODEL, LLM_PROVIDER, USE_ROLE_RESOLUTION
 from app.core.retriever import retrieve_context
 from app.core.sql_executor import execute_sql
 from app.core.live_sample import build_live_db_context, validate_sql_against_schema
-from app.core.sql_validator import allowed_tables_hint
+from app.core.sql_validator import allowed_tables_hint, validate_sql
 from app.core.query_safety import validate_query
 from app.core.sql_autofix import autofix_sql
 from app.core.code_values import code_values_prompt_hint
@@ -244,11 +244,6 @@ def _split_column_ref(column_ref: str) -> tuple[str, str] | None:
     return match.group(1), match.group(2)
 
 
-def _clip_prompt_text(text: str, max_chars: int) -> str:
-    """Conservatively keep Korean-heavy prompts below the 2048-token limit."""
-    if not text or len(text) <= max_chars:
-        return text
-    return text[:max_chars].rstrip() + "\n... (컨텍스트 길이 제한으로 일부 생략)"
 
 
 def _semantic_sql_errors(question: str, sql: str, term_resolution: dict[str, Any] | None = None) -> list[str]:
@@ -482,17 +477,11 @@ async def nl_to_sql(req: NlToSqlRequest):
                 description = deterministic_sql_description(req.question, term_resolution)
                 resolved_terms = []
             else:
-                prompt_schema_ctx = _clip_prompt_text(schema_ctx, 450)
-                prompt_db_context = _clip_prompt_text(db_context or "(관련 테이블의 실제 DB 샘플 없음)", 120)
-                prompt_term_context = _clip_prompt_text(
-                    format_term_resolution_for_prompt(term_resolution or term_fallback),
-                    220,
-                )
                 prompt = NL_TO_SQL_PROMPT.format(
-                    schema=prompt_schema_ctx,
-                    db_context=prompt_db_context,
-                    term_context=prompt_term_context,
-                    question=_clip_prompt_text(req.question, 150),
+                    schema=schema_ctx,
+                    db_context=db_context or "(관련 테이블의 실제 DB 샘플 없음)",
+                    term_context=format_term_resolution_for_prompt(term_resolution or term_fallback),
+                    question=req.question,
                     **_static_prompt_hints(),
                 )
                 try:
@@ -517,14 +506,11 @@ async def nl_to_sql(req: NlToSqlRequest):
             term_context = format_term_resolution_for_prompt(term_resolution)
             term_user_note = format_term_resolution_for_user(term_resolution)
         else:
-            prompt_schema_ctx = _clip_prompt_text(schema_ctx, 450)
-            prompt_db_context = _clip_prompt_text(db_context or "(관련 테이블의 실제 DB 샘플 없음)", 120)
-            prompt_term_context = _clip_prompt_text(term_context, 220)
             prompt = NL_TO_SQL_PROMPT.format(
-                schema=prompt_schema_ctx,
-                db_context=prompt_db_context,
-                term_context=prompt_term_context,
-                question=_clip_prompt_text(req.question, 150),
+                schema=schema_ctx,
+                db_context=db_context or "(관련 테이블의 실제 DB 샘플 없음)",
+                term_context=term_context,
+                question=req.question,
                 **_static_prompt_hints(),
             )
             try:
@@ -550,6 +536,10 @@ async def nl_to_sql(req: NlToSqlRequest):
             print(f"[AUTOFIX] {_autofixes}")
         safety = validate_query(sql)
         preflight_errors = validate_sql_against_schema(sql) + _semantic_sql_errors(req.question, sql, term_resolution)
+        # 벤치마크와 동일한 검증기 (스키마, 코드값, 질의-테이블 정합성)
+        schema_vr = validate_sql(sql, question=req.question)
+        if not schema_vr.ok:
+            preflight_errors = [schema_vr.error_message()] + preflight_errors
         if not safety.ok:
             # Query Safety Layer: 파스트리로 DDL/DML·전체 스캔·시스템 테이블을 막는다.
             preflight_errors = [f"[SafetyLayer] {safety.error_message()}"] + preflight_errors
@@ -560,12 +550,12 @@ async def nl_to_sql(req: NlToSqlRequest):
                 break
 
             repair_prompt = SQL_REPAIR_PROMPT.format(
-                schema=_clip_prompt_text(schema_ctx, 500),
-                db_context=_clip_prompt_text(db_context or "(관련 테이블의 실제 DB 샘플 없음)", 150),
-                term_context=_clip_prompt_text(term_context, 250),
-                question=_clip_prompt_text(req.question, 200),
-                sql=_clip_prompt_text(sql, 600),
-                error=_clip_prompt_text(db_error, 300),
+                schema=schema_ctx,
+                db_context=db_context or "(관련 테이블의 실제 DB 샘플 없음)",
+                term_context=term_context,
+                question=req.question,
+                sql=sql,
+                error=db_error,
             )
             try:
                 repaired_sql, repaired_description, _ = await _llm_sql_from_prompt(repair_prompt, max_tokens=320)
@@ -610,12 +600,12 @@ async def nl_to_sql(req: NlToSqlRequest):
                 break
 
             repair_prompt = SQL_REPAIR_PROMPT.format(
-                schema=_clip_prompt_text(schema_ctx, 500),
-                db_context=_clip_prompt_text(db_context or "(관련 테이블의 실제 DB 샘플 없음)", 150),
-                term_context=_clip_prompt_text(term_context, 250),
-                question=_clip_prompt_text(req.question, 200),
-                sql=_clip_prompt_text(sql, 600),
-                error=_clip_prompt_text(db_error, 300),
+                schema=schema_ctx,
+                db_context=db_context or "(관련 테이블의 실제 DB 샘플 없음)",
+                term_context=term_context,
+                question=req.question,
+                sql=sql,
+                error=db_error,
             )
             try:
                 repaired_sql, repaired_description, _ = await _llm_sql_from_prompt(repair_prompt, max_tokens=320)
