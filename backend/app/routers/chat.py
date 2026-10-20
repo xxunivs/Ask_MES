@@ -6,17 +6,15 @@
 """
 from __future__ import annotations
 
-import asyncio
 import json
-import os
 import re
 
 from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 from typing import Optional, Any
 
 from app.core.llm import llm_generate, check_ollama
-from app.core.config import LLM_MODEL, LLM_PROVIDER, USE_ROLE_RESOLUTION
+from app.core.config import LLM_MODEL, LLM_PROVIDER
 from app.core.retriever import retrieve_context
 from app.core.sql_executor import execute_sql
 from app.core.live_sample import build_live_db_context, validate_sql_against_schema
@@ -26,28 +24,8 @@ from app.core.sql_autofix import autofix_sql
 from app.core.code_values import code_values_prompt_hint
 from app.core.concept_alignment import alignment_prompt_rules
 from app.core.date_policy import date_rules_for_prompt
-from app.core.role_pipeline import (
-    advance_term_resolution_candidate,
-    build_deterministic_sql,
-    deterministic_sql_description,
-    enforce_kpi_columns_in_sql,
-    patch_term_resolution_with_policy,
-    term_resolution_sql_errors,
-)
-from app.core.term_resolver import (
-    align_sql_with_live_candidates,
-    detect_ambiguous_terms,
-    finalize_term_resolution,
-    format_term_resolution_for_prompt,
-    format_term_resolution_for_user,
-    prepare_term_resolution_context,
-    resolve_ambiguous_terms,
-)
 
 router = APIRouter()
-_BASE_DIR = os.path.dirname(__file__)
-_SCHEMA_PATH = os.path.join(_BASE_DIR, "../../data/mes_schema.json")
-_SCHEMA_CACHE: dict[str, dict[str, Any]] | None = None
 
 # SQL 사전 검증 실패 시 재생성 횟수 / DB 실행 실패 시 재생성 횟수
 SCHEMA_RETRY_MAX = 1
@@ -60,9 +38,6 @@ DB_RETRY_MAX = 1
 class NlToSqlRequest(BaseModel):
     question: str
     limit: int = 100
-    user_role: str = "general"
-    current_view: str = "chat"
-    conversation_context: list[str] = Field(default_factory=list)
 
 
 class AnalyzeRequest(BaseModel):
@@ -92,14 +67,10 @@ NL_TO_SQL_PROMPT = """MES 질문을 간결한 MS SQL Server SELECT로 변환하�
 ## 실제 DB
 {db_context}
 
-## 역할·문맥·모호어 후보
-{term_context}
-
 ## 규칙
 1. SELECT 문만 생성 (INSERT/UPDATE/DELETE/DROP/EXEC 절대 금지)
 2. MS SQL Server 문법 사용. WITH (NOLOCK) 힌트를 모든 테이블에 적용하세요.
 3. 컬럼/테이블명은 반드시 스키마에 있는 이름 그대로 사용 (존재하지 않는 컬럼 사용 금지)
-4. 모호어는 역할·대화·실데이터를 함께 판단합니다. 반드시 위 후보 중 값있음 후보를 SQL에 사용하고 후보 밖의 유사 컬럼은 쓰지 않습니다.
 
 ## 날짜 규칙
 {date_rules}
@@ -142,7 +113,7 @@ NL_TO_SQL_PROMPT = """MES 질문을 간결한 MS SQL Server SELECT로 변환하�
 24. **컬럼 alias 에 공백을 쓰지 마세요.** 예: AS LOT 건수 (X) → AS LOT건수 (O)
 
 첫 글자부터 한 줄 JSON만 응답하고 사고과정·설명·마크다운은 출력하지 마세요:
-{{"sql":"SELECT ...","term_choices":{{"모호어":"TABLE.COLUMN"}}}}
+{{"sql":"SELECT ..."}}
 
 ## 질문
 {question}
@@ -157,9 +128,6 @@ SQL_REPAIR_PROMPT = """아래 SQL을 오류 한 가지만 반영해 간결한 MS
 
 ## 실제 MES DB 탐색 결과
 {db_context}
-
-## 모호 제조 용어 해석
-{term_context}
 
 ## 사용자 질문
 {question}
@@ -216,37 +184,10 @@ def _parse_llm_json(raw: str) -> dict[str, Any]:
     # 코드펜스만 뱉고 끊긴 경우(```sql) 찌꺼기 "sql" 이 SQL 로 실행됐다.
     sql_match = re.search(r'(SELECT\s.+?)(?:;|$)', raw, re.DOTALL | re.IGNORECASE)
     sql = sql_match.group(1).strip() if sql_match else ""
-    return {"sql": sql, "description": "", "resolved_terms": []}
+    return {"sql": sql, "description": ""}
 
 
-def _resolved_terms_from_choices(parsed: dict[str, Any]) -> list[dict[str, Any]]:
-    choices = parsed.get("term_choices")
-    if not isinstance(choices, dict):
-        resolved_terms = parsed.get("resolved_terms")
-        return resolved_terms if isinstance(resolved_terms, list) else []
-
-    return [
-        {
-            "term": str(term),
-            "selected_columns": [str(column)],
-            "confidence": 0.7,
-            "evidence": ["역할, 대화 맥락 및 실제 DB 후보를 함께 비교"],
-        }
-        for term, column in choices.items()
-        if term and column
-    ]
-
-
-def _split_column_ref(column_ref: str) -> tuple[str, str] | None:
-    match = re.match(r"^\s*(CIM_[A-Z0-9_]+)\.([A-Z0-9_]+)\s*$", column_ref.upper())
-    if not match:
-        return None
-    return match.group(1), match.group(2)
-
-
-
-
-def _semantic_sql_errors(question: str, sql: str, term_resolution: dict[str, Any] | None = None) -> list[str]:
+def _semantic_sql_errors(question: str, sql: str) -> list[str]:
     """Catch common SQL that runs but answers the wrong MES business question."""
     q = question.replace(" ", "")
     upper_sql = sql.upper()
@@ -267,24 +208,20 @@ def _semantic_sql_errors(question: str, sql: str, term_resolution: dict[str, Any
         errors.append("가동/정지 질문은 CIM_EQUIPMENT 또는 CIM_LOT 테이블을 사용해야 합니다.")
     if "완료" in q and "완료" not in "생산완료설비완료" and "CIM_LOT" not in upper_sql and "CIM_PRODUCTORDER" not in upper_sql:
         errors.append("완료 현황 질문은 CIM_LOT(TRACKOUTTIME) 또는 CIM_PRODUCTORDER(ENDTIME)를 사용해야 합니다.")
-
-    if USE_ROLE_RESOLUTION:
-        errors.extend(term_resolution_sql_errors(sql, term_resolution))
     return errors
 
 
-async def _llm_sql_from_prompt(prompt: str, max_tokens: int = 256) -> tuple[str, str, list[dict[str, Any]]]:
+async def _llm_sql_from_prompt(prompt: str, max_tokens: int = 256) -> tuple[str, str]:
     raw_response = await llm_generate(prompt, temperature=0.05, max_tokens=max_tokens)
     parsed = _parse_llm_json(raw_response)
     sql = str(parsed.get("sql", ""))
     description = str(parsed.get("description", ""))
-    resolved_terms = _resolved_terms_from_choices(parsed)
     if not sql:
         print(f"[LLM_SQL_RAW] {raw_response[:800]}")
         raise HTTPException(status_code=500, detail="SQL 생성 실패 — LLM 응답을 파싱할 수 없습니다.")
     if not re.match(r"^\s*SELECT\b", sql, re.IGNORECASE):
         raise HTTPException(status_code=500, detail=f"SQL 생성 실패 — SELECT 문이 아닙니다: {sql[:120]}")
-    return sql, description, resolved_terms
+    return sql, description
 
 
 def _rows_to_text(columns: list, rows: list, max_rows: int = 20) -> str:
@@ -410,11 +347,6 @@ async def nl_to_sql(req: NlToSqlRequest):
     반환: { success, sql, description, data }
     """
     preset = _preset_sql(req.question)
-    term_resolution = None
-    term_context = format_term_resolution_for_prompt(None)
-    term_user_note = ""
-    term_fallback = None
-    deterministic_sql = None
 
     if preset:
         sql, description = preset
@@ -429,99 +361,26 @@ async def nl_to_sql(req: NlToSqlRequest):
             schema_ctx = "(스키마 정보 조회 실패)"
             print(f"[RAG] 오류: {e}")
 
-        # 2. 모호어가 있을 때만 역할 기반 의미 해석 경로를 활성화
-        ambiguous_terms = detect_ambiguous_terms(req.question) if USE_ROLE_RESOLUTION else []
-
-        # 3. 실제 DB 탐색과 모호어 후보 생성을 병렬 수행
+        # 2. 실제 DB 샘플 탐색
         try:
-            if ambiguous_terms:
-                db_context, term_prepared = await asyncio.gather(
-                    build_live_db_context(schema_ctx),
-                    prepare_term_resolution_context(
-                        question=req.question,
-                        user_role=req.user_role,
-                        current_view=req.current_view,
-                        conversation_context=req.conversation_context,
-                        schema_context=schema_ctx,
-                    ),
-                )
-            else:
-                db_context = await build_live_db_context(schema_ctx)
-                term_prepared = ("(모호어 없음: 일반 NL2SQL 경로 사용)", None)
+            db_context = await build_live_db_context(schema_ctx)
         except Exception as e:
             db_context = "(실제 MES DB 탐색 실패)"
-            term_prepared = ("(모호어 후보 생성 실패)", None)
             print(f"[CONTEXT] 오류: {e}")
-        term_context, term_fallback = term_prepared
 
-        if ambiguous_terms:
-            try:
-                term_resolution = await resolve_ambiguous_terms(
-                    question=req.question,
-                    user_role=req.user_role,
-                    current_view=req.current_view,
-                    conversation_context=req.conversation_context,
-                    schema_context=schema_ctx,
-                    db_context=db_context,
-                )
-            except Exception as e:
-                print(f"[TERM_RESOLUTION] 오류: {e}")
-                term_resolution = term_fallback
-
-            deterministic_sql = build_deterministic_sql(req.question, term_resolution)
-            if deterministic_sql:
-                sql = deterministic_sql
-                # term_resolution을 실제 사용된 정책 컬럼으로 업데이트
-                # (LLM이 고른 컬럼과 다를 수 있으므로 해석 노트도 일치시킴)
-                patch_term_resolution_with_policy(term_resolution, req.user_role)
-                description = deterministic_sql_description(req.question, term_resolution)
-                resolved_terms = []
-            else:
-                prompt = NL_TO_SQL_PROMPT.format(
-                    schema=schema_ctx,
-                    db_context=db_context or "(관련 테이블의 실제 DB 샘플 없음)",
-                    term_context=format_term_resolution_for_prompt(term_resolution or term_fallback),
-                    question=req.question,
-                    **_static_prompt_hints(),
-                )
-                try:
-                    sql, description, resolved_terms = await _llm_sql_from_prompt(prompt, max_tokens=320)
-                except HTTPException:
-                    raise
-                except Exception as e:
-                    raise HTTPException(status_code=503, detail=f"LLM 연결 오류: {e}")
-
-                sql, alignment_notes = align_sql_with_live_candidates(sql, term_fallback)
-                # LLM이 역할 KPI 컬럼을 무시했을 경우 강제 교체
-                sql, kpi_patches = enforce_kpi_columns_in_sql(sql, term_resolution or term_fallback)
-                if kpi_patches:
-                    print(f"[KPI_ENFORCE] {kpi_patches}")
-                term_resolution = finalize_term_resolution(
-                    resolved_terms,
-                    term_fallback,
-                    sql,
-                    alignment_notes,
-                )
-
-            term_context = format_term_resolution_for_prompt(term_resolution)
-            term_user_note = format_term_resolution_for_user(term_resolution)
-        else:
-            prompt = NL_TO_SQL_PROMPT.format(
-                schema=schema_ctx,
-                db_context=db_context or "(관련 테이블의 실제 DB 샘플 없음)",
-                term_context=term_context,
-                question=req.question,
-                **_static_prompt_hints(),
-            )
-            try:
-                sql, description, resolved_terms = await _llm_sql_from_prompt(prompt, max_tokens=320)
-            except HTTPException:
-                raise
-            except Exception as e:
-                raise HTTPException(status_code=503, detail=f"LLM 연결 오류: {e}")
-            term_resolution = None
-            term_context = format_term_resolution_for_prompt(None)
-            term_user_note = ""
+        # 3. SQL 생성
+        prompt = NL_TO_SQL_PROMPT.format(
+            schema=schema_ctx,
+            db_context=db_context or "(관련 테이블의 실제 DB 샘플 없음)",
+            question=req.question,
+            **_static_prompt_hints(),
+        )
+        try:
+            sql, description = await _llm_sql_from_prompt(prompt, max_tokens=320)
+        except HTTPException:
+            raise
+        except Exception as e:
+            raise HTTPException(status_code=503, detail=f"LLM 연결 오류: {e}")
         if not description:
             description = f'"{req.question}" 조회 결과'
         generated_by_llm = True
@@ -535,7 +394,7 @@ async def nl_to_sql(req: NlToSqlRequest):
         if _autofixes:
             print(f"[AUTOFIX] {_autofixes}")
         safety = validate_query(sql)
-        preflight_errors = validate_sql_against_schema(sql) + _semantic_sql_errors(req.question, sql, term_resolution)
+        preflight_errors = validate_sql_against_schema(sql) + _semantic_sql_errors(req.question, sql)
         # 벤치마크와 동일한 검증기 (스키마, 코드값, 질의-테이블 정합성)
         schema_vr = validate_sql(sql, question=req.question)
         if not schema_vr.ok:
@@ -552,13 +411,12 @@ async def nl_to_sql(req: NlToSqlRequest):
             repair_prompt = SQL_REPAIR_PROMPT.format(
                 schema=schema_ctx,
                 db_context=db_context or "(관련 테이블의 실제 DB 샘플 없음)",
-                term_context=term_context,
                 question=req.question,
                 sql=sql,
                 error=db_error,
             )
             try:
-                repaired_sql, repaired_description, _ = await _llm_sql_from_prompt(repair_prompt, max_tokens=320)
+                repaired_sql, repaired_description = await _llm_sql_from_prompt(repair_prompt, max_tokens=320)
                 sql = repaired_sql
                 if repaired_description:
                     description = repaired_description
@@ -575,22 +433,6 @@ async def nl_to_sql(req: NlToSqlRequest):
                 "rows": db_result.get("rows", []),   # [{col: val, ...}]
                 "count": db_result.get("count", 0),
             }
-            if (
-                deterministic_sql
-                and term_resolution
-                and db_data.get("count", 0) == 0
-                and attempt < max_attempts - 1
-            ):
-                next_resolution = advance_term_resolution_candidate(term_resolution)
-                if next_resolution:
-                    term_resolution = next_resolution
-                    term_context = format_term_resolution_for_prompt(term_resolution)
-                    term_user_note = format_term_resolution_for_user(term_resolution)
-                    rebuilt_sql = build_deterministic_sql(req.question, term_resolution)
-                    if rebuilt_sql and rebuilt_sql != sql:
-                        sql = rebuilt_sql
-                        description = deterministic_sql_description(req.question, term_resolution)
-                        continue
             db_error = None
             break
         except Exception as e:
@@ -602,13 +444,12 @@ async def nl_to_sql(req: NlToSqlRequest):
             repair_prompt = SQL_REPAIR_PROMPT.format(
                 schema=schema_ctx,
                 db_context=db_context or "(관련 테이블의 실제 DB 샘플 없음)",
-                term_context=term_context,
                 question=req.question,
                 sql=sql,
                 error=db_error,
             )
             try:
-                repaired_sql, repaired_description, _ = await _llm_sql_from_prompt(repair_prompt, max_tokens=320)
+                repaired_sql, repaired_description = await _llm_sql_from_prompt(repair_prompt, max_tokens=320)
                 sql = repaired_sql
                 if repaired_description:
                     description = repaired_description
@@ -622,8 +463,6 @@ async def nl_to_sql(req: NlToSqlRequest):
         "description": description,
         "data": db_data,
         "db_error": db_error,
-        "term_resolution": term_resolution,
-        "term_note": term_user_note,
     }
 
 

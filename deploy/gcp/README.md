@@ -67,14 +67,10 @@ VITE_LLM_API_URL=https://api.neurofactory.cloud
 4. 백엔드 Cloud Run 배포 — **`backend/` 디렉터리에서 빌드한다.** `Dockerfile` 과 `.dockerignore` 가 그 안에 있고, 실행 대상은 `app.main:app` 이다.
 5. `GET /chat/health` 로 LLM·DB 연결 확인
 6. 프론트 배포 (`UI/`, `cloudbuild.yaml` 의 `_VITE_LLM_API_URL` 에 백엔드 주소 전달)
-7. 웹에서 역할 선택 후 질문 테스트
+7. 웹에서 질문 테스트
 
 ## 6. 테스트 질문
 
-- 품질팀: `이번 달 불량 보여줘`
-- 생산팀: `이번 달 불량 보여줘`
-- 관리팀: `이번 달 불량 보여줘`
-- 생산팀: `완료된 작업지시 실적 보여줘`
-- 설비팀: `지난달 설비 가동 추이 알려줘`
-
-역할에 따라 같은 표현이 다른 SQL 의미로 해석되는지 확인한다.
+- `홀드 상태인 LOT 목록 보여줘`
+- `LOT ID와 제품명을 함께 보여줘`
+- `지난달 설비 가동 추이 알려줘`

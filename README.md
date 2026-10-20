@@ -18,8 +18,6 @@ backend/
 │   │   ├── ontology_loader.py 온톨로지 기반 개념어 인식, JOIN 힌트 추출
 │   │   ├── fk_resolver.py     FK 그래프 + Dijkstra 최단 JOIN 경로 계산
 │   │   ├── live_sample.py     실 DB 샘플 조회로 컨텍스트 보강, SQL 검증
-│   │   ├── term_resolver.py   모호어 해석 — 역할·맥락 기반 컬럼 선택
-│   │   ├── role_pipeline.py   역할별 KPI 정책으로 SQL 확정 (플래그로 on/off)
 │   │   ├── sql_validator.py   생성된 SQL 의 스키마·코드값 검증
 │   │   ├── code_values.py     컬럼별 허용 코드값 사전
 │   │   ├── concept_alignment.py  개념어 ↔ 컬럼 정렬 규칙
@@ -68,12 +66,9 @@ UI/src/
 ## 처리 흐름
 
 ```
-질문 + 역할
+질문
    ↓
 retriever      어느 테이블인가        (ontology_loader, fk_resolver 협업)
-   ↓
-term_resolver  모호어를 어느 컬럼으로 볼 것인가   ┐ USE_ROLE_RESOLUTION
-role_pipeline  역할 KPI 정책으로 SQL 확정        ┘ 이 켜졌을 때만
    ↓
 live_sample    실제 DB에 그 값이 있는가
    ↓
@@ -83,9 +78,6 @@ sql_validator  스키마·코드값 검증
    ↓
 sql_executor   SQL 실행 → 결과 반환
 ```
-
-`USE_ROLE_RESOLUTION` 을 끄면 역할 해석 두 단계를 건너뛴 일반 NL2SQL 로 동작한다.
-논문 실험(Ollama Qwen2.5:7b, 50문항)은 이 꺼진 구성을 기준으로 측정했다.
 
 ---
 

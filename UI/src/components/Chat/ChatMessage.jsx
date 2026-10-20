@@ -19,12 +19,6 @@ export default function ChatMessage({ msg, onConfirm, onCancel, onStatsConfirm, 
         {msg.type === "sql-confirm" && (
           <div className="sql-confirm">
             <p className="sql-desc">{msg.description}</p>
-            {msg.term_note && (
-              <div className="term-note">
-                <span className="term-note-label">용어 해석</span>
-                <p>{msg.term_note}</p>
-              </div>
-            )}
             <p className="sql-subtitle">다음 SQL을 실행할까요?</p>
             <pre className="sql-code">{msg.sql}</pre>
             {msg.pending && (

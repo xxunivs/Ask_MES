@@ -80,8 +80,6 @@ async def generate_sql(
         schema=schema_ctx,
         db_context=db_ctx,
         question=question,
-        # 벤치마크는 USE_ROLE_RESOLUTION 이 꺼진 구성을 재므로 역할 해석 컨텍스트가 없다.
-        term_context="(모호어 해석 미사용: 기준선 구성)",
         schema_whitelist=allowed_tables_hint(),
         code_values=code_values_prompt_hint() or "(코드값 사전 없음)",
         alignment_rules=alignment_prompt_rules(),

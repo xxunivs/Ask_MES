@@ -31,7 +31,3 @@ EMBED_MODEL = os.getenv("EMBED_MODEL", "bge-m3")
 # 임베딩 백엔드: "ollama" 는 OLLAMA_URL 의 /api/embeddings 를 부른다.
 # "default" 로 두면 Chroma 기본 임베딩으로 되돌아간다(대조군용).
 EMBED_BACKEND = os.getenv("EMBED_BACKEND", "ollama")
-
-# 역할 기반 모호어 해석 파이프라인 사용 여부.
-# 끄면 app/core/role_pipeline.py 를 타지 않는 일반 NL2SQL 로 동작한다.
-USE_ROLE_RESOLUTION = os.getenv("USE_ROLE_RESOLUTION", "false").strip().lower() in ("1", "true", "yes", "on")
