@@ -39,6 +39,8 @@ async def _ollama_generate(
     options = {
         "temperature": temperature,
         "num_predict": max_tokens,
+        # 스키마 컨텍스트 전체(약 3천 토큰)가 잘리지 않는 컨텍스트 길이
+        "num_ctx": 8192,
     }
     if seed is not None:
         options["seed"] = seed
@@ -46,6 +48,8 @@ async def _ollama_generate(
         "model": OLLAMA_MODEL,
         "prompt": prompt,
         "stream": False,
+        # vLLM 경로와 동일하게 Qwen thinking 모드 비활성화
+        "think": False,
         "options": options,
     }
     try:
