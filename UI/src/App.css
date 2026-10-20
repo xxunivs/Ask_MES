@@ -342,6 +342,38 @@ html, body, #root {
   color: var(--text3);
 }
 
+.trace {
+  font-size: 12px;
+  color: var(--text2);
+}
+
+.trace-toggle {
+  cursor: pointer;
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.trace-step {
+  margin: 4px 0 0 12px;
+}
+
+.trace-step summary {
+  cursor: pointer;
+}
+
+.trace-detail {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 8px 10px;
+  margin-top: 4px;
+  max-height: 240px;
+  overflow: auto;
+  white-space: pre-wrap;
+  word-break: break-all;
+  font-size: 11px;
+}
+
 .sql-code {
   background: #0d1117;
   border: 1px solid var(--border);

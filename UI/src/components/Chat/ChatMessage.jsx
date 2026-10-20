@@ -21,6 +21,17 @@ export default function ChatMessage({ msg, onConfirm, onCancel, onStatsConfirm, 
             <p className="sql-desc">{msg.description}</p>
             <p className="sql-subtitle">다음 SQL을 실행할까요?</p>
             <pre className="sql-code">{msg.sql}</pre>
+            {msg.trace?.length > 0 && (
+              <details className="trace">
+                <summary className="trace-toggle">처리 과정 보기</summary>
+                {msg.trace.map((t, i) => (
+                  <details key={i} className="trace-step">
+                    <summary>{t.step}</summary>
+                    <pre className="trace-detail">{t.detail}</pre>
+                  </details>
+                ))}
+              </details>
+            )}
             {msg.pending && (
               <div className="sql-actions">
                 <button className="btn-confirm" onClick={onConfirm}>

@@ -211,7 +211,7 @@ def _semantic_sql_errors(question: str, sql: str) -> list[str]:
     return errors
 
 
-async def _llm_sql_from_prompt(prompt: str, max_tokens: int = 256) -> tuple[str, str]:
+async def _llm_sql_from_prompt(prompt: str, max_tokens: int = 256) -> tuple[str, str, str]:
     raw_response = await llm_generate(prompt, temperature=0.05, max_tokens=max_tokens)
     parsed = _parse_llm_json(raw_response)
     sql = str(parsed.get("sql", ""))
@@ -221,7 +221,21 @@ async def _llm_sql_from_prompt(prompt: str, max_tokens: int = 256) -> tuple[str,
         raise HTTPException(status_code=500, detail="SQL 생성 실패 — LLM 응답을 파싱할 수 없습니다.")
     if not re.match(r"^\s*SELECT\b", sql, re.IGNORECASE):
         raise HTTPException(status_code=500, detail=f"SQL 생성 실패 — SELECT 문이 아닙니다: {sql[:120]}")
-    return sql, description
+    return sql, description, raw_response
+
+
+def _split_schema_context(schema_ctx: str) -> list[tuple[str, str]]:
+    """retrieve_context 결과를 처리 과정 표시용 단계로 분리"""
+    labels = {
+        "## 개념 매핑": "1-2. 개념 사전 매핑",
+        "## JOIN 경로 힌트": "2. JOIN 경로 계산",
+    }
+    parts = re.split(r"\n\s*(?=## )", schema_ctx)
+    steps = [("1-1. 벡터 검색", parts[0].strip())]
+    for part in parts[1:]:
+        title = next((v for k, v in labels.items() if part.startswith(k)), part.split("\n", 1)[0])
+        steps.append((title, part.split("\n", 1)[1].strip() if "\n" in part else ""))
+    return steps
 
 
 def _rows_to_text(columns: list, rows: list, max_rows: int = 20) -> str:
@@ -347,12 +361,18 @@ async def nl_to_sql(req: NlToSqlRequest):
     반환: { success, sql, description, data }
     """
     preset = _preset_sql(req.question)
+    # 처리 과정 표시용 단계별 중간 결과
+    trace: list[dict[str, str]] = []
+
+    def log(step: str, detail: str) -> None:
+        trace.append({"step": step, "detail": detail})
 
     if preset:
         sql, description = preset
         generated_by_llm = False
         schema_ctx = ""
         db_context = ""
+        log("단골 질문", "추천 질문과 일치해 미리 작성된 SQL을 사용 (LLM 미사용)")
     else:
         # 1. RAG: 관련 스키마 청크 조회
         try:
@@ -360,6 +380,8 @@ async def nl_to_sql(req: NlToSqlRequest):
         except Exception as e:
             schema_ctx = "(스키마 정보 조회 실패)"
             print(f"[RAG] 오류: {e}")
+        for step, detail in _split_schema_context(schema_ctx):
+            log(step, detail)
 
         # 2. 실제 DB 샘플 탐색
         try:
@@ -367,6 +389,7 @@ async def nl_to_sql(req: NlToSqlRequest):
         except Exception as e:
             db_context = "(실제 MES DB 탐색 실패)"
             print(f"[CONTEXT] 오류: {e}")
+        log("3. 실제 값 확인", db_context or "(관련 테이블의 실제 DB 샘플 없음)")
 
         # 3. SQL 생성
         prompt = NL_TO_SQL_PROMPT.format(
@@ -375,8 +398,10 @@ async def nl_to_sql(req: NlToSqlRequest):
             question=req.question,
             **_static_prompt_hints(),
         )
+        log("4. LLM에 보낸 프롬프트", prompt)
         try:
-            sql, description = await _llm_sql_from_prompt(prompt, max_tokens=320)
+            sql, description, raw = await _llm_sql_from_prompt(prompt, max_tokens=320)
+            log("4. LLM 응답", raw)
         except HTTPException:
             raise
         except Exception as e:
@@ -390,9 +415,11 @@ async def nl_to_sql(req: NlToSqlRequest):
     db_error = None
     max_attempts = (SCHEMA_RETRY_MAX + DB_RETRY_MAX) if generated_by_llm else 1
     for attempt in range(max_attempts):
+        attempt_label = f" (시도 {attempt + 1})"
         sql, _autofixes = autofix_sql(sql)
         if _autofixes:
             print(f"[AUTOFIX] {_autofixes}")
+        log("5. 자동 교정" + attempt_label, "\n".join(_autofixes) if _autofixes else "교정 없음")
         safety = validate_query(sql)
         preflight_errors = validate_sql_against_schema(sql) + _semantic_sql_errors(req.question, sql)
         # 벤치마크와 동일한 검증기 (스키마, 코드값, 질의-테이블 정합성)
@@ -402,6 +429,7 @@ async def nl_to_sql(req: NlToSqlRequest):
         if not safety.ok:
             # Query Safety Layer: 파스트리로 DDL/DML·전체 스캔·시스템 테이블을 막는다.
             preflight_errors = [f"[SafetyLayer] {safety.error_message()}"] + preflight_errors
+        log("6. 검증" + attempt_label, "\n".join(preflight_errors) if preflight_errors else f"통과\n{sql}")
         if preflight_errors:
             db_error = "SQL 사전 검증 실패: " + "; ".join(preflight_errors)
             print(f"[SQL_SCHEMA] 오류(attempt {attempt + 1}/{max_attempts}): {db_error}")
@@ -416,7 +444,8 @@ async def nl_to_sql(req: NlToSqlRequest):
                 error=db_error,
             )
             try:
-                repaired_sql, repaired_description = await _llm_sql_from_prompt(repair_prompt, max_tokens=320)
+                repaired_sql, repaired_description, raw = await _llm_sql_from_prompt(repair_prompt, max_tokens=320)
+                log("다시 쓰기" + attempt_label, raw)
                 sql = repaired_sql
                 if repaired_description:
                     description = repaired_description
@@ -434,10 +463,12 @@ async def nl_to_sql(req: NlToSqlRequest):
                 "count": db_result.get("count", 0),
             }
             db_error = None
+            log("7. 실행" + attempt_label, f"{db_data['count']}행 반환")
             break
         except Exception as e:
             db_error = str(e)
             print(f"[DB] 오류(attempt {attempt + 1}/{max_attempts}): {e}")
+            log("7. 실행" + attempt_label, f"DB 오류: {db_error}")
             if not generated_by_llm or attempt >= max_attempts - 1:
                 break
 
@@ -449,7 +480,8 @@ async def nl_to_sql(req: NlToSqlRequest):
                 error=db_error,
             )
             try:
-                repaired_sql, repaired_description = await _llm_sql_from_prompt(repair_prompt, max_tokens=320)
+                repaired_sql, repaired_description, raw = await _llm_sql_from_prompt(repair_prompt, max_tokens=320)
+                log("다시 쓰기" + attempt_label, raw)
                 sql = repaired_sql
                 if repaired_description:
                     description = repaired_description
@@ -463,6 +495,7 @@ async def nl_to_sql(req: NlToSqlRequest):
         "description": description,
         "data": db_data,
         "db_error": db_error,
+        "trace": trace,
     }
 
 

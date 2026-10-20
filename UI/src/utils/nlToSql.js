@@ -26,6 +26,7 @@ export async function convertNlToSql(text, limit = 100) {
     description: result.description,
     data: result.data,         // { columns: [...], rows: [{...}], count: N } | null
     db_error: result.db_error, // DB 실행 실패 시 오류 메시지
+    trace: result.trace,       // 단계별 중간 결과 [{ step, detail }]
   };
 }
 

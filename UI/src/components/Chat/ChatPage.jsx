@@ -63,6 +63,7 @@ export default function ChatPage({ onSqlConfirmed }) {
         description: result.description,
         data: result.data,        // 실제 DB 데이터 (또는 null)
         db_error: result.db_error,
+        trace: result.trace,
         pending: true,
         confirmed: false,
         time: now(),
