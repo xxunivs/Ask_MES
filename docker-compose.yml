@@ -1,0 +1,15 @@
+# 공개용 데모 DB (가상 데이터를 담는 SQL Server)
+services:
+  mes-db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: neurofactory-mes-db
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: ${MSSQL_SA_PASSWORD}
+    ports:
+      - "1433:1433"
+    volumes:
+      - mes-db-data:/var/opt/mssql
+
+volumes:
+  mes-db-data:

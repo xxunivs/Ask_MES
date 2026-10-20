@@ -15,6 +15,9 @@ OLLAMA_MODEL = LLM_MODEL
 VLLM_API_URL = os.getenv("VLLM_API_URL", "http://127.0.0.1:8008/v1")
 VLLM_API_KEY = os.getenv("VLLM_API_KEY", "EMPTY")
 
+# SQL 실행 대상: "demo" 는 로컬 데모 DB(가상 데이터), "mes_api" 는 원격 MES API(실제 DB)
+DB_BACKEND = os.getenv("DB_BACKEND", "demo").strip().lower()
+
 # MES DB API (기존 mes-api) 설정
 MES_API_URL = os.getenv("MES_API_URL", "http://localhost:8000")
 MES_API_KEY = os.getenv("MES_API_KEY", "my-secret-api-key")
@@ -31,3 +34,13 @@ EMBED_MODEL = os.getenv("EMBED_MODEL", "bge-m3")
 # 임베딩 백엔드: "ollama" 는 OLLAMA_URL 의 /api/embeddings 를 부른다.
 # "default" 로 두면 Chroma 기본 임베딩으로 되돌아간다(대조군용).
 EMBED_BACKEND = os.getenv("EMBED_BACKEND", "ollama")
+
+# 공개용 데모 DB (docker compose 의 mes-db, 가상 데이터)
+DEMO_DB_HOST = os.getenv("DEMO_DB_HOST", "localhost")
+DEMO_DB_PORT = int(os.getenv("DEMO_DB_PORT", "1433"))
+DEMO_DB_USER = os.getenv("DEMO_DB_USER", "sa")
+DEMO_DB_PASSWORD = os.getenv("DEMO_DB_PASSWORD", "")
+DEMO_DB_NAME = os.getenv("DEMO_DB_NAME", "MES_DEMO")
+# SQL 실행용 읽기 전용 계정 (demo-db/02_create_reader.sql)
+DEMO_DB_READER_USER = os.getenv("DEMO_DB_READER_USER", "mes_reader")
+DEMO_DB_READER_PASSWORD = os.getenv("DEMO_DB_READER_PASSWORD", "")

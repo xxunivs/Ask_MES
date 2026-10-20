@@ -30,3 +30,7 @@ docs/
 
 # 벤치마크 실행 결과 (재생성 가능)
 backend/eval/results/
+
+# 실제 DB 값 조사 결과 (실제 업무 정보 포함, 로컬 참고용)
+demo-db/value_profile.md
+

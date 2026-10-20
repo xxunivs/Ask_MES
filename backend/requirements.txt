@@ -6,3 +6,4 @@ pydantic
 chromadb
 rdflib
 sqlparse
+pymssql

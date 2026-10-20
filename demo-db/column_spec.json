@@ -1,0 +1,8349 @@
+{
+ "CIM_BATCH": {
+  "BATCHID": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 1.0,
+   "shapes": [
+    "AAA_99999999_9999"
+   ]
+  },
+  "SITEID": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "1000": 2000
+   }
+  },
+  "BATCHNAME": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "BATCHTYPE": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "STATE": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "PREVSTATE": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "QTY": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "UNITID": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "STOCKEDDATE": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "PICKEDDATE": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "SHIPPEDDATE": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "RETURNEDDATE": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "DELIVERYORDERID": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "PREVDELIVERYORDERID": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "ACTIVITY": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "UpdateBatch": 1234,
+    "CreateBatch": 766
+   }
+  },
+  "PREVACTIVITY": {
+   "empty_ratio": 0.383,
+   "kind": "code",
+   "values": {
+    "UpdateBatch": 882,
+    "CreateBatch": 352
+   }
+  },
+  "CUSTOMACTIVITY": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "CreateBatch": 1402,
+    "UpdateBatch": 597,
+    "RulePopBatchLogFile": 1
+   }
+  },
+  "PREVCUSTOMACTIVITY": {
+   "empty_ratio": 0.383,
+   "kind": "code",
+   "values": {
+    "CreateBatch": 866,
+    "UpdateBatch": 367,
+    "RulePopBatchLogFile": 1
+   }
+  },
+  "ISUSABLE": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "Usable": 2000
+   }
+  },
+  "DESCRIPTION": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "REASONCODE": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "COMMENTS": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "CREATOR": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 0.011,
+   "shapes": [
+    "99999999",
+    "AAAAAA"
+   ]
+  },
+  "CREATETIME": {
+   "empty_ratio": 0.0,
+   "kind": "date"
+  },
+  "MODIFIER": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 0.013,
+   "shapes": [
+    "99999999"
+   ]
+  },
+  "MODIFYTIME": {
+   "empty_ratio": 0.0,
+   "kind": "date"
+  },
+  "LASTEVENTTIME": {
+   "empty_ratio": 0.0,
+   "kind": "date"
+  },
+  "TID": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 0.651,
+   "shapes": [
+    "999999999999999999A9A9999999999999999",
+    "999999999999999999A9A999999A999999999",
+    "999999999999999999A9A99999999999999A9"
+   ]
+  },
+  "EQUIPMENTID": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 0.013,
+   "shapes": [
+    "A999999999",
+    "A9999999"
+   ]
+  },
+  "PRIORITY": {
+   "empty_ratio": 0.0,
+   "kind": "number",
+   "integer": true,
+   "low": 1,
+   "high": 4
+  },
+  "COMMENTS1": {
+   "empty_ratio": 0.67,
+   "kind": "text",
+   "distinct_ratio": 0.328,
+   "shapes": [
+    "</AA>AA-9",
+    "AA-9",
+    "</AA>(AAAA-AAAA)"
+   ]
+  },
+  "COMMENTS2": {
+   "empty_ratio": 0.512,
+   "kind": "text",
+   "distinct_ratio": 0.097,
+   "shapes": [
+    "AA-9",
+    "(AAAA-AAAA)",
+    "(AAAA)"
+   ]
+  },
+  "BATCHDATE": {
+   "empty_ratio": 0.0,
+   "kind": "date"
+  },
+  "BATCHLOGFILEID": {
+   "empty_ratio": 1.0,
+   "kind": "text",
+   "distinct_ratio": 1.0,
+   "shapes": [
+    "AAAAAAAAAAAA_99999999_999999"
+   ]
+  },
+  "COMMENTS3": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "WORKCENTER": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "BATCHSITENAME": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  }
+ },
+ "CIM_CODE": {
+  "CODEID": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 0.354,
+   "shapes": [
+    "99999999",
+    "A99",
+    "A9"
+   ]
+  },
+  "CODECLASSID": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 0.043,
+   "shapes": [
+    "AAAAAAAA",
+    "AAAAAAA_AAAAAAAAA",
+    "AAAAAAAAAAA"
+   ]
+  },
+  "SITEID": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "1010": 422,
+    "1032": 421,
+    "1000": 416,
+    "1100": 382,
+    "1030": 359
+   }
+  },
+  "CODENAME": {
+   "empty_ratio": 0.031,
+   "kind": "text",
+   "distinct_ratio": 0.344,
+   "shapes": [
+    "가가",
+    "가가가가",
+    "AA_AA_AAA_AAAAA99"
+   ]
+  },
+  "CODEVALUE": {
+   "empty_ratio": 0.689,
+   "kind": "text",
+   "distinct_ratio": 0.188,
+   "shapes": [
+    "AAAA. AAAAA 9",
+    "9",
+    "A99A999"
+   ]
+  },
+  "PARENTID": {
+   "empty_ratio": 0.953,
+   "kind": "code",
+   "values": {
+    "ROOT": 32,
+    "NORMAL": 9,
+    "11": 9,
+    "21": 7,
+    "INSERT": 6,
+    "15": 6,
+    "13": 6,
+    "19": 6,
+    "16": 4,
+    "23": 4,
+    "17": 2,
+    "12": 2,
+    "14": 2
+   }
+  },
+  "ISSYSTEM": {
+   "empty_ratio": 0.483,
+   "kind": "code",
+   "values": {
+    "N": 991,
+    "Y": 43
+   }
+  },
+  "UISEQUENCE": {
+   "empty_ratio": 0.2,
+   "kind": "number",
+   "integer": true,
+   "low": 1.0,
+   "high": 41.0
+  },
+  "ACTIVITY": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "CreateCode": 1637,
+    "UpdateCode": 323,
+    "DeleteCode": 40
+   }
+  },
+  "PREVACTIVITY": {
+   "empty_ratio": 0.788,
+   "kind": "code",
+   "values": {
+    "CreateCode": 203,
+    "UpdateCode": 147,
+    "UnDeleteCode": 65,
+    "DeleteCode": 9
+   }
+  },
+  "CUSTOMACTIVITY": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 0.002,
+   "shapes": [
+    "AAAAAAAAAA",
+    "AAAAAAAAAAAAAAAAAAAAAAAAAA"
+   ]
+  },
+  "PREVCUSTOMACTIVITY": {
+   "empty_ratio": 0.788,
+   "kind": "text",
+   "distinct_ratio": 0.007,
+   "shapes": [
+    "AAAAAAAAAA",
+    "AAAAAAAAAAAA",
+    "AAAAAAAAAAAAAAAAAAAAAAAAAA"
+   ]
+  },
+  "ISUSABLE": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "Usable": 1884,
+    "UnUsable": 116
+   }
+  },
+  "DESCRIPTION": {
+   "empty_ratio": 0.919,
+   "kind": "text",
+   "distinct_ratio": 0.137,
+   "shapes": [
+    "9",
+    "AAA999,AAA999",
+    "99"
+   ]
+  },
+  "REASONCODE": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "COMMENTS": {
+   "empty_ratio": 0.961,
+   "kind": "text",
+   "distinct_ratio": 0.449,
+   "shapes": [
+    "9999",
+    "999",
+    "AAAAAAAAAA AAAAAAA AAAAAAA"
+   ]
+  },
+  "CREATOR": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 0.007,
+   "shapes": [
+    "AAAAA",
+    "AAAAAA",
+    "99999999"
+   ]
+  },
+  "CREATETIME": {
+   "empty_ratio": 0.0,
+   "kind": "date"
+  },
+  "MODIFIER": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 0.008,
+   "shapes": [
+    "AAAAA",
+    "AAAAAA",
+    "99999999"
+   ]
+  },
+  "MODIFYTIME": {
+   "empty_ratio": 0.0,
+   "kind": "date"
+  },
+  "LASTEVENTTIME": {
+   "empty_ratio": 0.0,
+   "kind": "date"
+  },
+  "TID": {
+   "empty_ratio": 0.442,
+   "kind": "text",
+   "distinct_ratio": 0.115,
+   "shapes": [
+    "99999999999999999A9AA9A99999999999999",
+    "99999999999999999A9AA9A999A999999999A",
+    "99999999999999999A9AA9A999A99999999A9"
+   ]
+  },
+  "PARAM1": {
+   "empty_ratio": 0.857,
+   "kind": "text",
+   "distinct_ratio": 0.105,
+   "shapes": [
+    "AAAAAAA",
+    "AAAAA",
+    "9"
+   ]
+  },
+  "PARAM2": {
+   "empty_ratio": 0.946,
+   "kind": "text",
+   "distinct_ratio": 0.239,
+   "shapes": [
+    "9999-99-99 99:99:99",
+    "AAA_A9_AAAAAAA_AAAA",
+    "AAAAAAA"
+   ]
+  },
+  "PARAM3": {
+   "empty_ratio": 0.924,
+   "kind": "text",
+   "distinct_ratio": 0.205,
+   "shapes": [
+    "9999-99-99 99:99:99",
+    "9",
+    "AAAAAAAAAA"
+   ]
+  },
+  "PARAM4": {
+   "empty_ratio": 0.966,
+   "kind": "code",
+   "values": {
+    "0": 24,
+    "2": 9,
+    "1": 7,
+    "4": 6,
+    "6": 5,
+    "3": 4,
+    "34": 3,
+    "50": 3,
+    "91": 2,
+    "9": 2,
+    "17": 2,
+    "47": 2
+   }
+  },
+  "CODENAME_KO": {
+   "empty_ratio": 0.561,
+   "kind": "text",
+   "distinct_ratio": 0.343,
+   "shapes": [
+    "가가",
+    "가가가가",
+    "가가가"
+   ]
+  },
+  "CODENAME_EN": {
+   "empty_ratio": 0.565,
+   "kind": "text",
+   "distinct_ratio": 0.344,
+   "shapes": [
+    "가가",
+    "가가가가",
+    "가가가"
+   ]
+  },
+  "CODENAME_JA": {
+   "empty_ratio": 0.565,
+   "kind": "text",
+   "distinct_ratio": 0.344,
+   "shapes": [
+    "가가",
+    "가가가가",
+    "가가가"
+   ]
+  },
+  "CODENAME_ZH": {
+   "empty_ratio": 0.565,
+   "kind": "text",
+   "distinct_ratio": 0.344,
+   "shapes": [
+    "가가",
+    "가가가가",
+    "가가가"
+   ]
+  },
+  "CDSYSID": {
+   "empty_ratio": 0.565,
+   "kind": "text",
+   "distinct_ratio": 0.422,
+   "shapes": [
+    "AAA_A9_AAAAAAAA_AAAAA99",
+    "AAAAAA_AAAAAA999",
+    "AAA_A9_AAAAAAA_AAAA99"
+   ]
+  },
+  "PACK_PARAM1": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "PACK_PARAM2": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  }
+ },
+ "CIM_CODECLASS": {
+  "CODECLASSID": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 0.212,
+   "shapes": [
+    "AAAAA99",
+    "AAAAAAA_AAAAAAAAA",
+    "AAAAAAAA"
+   ]
+  },
+  "SITEID": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "1000": 305,
+    "1100": 294,
+    "1010": 288,
+    "1030": 288,
+    "1032": 288
+   }
+  },
+  "CODECLASSNAME": {
+   "empty_ratio": 0.09,
+   "kind": "text",
+   "distinct_ratio": 0.19,
+   "shapes": [
+    "가가가가",
+    "가가가 가가",
+    "AAA_A9_AAAAAAA_AAAA"
+   ]
+  },
+  "ACTIVITY": {
+   "empty_ratio": 0.034,
+   "kind": "code",
+   "values": {
+    "CreateCodeClass": 1368,
+    "UpdateCodeClass": 45
+   }
+  },
+  "PREVACTIVITY": {
+   "empty_ratio": 0.956,
+   "kind": "code",
+   "values": {
+    "CreateCodeClass": 65
+   }
+  },
+  "CUSTOMACTIVITY": {
+   "empty_ratio": 0.038,
+   "kind": "code",
+   "values": {
+    "CreateCodeClass": 1408
+   }
+  },
+  "PREVCUSTOMACTIVITY": {
+   "empty_ratio": 0.956,
+   "kind": "code",
+   "values": {
+    "CreateCodeClass": 65
+   }
+  },
+  "ISUSABLE": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "Usable": 1463
+   }
+  },
+  "DESCRIPTION": {
+   "empty_ratio": 0.984,
+   "kind": "text",
+   "distinct_ratio": 0.304,
+   "shapes": [
+    "가가가가가가 AAAA9 가가가 가가가가",
+    "AA_AA_AA_999",
+    "가가가가가가 AA(%) 가가가"
+   ]
+  },
+  "REASONCODE": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "COMMENTS": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "CREATOR": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "admin": 1178,
+    "hyeonuknam": 65,
+    "IF": 50,
+    "djkim": 42,
+    "hgjeon": 33,
+    "shsong": 25,
+    "yrjiang": 20,
+    "ohkeun0": 20,
+    "rhwogkr": 10,
+    "hwjo": 5,
+    "hjkim": 5,
+    "THIRAUTECH": 5,
+    "10210002": 5
+   }
+  },
+  "CREATETIME": {
+   "empty_ratio": 0.0,
+   "kind": "date"
+  },
+  "MODIFIER": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "admin": 1178,
+    "hyeonuknam": 65,
+    "IF": 50,
+    "djkim": 42,
+    "hgjeon": 33,
+    "shsong": 25,
+    "yrjiang": 20,
+    "ohkeun0": 20,
+    "rhwogkr": 10,
+    "hwjo": 5,
+    "hjkim": 5,
+    "THIRAUTECH": 5,
+    "10210002": 5
+   }
+  },
+  "MODIFYTIME": {
+   "empty_ratio": 0.0,
+   "kind": "date"
+  },
+  "LASTEVENTTIME": {
+   "empty_ratio": 0.034,
+   "kind": "date"
+  },
+  "TID": {
+   "empty_ratio": 0.451,
+   "kind": "text",
+   "distinct_ratio": 0.197,
+   "shapes": [
+    "99999999999999999A9AA9A999999999999AA",
+    "99999999999999999A9AA9A99999999999999",
+    "99999999999999999A9AA9A9999999999999A"
+   ]
+  }
+ },
+ "CIM_DEFECT": {
+  "DEFECTID": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 0.406,
+   "shapes": [
+    "99999999"
+   ]
+  },
+  "SITEID": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "1010": 695,
+    "1032": 666,
+    "1000": 639
+   }
+  },
+  "DEFECTNAME": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 0.093,
+   "shapes": [
+    "AAAA",
+    "AAAA AAAAAA (가가 不)",
+    "AAAAAAA"
+   ]
+  },
+  "DEFECTCLASSID": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "30": 781,
+    "20": 574,
+    "40": 460,
+    "50": 133,
+    "10": 52
+   }
+  },
+  "DEFECTTYPE": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "05": 217,
+    "07": 214,
+    "08": 214,
+    "04": 212,
+    "06": 208,
+    "13": 194,
+    "09": 166,
+    "11": 150,
+    "10": 130,
+    "12": 114,
+    "14": 95,
+    "03": 50,
+    "01": 20,
+    "02": 16
+   }
+  },
+  "ACTIVITY": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 0.001,
+   "shapes": [
+    "AAAAAAAAAAAA(A/A)"
+   ]
+  },
+  "PREVACTIVITY": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 0.001,
+   "shapes": [
+    "AAAAAAAAAAAA(A/A)"
+   ]
+  },
+  "CUSTOMACTIVITY": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 0.001,
+   "shapes": [
+    "AAAAAAAAAAAA(A/A)"
+   ]
+  },
+  "PREVCUSTOMACTIVITY": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 0.001,
+   "shapes": [
+    "AAAAAAAAAAAA(A/A)"
+   ]
+  },
+  "ISUSABLE": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "UnUsable": 2000
+   }
+  },
+  "DESCRIPTION": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 0.007,
+   "shapes": [
+    "99"
+   ]
+  },
+  "REASONCODE": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "COMMENTS": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 0.001,
+   "shapes": [
+    "9999/99/99 가가가 가가 AAAAAAAA 가가"
+   ]
+  },
+  "CREATOR": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "PI12": 2000
+   }
+  },
+  "CREATETIME": {
+   "empty_ratio": 0.0,
+   "kind": "date"
+  },
+  "MODIFIER": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "INTERFACE": 2000
+   }
+  },
+  "MODIFYTIME": {
+   "empty_ratio": 0.0,
+   "kind": "date"
+  },
+  "LASTEVENTTIME": {
+   "empty_ratio": 0.0,
+   "kind": "date"
+  },
+  "TID": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 0.001,
+   "shapes": [
+    "999999999999999999AAA99AA999999999999",
+    "99999999999999999A9AA9A999A9999999999"
+   ]
+  },
+  "DEDUCTUINYN": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "Y": 2000
+   }
+  },
+  "UNITID": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "ERPDEFECTCODE": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 0.089,
+   "shapes": [
+    "999"
+   ]
+  },
+  "BYPRODUCTLOCATION": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "DEFECTCLASSNAME": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "DEFECTTYPENAME": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  }
+ },
+ "CIM_DEFECTCLASS": {
+  "DEFECTCLASSID": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 0.343,
+   "shapes": [
+    "99",
+    "A",
+    "AAAA"
+   ]
+  },
+  "SITEID": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "1000": 24,
+    "1010": 22,
+    "1032": 22,
+    "1030": 1,
+    "1100": 1
+   }
+  },
+  "DEFECTCLASSNAME": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 0.343,
+   "shapes": [
+    "AAAAAA",
+    "AAAAA AAAAA",
+    "AAA AAAA AAA."
+   ]
+  },
+  "ACTIVITY": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "CreateDefectClass": 63,
+    "CreateProductClass": 7
+   }
+  },
+  "PREVACTIVITY": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "CUSTOMACTIVITY": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "CreateDefectClass": 63,
+    "CreateProductClass": 7
+   }
+  },
+  "PREVCUSTOMACTIVITY": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "ISUSABLE": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "Usable": 70
+   }
+  },
+  "DESCRIPTION": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "REASONCODE": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "COMMENTS": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "CREATOR": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "shsong": 67,
+    "IF": 3
+   }
+  },
+  "CREATETIME": {
+   "empty_ratio": 0.0,
+   "kind": "date"
+  },
+  "MODIFIER": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "shsong": 67,
+    "IF": 3
+   }
+  },
+  "MODIFYTIME": {
+   "empty_ratio": 0.0,
+   "kind": "date"
+  },
+  "LASTEVENTTIME": {
+   "empty_ratio": 0.0,
+   "kind": "date"
+  },
+  "TID": {
+   "empty_ratio": 0.043,
+   "kind": "text",
+   "distinct_ratio": 0.045,
+   "shapes": [
+    "999999999999999999AAA99A9999999999999",
+    "999999999999999999AAA99A999999999999A",
+    "99999999999999999A9AA9A999AAA999999AA"
+   ]
+  }
+ },
+ "CIM_EQUIPMENT": {
+  "EQUIPMENTID": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 0.697,
+   "shapes": [
+    "A999999999",
+    "A9999999",
+    "AAAA_A999999999"
+   ]
+  },
+  "SITEID": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "1032": 832,
+    "1000": 562,
+    "1010": 296,
+    "1100": 211,
+    "1030": 99
+   }
+  },
+  "EQUIPMENTNAME": {
+   "empty_ratio": 0.015,
+   "kind": "text",
+   "distinct_ratio": 0.706,
+   "shapes": [
+    "AA-999",
+    "AAA99",
+    "A9-999"
+   ]
+  },
+  "EQUIPMENTCLASSID": {
+   "empty_ratio": 0.054,
+   "kind": "text",
+   "distinct_ratio": 0.2,
+   "shapes": [
+    "999999",
+    "AAAAAAAAA",
+    "AAAA AAAAA"
+   ]
+  },
+  "EQUIPMENTTYPE": {
+   "empty_ratio": 0.055,
+   "kind": "code",
+   "values": {
+    "Main": 1642,
+    "Sub": 123,
+    "Utility": 107,
+    "MAIN": 17
+   }
+  },
+  "PARENTID": {
+   "empty_ratio": 0.455,
+   "kind": "text",
+   "distinct_ratio": 0.517,
+   "shapes": [
+    "A999999999",
+    "A9999999"
+   ]
+  },
+  "EQUIPMENTLEVEL": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "RUNCOUNT": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "RECIPEID": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "STATETIME": {
+   "empty_ratio": 0.455,
+   "kind": "date"
+  },
+  "PREVSTATETIME": {
+   "empty_ratio": 0.559,
+   "kind": "date"
+  },
+  "STATE": {
+   "empty_ratio": 0.028,
+   "kind": "code",
+   "values": {
+    "Idle": 1806,
+    "Run": 137,
+    "Down": 1
+   }
+  },
+  "PREVSTATE": {
+   "empty_ratio": 0.301,
+   "kind": "code",
+   "values": {
+    "Run": 703,
+    "Idle": 659,
+    "Down": 35
+   }
+  },
+  "VENDORID": {
+   "empty_ratio": 0.043,
+   "kind": "text",
+   "distinct_ratio": 0.12,
+   "shapes": [
+    "999999",
+    "가가 가가",
+    "가가 가가가"
+   ]
+  },
+  "MODELNUMBER": {
+   "empty_ratio": 0.211,
+   "kind": "text",
+   "distinct_ratio": 0.208,
+   "shapes": [
+    "999999",
+    "AAAAAAAAA"
+   ]
+  },
+  "SERIALNO": {
+   "empty_ratio": 0.189,
+   "kind": "text",
+   "distinct_ratio": 0.644,
+   "shapes": [
+    "AA99-999",
+    "AAA-999",
+    "999"
+   ]
+  },
+  "ECSERVERNAME": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "CONTROLMODE": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "PREVCONTROLMODE": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "CONTROLMODETIME": {
+   "empty_ratio": 0.992,
+   "kind": "date"
+  },
+  "PREVCONTROLMODETIME": {
+   "empty_ratio": 0.992,
+   "kind": "date"
+  },
+  "OPERATIONMODE": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "PREVOPERATIONMODE": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "OPERATIONMODETIME": {
+   "empty_ratio": 0.992,
+   "kind": "date"
+  },
+  "PREVOPERATIONMODETIME": {
+   "empty_ratio": 0.992,
+   "kind": "date"
+  },
+  "ALARMID": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "CAPABILITY": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "CAPABILITYUNIT": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "MAXCAPACITY": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "MINCAPACITY": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "TACTTIME": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "TACTTIMEUNIT": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "LEADTIME": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "LEADTIMEUNIT": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "LOCATION": {
+   "empty_ratio": 0.5,
+   "kind": "text",
+   "distinct_ratio": 0.027,
+   "shapes": [
+    "9가",
+    "9가가",
+    "AAA 가가가 9가"
+   ]
+  },
+  "PREVLOCATION": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "PROCESSSTATE": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "PREVPROCESSSTATE": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "PROCESSSTATETIME": {
+   "empty_ratio": 0.992,
+   "kind": "date"
+  },
+  "PREVPROCESSSTATETIME": {
+   "empty_ratio": 0.992,
+   "kind": "date"
+  },
+  "UISEQUENCE": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "ACTIVITY": {
+   "empty_ratio": 0.146,
+   "kind": "text",
+   "distinct_ratio": 0.01,
+   "shapes": [
+    "AAAAAAAAAAAAAAAAAAAA",
+    "AAAAAAAAAAAAAAA",
+    "AA99999"
+   ]
+  },
+  "PREVACTIVITY": {
+   "empty_ratio": 0.315,
+   "kind": "text",
+   "distinct_ratio": 0.012,
+   "shapes": [
+    "AAAAAAAAAAAAAAAAAAAA",
+    "AAAAAAAAAAAAAAA",
+    "AAAAAAAAAAAAAAAAAAA"
+   ]
+  },
+  "CUSTOMACTIVITY": {
+   "empty_ratio": 0.288,
+   "kind": "text",
+   "distinct_ratio": 0.008,
+   "shapes": [
+    "AA_AAA_AAAAAAAAAAAAA",
+    "AAAAAAAAAAAAAA",
+    "AAAAA_9999_AAAAAAAAA_AAAAAAAAAA_AAAA_AAAAAAAAAAAA"
+   ]
+  },
+  "PREVCUSTOMACTIVITY": {
+   "empty_ratio": 0.352,
+   "kind": "text",
+   "distinct_ratio": 0.008,
+   "shapes": [
+    "AAAAAAAAAAAAAA",
+    "AA_AAA_AAAAAAAAAAAAA",
+    "AAAAAAAAAAAAAAAAAAAA"
+   ]
+  },
+  "ISUSABLE": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "Usable": 1111,
+    "UnUsable": 889
+   }
+  },
+  "DESCRIPTION": {
+   "empty_ratio": 0.356,
+   "kind": "text",
+   "distinct_ratio": 0.102,
+   "shapes": [
+    "9 AAAA AAAA AAAAAAAA A/A",
+    "AAAAAAAAA AAAAAA",
+    "AAA AAAAA AAAAAAAA A/A"
+   ]
+  },
+  "REASONCODE": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "COMMENTS": {
+   "empty_ratio": 0.465,
+   "kind": "text",
+   "distinct_ratio": 0.526,
+   "shapes": [
+    "AA-999",
+    "A9-999",
+    "AAA-999"
+   ]
+  },
+  "CREATOR": {
+   "empty_ratio": 0.05,
+   "kind": "code",
+   "values": {
+    "admin": 1713,
+    "josong": 78,
+    "10210002": 78,
+    "test": 20,
+    "TEST": 7,
+    "10220067": 2,
+    "ADMIN": 1
+   }
+  },
+  "CREATETIME": {
+   "empty_ratio": 0.04,
+   "kind": "date"
+  },
+  "MODIFIER": {
+   "empty_ratio": 0.038,
+   "kind": "text",
+   "distinct_ratio": 0.073,
+   "shapes": [
+    "99999999",
+    "AAAAA",
+    "AAAA_AAA"
+   ]
+  },
+  "MODIFYTIME": {
+   "empty_ratio": 0.0,
+   "kind": "date"
+  },
+  "LASTEVENTTIME": {
+   "empty_ratio": 0.028,
+   "kind": "date"
+  },
+  "TID": {
+   "empty_ratio": 0.319,
+   "kind": "text",
+   "distinct_ratio": 0.656,
+   "shapes": [
+    "999999999999999999A9A9999999999999999",
+    "999999999999999999A9A999999999999999A",
+    "999999999999999999A9A99999AA9999999A9"
+   ]
+  },
+  "CHARGEDEPT": {
+   "empty_ratio": 0.224,
+   "kind": "code",
+   "values": {
+    "Y1031400": 834,
+    "Y1032400": 239,
+    "Y1052100": 217,
+    "Y1031601": 46,
+    "Y1034400": 44,
+    "Y1034251": 22,
+    "Y1034246": 21,
+    "Y1034242": 20,
+    "Y1034256": 18,
+    "Y1034261": 16,
+    "Y1034244": 11,
+    "Y1034262": 11,
+    "Y1034243": 10,
+    "Y1034241": 10,
+    "Y1031197": 10,
+    "Y1034263": 9,
+    "Y1034265": 5,
+    "Y1034320": 3,
+    "Y1034247": 3,
+    "Y1034245": 3
+   }
+  },
+  "INSTPOSITION": {
+   "empty_ratio": 0.261,
+   "kind": "text",
+   "distinct_ratio": 0.016,
+   "shapes": [
+    "9가",
+    "AAA 가가가 9가",
+    "9가가 9가"
+   ]
+  },
+  "COSTCENTERID": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 0.043,
+   "shapes": [
+    "A9999999",
+    "A999999A"
+   ]
+  },
+  "FACILITYID": {
+   "empty_ratio": 0.037,
+   "kind": "code",
+   "values": {
+    "FM03": 429,
+    "FM02": 426,
+    "FM06": 347,
+    "FM05": 288,
+    "FM01": 274,
+    "FM07": 162
+   }
+  },
+  "ASSETNO": {
+   "empty_ratio": 0.179,
+   "kind": "text",
+   "distinct_ratio": 0.656,
+   "shapes": [
+    "999999",
+    "999999 ",
+    "AAAAAA"
+   ]
+  },
+  "COUNTRYORIGIN": {
+   "empty_ratio": 0.112,
+   "kind": "text",
+   "distinct_ratio": 0.018,
+   "shapes": [
+    "AAAAA",
+    "AAAAAA",
+    "AAAAAAA"
+   ]
+  },
+  "INSTASLLATIONDATE": {
+   "empty_ratio": 0.395,
+   "kind": "text",
+   "distinct_ratio": 0.427,
+   "shapes": [
+    "99999999",
+    "9999-99-99 99:99:99",
+    "9999.99.99"
+   ]
+  },
+  "MANUFACTUREYEAR": {
+   "empty_ratio": 0.475,
+   "kind": "text",
+   "distinct_ratio": 0.451,
+   "shapes": [
+    "9999-99-99 99:99:99",
+    "99999999",
+    "9999"
+   ]
+  },
+  "EQPRATINGGRADE": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "PMTARGET": {
+   "empty_ratio": 0.571,
+   "kind": "code",
+   "values": {
+    "Y": 859
+   }
+  },
+  "EQPGROUP1": {
+   "empty_ratio": 0.414,
+   "kind": "code",
+   "values": {
+    "Production": 798,
+    "Coating": 230,
+    "Utility": 86,
+    "Logisic": 47,
+    "Measurement": 11
+   }
+  },
+  "EQPGROUP2": {
+   "empty_ratio": 0.422,
+   "kind": "code",
+   "values": {
+    "Production": 884,
+    "Coating": 181,
+    "Logisic": 47,
+    "DragFinishing": 25,
+    "Measurement": 11,
+    "Cleaning": 8
+   }
+  },
+  "ELECTRICALSPECV": {
+   "empty_ratio": 0.673,
+   "kind": "code",
+   "values": {
+    "220": 461,
+    "380": 176,
+    "400": 16
+   }
+  },
+  "ELECTRICALSPECHZ": {
+   "empty_ratio": 0.66,
+   "kind": "code",
+   "values": {
+    "60": 679
+   }
+  },
+  "ELECTRICALSPECKW": {
+   "empty_ratio": 0.767,
+   "kind": "text",
+   "distinct_ratio": 0.037,
+   "shapes": [
+    "9",
+    "9.9",
+    "99"
+   ]
+  },
+  "POWERACTUAL": {
+   "empty_ratio": 0.767,
+   "kind": "text",
+   "distinct_ratio": 0.037,
+   "shapes": [
+    "9.9",
+    "99.9",
+    "99"
+   ]
+  },
+  "EQUIPWEIGHTKG": {
+   "empty_ratio": 0.99,
+   "kind": "code",
+   "values": {
+    "3200": 15,
+    "2750": 5
+   }
+  },
+  "EQUIPDIMENWDH": {
+   "empty_ratio": 0.983,
+   "kind": "code",
+   "values": {
+    "2320x1800x2750": 15,
+    "4835x5545x2465": 13,
+    "2320x1800x2200": 5,
+    "1320x1170x741": 2
+   }
+  },
+  "ROBOTNO": {
+   "empty_ratio": 0.836,
+   "kind": "text",
+   "distinct_ratio": 0.407,
+   "shapes": [
+    "AA99-999",
+    "9",
+    "AAA-A-999"
+   ]
+  },
+  "PROGRAM": {
+   "empty_ratio": 0.907,
+   "kind": "text",
+   "distinct_ratio": 0.065,
+   "shapes": [
+    "AAAA AAAAAA",
+    "AAAAA",
+    "A-AAAAA"
+   ]
+  },
+  "PROGRAMVERSION": {
+   "empty_ratio": 0.94,
+   "kind": "text",
+   "distinct_ratio": 0.182,
+   "shapes": [
+    "9.9.999",
+    "AAAAA",
+    "AA 99.9"
+   ]
+  },
+  "IFEQUIPMENT": {
+   "empty_ratio": 0.699,
+   "kind": "code",
+   "values": {
+    "Y": 497,
+    "N": 105
+   }
+  },
+  "EQUIPIP": {
+   "empty_ratio": 0.739,
+   "kind": "text",
+   "distinct_ratio": 0.517,
+   "shapes": [
+    "99.999.999.99",
+    "99.99.99.999",
+    "99.999.99.999"
+   ]
+  },
+  "COMMENTS1": {
+   "empty_ratio": 0.487,
+   "kind": "text",
+   "distinct_ratio": 0.491,
+   "shapes": [
+    "AA-99",
+    "AA-999",
+    "AAA-99"
+   ]
+  },
+  "COMMENTS2": {
+   "empty_ratio": 0.908,
+   "kind": "text",
+   "distinct_ratio": 0.179,
+   "shapes": [
+    "가가가가(가가)",
+    "가가 가가",
+    "가가"
+   ]
+  },
+  "COMMENTS3": {
+   "empty_ratio": 0.967,
+   "kind": "text",
+   "distinct_ratio": 0.179,
+   "shapes": [
+    "AAAA",
+    "AAAAAAAA",
+    "가가"
+   ]
+  },
+  "EQPGROUPIDCODE": {
+   "empty_ratio": 0.46,
+   "kind": "code",
+   "values": {
+    "P": 737,
+    "C": 204,
+    "U": 86,
+    "L": 42,
+    "M": 11
+   }
+  },
+  "MONITORINGFLAG": {
+   "empty_ratio": 0.039,
+   "kind": "text",
+   "distinct_ratio": 0.002,
+   "shapes": [
+    "A",
+    " "
+   ]
+  },
+  "BATCHCOUNT": {
+   "empty_ratio": 0.963,
+   "kind": "code",
+   "values": {
+    "1719": 5,
+    "1175": 5,
+    "622": 5,
+    "3294": 5,
+    "12624": 5,
+    "4643": 5,
+    "2163": 5,
+    "3674": 5,
+    "344": 5,
+    "61249": 5,
+    "472": 5,
+    "0": 4,
+    "337": 4,
+    "55": 3,
+    "7867": 2,
+    "4919": 2,
+    "753": 1,
+    "5869": 1,
+    "296": 1,
+    "727": 1
+   }
+  },
+  "CTIMEFLAG": {
+   "empty_ratio": 0.966,
+   "kind": "text",
+   "distinct_ratio": 0.043,
+   "shapes": [
+    "A",
+    " "
+   ]
+  },
+  "TABLEBATCHFLAG": {
+   "empty_ratio": 0.99,
+   "kind": "text",
+   "distinct_ratio": 0.048,
+   "shapes": [
+    " "
+   ]
+  },
+  "IMSYN": {
+   "empty_ratio": 0.991,
+   "kind": "code",
+   "values": {
+    "Y": 19
+   }
+  },
+  "PRODUCTORDERID": {
+   "empty_ratio": 0.709,
+   "kind": "text",
+   "distinct_ratio": 0.693,
+   "shapes": [
+    "99999999",
+    "99999999-99",
+    "9999999999-99"
+   ]
+  },
+  "EQLEVEL1": {
+   "empty_ratio": 0.412,
+   "kind": "code",
+   "values": {
+    "ET00013": 367,
+    "ET00021": 206,
+    "ET00014": 117,
+    "ET00012": 77,
+    "ET00010": 75,
+    "ET00026": 72,
+    "ET00017": 72,
+    "ET00025": 51,
+    "ET00024": 33,
+    "ET00019": 20,
+    "ET00023": 17,
+    "ET00018": 17,
+    "ET00011": 16,
+    "ET00015": 13,
+    "ET00016": 10,
+    "ET00020": 9,
+    "ET00009": 3
+   }
+  },
+  "EQLEVEL2": {
+   "empty_ratio": 0.412,
+   "kind": "text",
+   "distinct_ratio": 0.025,
+   "shapes": [
+    "AA99999"
+   ]
+  },
+  "EQLEVEL3": {
+   "empty_ratio": 0.412,
+   "kind": "text",
+   "distinct_ratio": 0.069,
+   "shapes": [
+    "AA99999"
+   ]
+  },
+  "EQUIPMENTSTARTDATE": {
+   "empty_ratio": 0.797,
+   "kind": "date"
+  },
+  "LOADERASSETNO": {
+   "empty_ratio": 0.944,
+   "kind": "text",
+   "distinct_ratio": 0.938,
+   "shapes": [
+    "999999",
+    "AA99999",
+    "-"
+   ]
+  },
+  "LOADERDESC": {
+   "empty_ratio": 0.983,
+   "kind": "text",
+   "distinct_ratio": 0.886,
+   "shapes": [
+    "AAAAAA AAAAA AAAAAAAAAA A-999 AA99-999",
+    "AA99999",
+    "AAA 9999.99 / AAAAAA AA. A99999999"
+   ]
+  },
+  "LOADERMODEL": {
+   "empty_ratio": 0.95,
+   "kind": "text",
+   "distinct_ratio": 0.11,
+   "shapes": [
+    "AAAAA AAAAA",
+    "AAAA AAAAAA",
+    "AA99999"
+   ]
+  },
+  "LOADERNO": {
+   "empty_ratio": 0.943,
+   "kind": "text",
+   "distinct_ratio": 0.921,
+   "shapes": [
+    "AA99-999",
+    "AAA-A-999",
+    "A99999999"
+   ]
+  },
+  "NETWORKYN": {
+   "empty_ratio": 0.685,
+   "kind": "code",
+   "values": {
+    "N": 388,
+    "Y": 241
+   }
+  },
+  "PURPOSE": {
+   "empty_ratio": 0.412,
+   "kind": "code",
+   "values": {
+    "ET00003": 444,
+    "ET00006": 215,
+    "ET00004": 140,
+    "ET00005": 109,
+    "ET00007": 101,
+    "ET00002": 91,
+    "ET00008": 72,
+    "ET00001": 3
+   }
+  },
+  "RESULTYN": {
+   "empty_ratio": 0.424,
+   "kind": "code",
+   "values": {
+    "Y": 891,
+    "N": 260
+   }
+  },
+  "SUBLOCATION": {
+   "empty_ratio": 0.997,
+   "kind": "text",
+   "distinct_ratio": 0.833,
+   "shapes": [
+    "9가",
+    "999999",
+    "     "
+   ]
+  },
+  "TRANSFERFACILITYID": {
+   "empty_ratio": 0.992,
+   "kind": "code",
+   "values": {
+    "FM01": 8,
+    "FM05": 4,
+    "Y": 4,
+    "FM02": 1
+   }
+  },
+  "TRANSFERTYPE": {
+   "empty_ratio": 0.991,
+   "kind": "code",
+   "values": {
+    "TRANSFER": 13,
+    "ET00005": 3,
+    "ET00004": 2
+   }
+  },
+  "TRANSFERUSER": {
+   "empty_ratio": 0.991,
+   "kind": "text",
+   "distinct_ratio": 0.167,
+   "shapes": [
+    "AAAAA",
+    "A",
+    "AAAA"
+   ]
+  },
+  "USECAPABILITY": {
+   "empty_ratio": 0.762,
+   "kind": "text",
+   "distinct_ratio": 0.346,
+   "shapes": [
+    "A.A. A",
+    "A.A. A/A",
+    "가가가 가가가(99AAA)"
+   ]
+  },
+  "TRANSFERDATE": {
+   "empty_ratio": 0.985,
+   "kind": "date"
+  },
+  "ACCEPTDATE": {
+   "empty_ratio": 0.999,
+   "kind": "date"
+  },
+  "ACCEPTSTATE": {
+   "empty_ratio": 0.988,
+   "kind": "code",
+   "values": {
+    "ACCEPTREADY": 21,
+    "ACCEPTCOMPLETE": 3
+   }
+  },
+  "AUTOID": {
+   "empty_ratio": 0.982,
+   "kind": "text",
+   "distinct_ratio": 0.778,
+   "shapes": [
+    "A99A999"
+   ]
+  },
+  "AUTONAME": {
+   "empty_ratio": 0.982,
+   "kind": "text",
+   "distinct_ratio": 0.778,
+   "shapes": [
+    "AAAAA-A-9(가가9)",
+    "가가가-A-9(가가9)",
+    "AAAAA-A-9"
+   ]
+  }
+ },
+ "CIM_EQUIPMENTCLASS": {
+  "EQUIPMENTCLASSID": {
+   "empty_ratio": 0.002,
+   "kind": "text",
+   "distinct_ratio": 0.206,
+   "shapes": [
+    "999999",
+    "AAAAA"
+   ]
+  },
+  "SITEID": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "1010": 406,
+    "1000": 403,
+    "1030": 401,
+    "1032": 399,
+    "1100": 391
+   }
+  },
+  "EQUIPMENTCLASSNAME": {
+   "empty_ratio": 0.002,
+   "kind": "text",
+   "distinct_ratio": 0.206,
+   "shapes": [
+    "AA-99",
+    "AA-999",
+    "AAA-9A"
+   ]
+  },
+  "PARENTID": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "EQUIPMENTLEVEL": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "ACTIVITY": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "CreateEquipmentClass": 1581,
+    "UpdateEquipmentClass": 419
+   }
+  },
+  "PREVACTIVITY": {
+   "empty_ratio": 0.796,
+   "kind": "code",
+   "values": {
+    "CreateEquipmentClass": 397,
+    "UpdateEquipmentClass": 10
+   }
+  },
+  "CUSTOMACTIVITY": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 0.001,
+   "shapes": [
+    "AAAAAAAAAAAAAAAAAAAA",
+    "AAAAAAAAAAAAAAAAAAAAA"
+   ]
+  },
+  "PREVCUSTOMACTIVITY": {
+   "empty_ratio": 0.796,
+   "kind": "code",
+   "values": {
+    "CreateEquipmentClass": 407
+   }
+  },
+  "ISUSABLE": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "Usable": 1990,
+    "UnUsable": 10
+   }
+  },
+  "DESCRIPTION": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "REASONCODE": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "COMMENTS": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "CREATOR": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 0.003,
+   "shapes": [
+    "99999999",
+    "AAAAAA",
+    "AAAAA"
+   ]
+  },
+  "CREATETIME": {
+   "empty_ratio": 0.0,
+   "kind": "date"
+  },
+  "MODIFIER": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 0.004,
+   "shapes": [
+    "99999999",
+    "AAAAAA",
+    "AAAAA"
+   ]
+  },
+  "MODIFYTIME": {
+   "empty_ratio": 0.0,
+   "kind": "date"
+  },
+  "LASTEVENTTIME": {
+   "empty_ratio": 0.0,
+   "kind": "date"
+  },
+  "TID": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 0.04,
+   "shapes": [
+    "999999999999999999A9A999999999999999A",
+    "99999999999999999A9AA9A99999999999999",
+    "999999999999999999A9A9999999999999999"
+   ]
+  },
+  "VENDORID": {
+   "empty_ratio": 0.41,
+   "kind": "text",
+   "distinct_ratio": 0.09,
+   "shapes": [
+    "999999",
+    "999999\r\n"
+   ]
+  },
+  "FILEGROUPID": {
+   "empty_ratio": 0.635,
+   "kind": "text",
+   "distinct_ratio": 0.203,
+   "shapes": [
+    "AAAAA_AAAAAAAAAAAAAAAAAA_999999"
+   ]
+  }
+ },
+ "CIM_FACILITY": {
+  "FACILITYID": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 0.479,
+   "shapes": [
+    "AAAAAA",
+    "A9999999",
+    "AA9AAA"
+   ]
+  },
+  "SITEID": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "1032": 570,
+    "1010": 526,
+    "1000": 440,
+    "1100": 212,
+    "1030": 57
+   }
+  },
+  "FACILITYNAME": {
+   "empty_ratio": 0.001,
+   "kind": "text",
+   "distinct_ratio": 0.488,
+   "shapes": [
+    "가가가가",
+    "가가가",
+    "가가"
+   ]
+  },
+  "FACILITYCLASSID": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 0.004,
+   "shapes": [
+    "AAAAAAAAAA",
+    "AAA",
+    "AAAAAAA"
+   ]
+  },
+  "FACILITYTYPE": {
+   "empty_ratio": 0.985,
+   "kind": "code",
+   "values": {
+    "MW": 27
+   }
+  },
+  "QUEUETIME": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "QUEUEUNIT": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "ACTIVITY": {
+   "empty_ratio": 0.017,
+   "kind": "text",
+   "distinct_ratio": 0.003,
+   "shapes": [
+    "AAAAAAAAAAAAAA(A/A)",
+    "AAAAAAAAAAAAAA"
+   ]
+  },
+  "PREVACTIVITY": {
+   "empty_ratio": 0.173,
+   "kind": "text",
+   "distinct_ratio": 0.003,
+   "shapes": [
+    "AAAAAAAAAAAAAA(A/A)",
+    "AAAAAAAAAAAAAA"
+   ]
+  },
+  "CUSTOMACTIVITY": {
+   "empty_ratio": 0.017,
+   "kind": "text",
+   "distinct_ratio": 0.003,
+   "shapes": [
+    "AAAAAAAAAAAAAA(A/A)",
+    "AAAAAAAAAAAAAA"
+   ]
+  },
+  "PREVCUSTOMACTIVITY": {
+   "empty_ratio": 0.173,
+   "kind": "text",
+   "distinct_ratio": 0.003,
+   "shapes": [
+    "AAAAAAAAAAAAAA(A/A)",
+    "AAAAAAAAAAAAAA"
+   ]
+  },
+  "ISUSABLE": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "Usable": 1801,
+    "UnUsable": 4
+   }
+  },
+  "DESCRIPTION": {
+   "empty_ratio": 0.45,
+   "kind": "text",
+   "distinct_ratio": 0.095,
+   "shapes": [
+    "가가가가-가가가-AAAAA 9가",
+    "가가가가-가가가-AAAAA 9,9가",
+    "가가가가-가가가-AAAAA가"
+   ]
+  },
+  "REASONCODE": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "COMMENTS": {
+   "empty_ratio": 0.442,
+   "kind": "text",
+   "distinct_ratio": 0.092,
+   "shapes": [
+    "가가가가-가가가-AAAAA 9가",
+    "가가가가-가가가-AAAAA 9,9가",
+    "가가가가-가가가-AAAAA가"
+   ]
+  },
+  "CREATOR": {
+   "empty_ratio": 0.013,
+   "kind": "text",
+   "distinct_ratio": 0.018,
+   "shapes": [
+    "AAAAA",
+    "99999999",
+    "AAAAAAAAAA"
+   ]
+  },
+  "CREATETIME": {
+   "empty_ratio": 0.011,
+   "kind": "date"
+  },
+  "MODIFIER": {
+   "empty_ratio": 0.049,
+   "kind": "text",
+   "distinct_ratio": 0.02,
+   "shapes": [
+    "99999999",
+    "AAAAA",
+    "AAA99"
+   ]
+  },
+  "MODIFYTIME": {
+   "empty_ratio": 0.0,
+   "kind": "date"
+  },
+  "LASTEVENTTIME": {
+   "empty_ratio": 0.0,
+   "kind": "date"
+  },
+  "TID": {
+   "empty_ratio": 0.089,
+   "kind": "text",
+   "distinct_ratio": 0.032,
+   "shapes": [
+    "9999999999999999999999999999999",
+    "99999999999999999A9AA9A9999AA9999AAA9",
+    "999999999999999999AAA99AA9A9999999999"
+   ]
+  },
+  "COSTCENTERID": {
+   "empty_ratio": 0.289,
+   "kind": "text",
+   "distinct_ratio": 0.079,
+   "shapes": [
+    "A9999999",
+    "A999999A",
+    "A9999999\r\n"
+   ]
+  },
+  "OUTSOURCINGID": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "OUTSOURCINGNAME": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "GROUPTYPE": {
+   "empty_ratio": 0.952,
+   "kind": "code",
+   "values": {
+    "MAINPROCESS": 87
+   }
+  },
+  "OUTFACILITYID": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "MESLOCATIONYN": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "QMS_SPECIAL": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "STEUS": {
+   "empty_ratio": 0.251,
+   "kind": "code",
+   "values": {
+    "PP01": 1089,
+    "PP02": 127,
+    "ZPP1": 125,
+    "ZPP2": 8,
+    "ZP02": 2,
+    "ZP01": 1
+   }
+  }
+ },
+ "CIM_FACILITYMAP": {
+  "FACILITYID": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 0.464,
+   "shapes": [
+    "AAAAAA",
+    "A9999999",
+    "AA9AAA"
+   ]
+  },
+  "PARENTFACILITYID": {
+   "empty_ratio": 0.114,
+   "kind": "code",
+   "values": {
+    "FM03": 425,
+    "FM02": 314,
+    "FM01": 237,
+    "FM07": 191,
+    "FM06": 174,
+    "ROOT": 141,
+    "FM05": 134,
+    "FM08": 16,
+    "FM04": 10
+   }
+  },
+  "SITEID": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "1010": 588,
+    "1032": 563,
+    "1000": 450,
+    "1100": 201,
+    "1030": 51
+   }
+  },
+  "FACILITYLEVEL": {
+   "empty_ratio": 0.0,
+   "kind": "number",
+   "integer": true,
+   "low": 1.0,
+   "high": 1.0
+  },
+  "PRIORITY": {
+   "empty_ratio": 0.016,
+   "kind": "number",
+   "integer": true,
+   "low": 4.0,
+   "high": 1393.0
+  },
+  "FACILITYSEQUENCE": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "ACTIVITY": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "CreateFacilityMap": 1339,
+    "UpdateFacilityMap": 514
+   }
+  },
+  "PREVACTIVITY": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "CUSTOMACTIVITY": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "CreateFacilityMap": 1339,
+    "UpdateFacilityMap": 514
+   }
+  },
+  "PREVCUSTOMACTIVITY": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "ISUSABLE": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "Usable": 1523,
+    "UnUsable": 330
+   }
+  },
+  "DESCRIPTION": {
+   "empty_ratio": 0.989,
+   "kind": "text",
+   "distinct_ratio": 0.05,
+   "shapes": [
+    "AAAAAA AA AA9 AAAAAAA"
+   ]
+  },
+  "REASONCODE": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "COMMENTS": {
+   "empty_ratio": 0.815,
+   "kind": "text",
+   "distinct_ratio": 0.006,
+   "shapes": [
+    "AA99 가 AAAAAAAA 가가",
+    "9999 가가"
+   ]
+  },
+  "CREATOR": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 0.016,
+   "shapes": [
+    "AAAAAA",
+    "99999999",
+    "AAAAAAAAAA"
+   ]
+  },
+  "CREATETIME": {
+   "empty_ratio": 0.0,
+   "kind": "date"
+  },
+  "MODIFIER": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 0.016,
+   "shapes": [
+    "AAAAAA",
+    "99999999",
+    "AAAAAAAAAA"
+   ]
+  },
+  "MODIFYTIME": {
+   "empty_ratio": 0.0,
+   "kind": "date"
+  },
+  "LASTEVENTTIME": {
+   "empty_ratio": 0.0,
+   "kind": "date"
+  },
+  "TID": {
+   "empty_ratio": 0.08,
+   "kind": "text",
+   "distinct_ratio": 0.022,
+   "shapes": [
+    "9999999999999999999999999999999",
+    "999999999999999999AAA99A99999999999A9",
+    "99999999999999999A9AA9A9999AA9999AAA9"
+   ]
+  }
+ },
+ "CIM_LOT": {
+  "LOTID": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 1.0,
+   "shapes": [
+    "9999999999-99",
+    "99999999-999",
+    "99999999"
+   ]
+  },
+  "SITEID": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "1000": 1101,
+    "1010": 454,
+    "1032": 445
+   }
+  },
+  "LOTNAME": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 0.942,
+   "shapes": [
+    "9999999999-99",
+    "99999999",
+    "99999999-99"
+   ]
+  },
+  "PRODUCTDEFINITIONID": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 0.72,
+   "shapes": [
+    "A9999999",
+    "A9A99999",
+    "AA999999"
+   ]
+  },
+  "PRODUCTCLASSID": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "11": 749,
+    "13": 466,
+    "12": 461,
+    "14": 182,
+    "15": 100,
+    "90": 28,
+    "21": 9,
+    "17": 4,
+    "16": 1
+   }
+  },
+  "PRODUCTTYPE": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "FERT": 1963,
+    "FRT2": 22,
+    "HALB": 12,
+    "HAWA": 2,
+    "FRT3": 1
+   }
+  },
+  "PARENTLOTID": {
+   "empty_ratio": 0.935,
+   "kind": "text",
+   "distinct_ratio": 0.178,
+   "shapes": [
+    "99999999"
+   ]
+  },
+  "ROOTPARENTLOTID": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 0.942,
+   "shapes": [
+    "9999999999-99",
+    "99999999"
+   ]
+  },
+  "STATE": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "Finished": 1850,
+    "Terminated": 133,
+    "Converted": 13,
+    "Active": 4
+   }
+  },
+  "ORIGINALQTY": {
+   "empty_ratio": 0.0,
+   "kind": "number",
+   "integer": true,
+   "low": 2.0,
+   "high": 378.0
+  },
+  "QTY": {
+   "empty_ratio": 0.0,
+   "kind": "number",
+   "integer": true,
+   "low": 0.0,
+   "high": 376.0
+  },
+  "LOSSQTY": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "DEFECTQTY": {
+   "empty_ratio": 0.896,
+   "kind": "number",
+   "integer": true,
+   "low": 0.0,
+   "high": 7.0
+  },
+  "UNITID": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "PC": 2000
+   }
+  },
+  "LOCATION": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "PRODUCTORDERID": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 0.942,
+   "shapes": [
+    "9999999999-99",
+    "99999999"
+   ]
+  },
+  "WORKORDERID": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "PROCESSDEFINITIONID": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 0.942,
+   "shapes": [
+    "9999999999-99",
+    "99999999"
+   ]
+  },
+  "SUBPROCESSDEFINITIONID": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 0.942,
+   "shapes": [
+    "9999999999-99",
+    "99999999"
+   ]
+  },
+  "PROCESSNODEID": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 0.957,
+   "shapes": [
+    "9999999999-99-9999",
+    "99999999-9999"
+   ]
+  },
+  "PROCESSSEGMENTID": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "PACKING02": 1850,
+    "EMOCB2": 55,
+    "EMCLHO": 40,
+    "CLCNNC": 31,
+    "PACKING01": 8,
+    "EMET_L": 7,
+    "EMNKU4": 5,
+    "EMFTDS": 2,
+    "EMOCB6": 1,
+    "EMNKJM": 1
+   }
+  },
+  "EQUIPMENTID": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "PORTID": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "PROCESSSEGMENTRULEID": {
+   "empty_ratio": 0.931,
+   "kind": "code",
+   "values": {
+    "MOVEIN": 136,
+    "MOVEOUT": 1
+   }
+  },
+  "RULESEQUENCE": {
+   "empty_ratio": 0.931,
+   "kind": "number",
+   "integer": true,
+   "low": 1.0,
+   "high": 1.0
+  },
+  "PROCESSINGSTATE": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "WaitForSegment": 1863,
+    "WaitForRule": 136,
+    "ProcessingRule": 1
+   }
+  },
+  "NEXTSUBPROCESSDEFINITIONID": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "NEXTPROCESSSEGMENTID": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "TRACKINTIME": {
+   "empty_ratio": 0.002,
+   "kind": "date"
+  },
+  "TRACKOUTTIME": {
+   "empty_ratio": 0.002,
+   "kind": "date"
+  },
+  "LOTFINISHEDTIME": {
+   "empty_ratio": 0.069,
+   "kind": "date"
+  },
+  "LOTSHIPPEDTIME": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "PROCESSSTARTTIME": {
+   "empty_ratio": 0.002,
+   "kind": "date"
+  },
+  "PROCESSENDTIME": {
+   "empty_ratio": 0.002,
+   "kind": "date"
+  },
+  "GRADE": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "ISHOLD": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "N": 2000
+   }
+  },
+  "ISREWORK": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "N": 2000
+   }
+  },
+  "ISRESERVEDFUTUREACTION": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "N": 2000
+   }
+  },
+  "REWORKTYPE": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "TOTREWORKCOUNT": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "REWORKCOUNT": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "OWNSITE": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "DESTSITE": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "REPEATCOUNT": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "SOURCEINPUTID": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "SOURCEBATCHID": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "CUSTOMERID": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "VENDORID": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "PRIORITY": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "DUEDATE": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "MERGELOTID": {
+   "empty_ratio": 0.935,
+   "kind": "text",
+   "distinct_ratio": 0.178,
+   "shapes": [
+    "99999999"
+   ]
+  },
+  "REPLOTID": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "RECEIVEDTIME": {
+   "empty_ratio": 0.002,
+   "kind": "date"
+  },
+  "RESERVEDEQUIPMENTID": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "RESERVEDTIME": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "PROCESSSTEPID": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "PROCESSINGSPEED": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "TRACKINUSER": {
+   "empty_ratio": 0.002,
+   "kind": "text",
+   "distinct_ratio": 0.042,
+   "shapes": [
+    "99999999"
+   ]
+  },
+  "TRACKOUTUSER": {
+   "empty_ratio": 0.002,
+   "kind": "text",
+   "distinct_ratio": 0.029,
+   "shapes": [
+    "99999999"
+   ]
+  },
+  "MAINPROCESSDEFINITIONID": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 0.942,
+   "shapes": [
+    "9999999999-99",
+    "99999999"
+   ]
+  },
+  "ADHOCPROCESSSYSID": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "CHILDLOTID": {
+   "empty_ratio": 0.994,
+   "kind": "code",
+   "values": {
+    "16808603-022": 1,
+    "16808611-004": 1,
+    "16808614-002": 1,
+    "16808615-002": 1,
+    "16808620-006": 1,
+    "16808623-001": 1,
+    "16808625-006": 1,
+    "16808628-005": 1,
+    "16808630-008": 1,
+    "16808631-004": 1,
+    "16808632-007": 1,
+    "16808635-024": 1
+   }
+  },
+  "MATERIALTYPE": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "SUBMATERIALTYPE": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "SUBMATERIALQTY": {
+   "empty_ratio": 0.927,
+   "kind": "number",
+   "integer": true,
+   "low": 0.0,
+   "high": 0.0
+  },
+  "PREVSTATE": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "Active": 1983,
+    "Finished": 13,
+    "Created": 4
+   }
+  },
+  "PREVQTY": {
+   "empty_ratio": 0.002,
+   "kind": "number",
+   "integer": true,
+   "low": 2.0,
+   "high": 376.0
+  },
+  "PREVLOSSQTY": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "PREVPRODUCTDEFINITIONID": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "PREVPROCESSDEFINITIONID": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "PREVSUBPROCESSDEFINITIONID": {
+   "empty_ratio": 0.002,
+   "kind": "text",
+   "distinct_ratio": 0.941,
+   "shapes": [
+    "9999999999-99",
+    "99999999"
+   ]
+  },
+  "PREVPROCESSNODEID": {
+   "empty_ratio": 0.002,
+   "kind": "text",
+   "distinct_ratio": 0.957,
+   "shapes": [
+    "9999999999-99-9999",
+    "99999999-9999"
+   ]
+  },
+  "PREVPROCESSSEGMENTID": {
+   "empty_ratio": 0.002,
+   "kind": "code",
+   "values": {
+    "PACKING01": 1850,
+    "EMOCB6": 59,
+    "EMOCB2": 42,
+    "EMCLHO": 12,
+    "EMOCB4": 8,
+    "EMNKU4": 7,
+    "EMOCB5": 5,
+    "EMFLMJ": 5,
+    "PACKINGQI": 4,
+    "EMFTDS": 1,
+    "RTCLR3": 1,
+    "EMNKJM": 1,
+    "EMET_L": 1
+   }
+  },
+  "PREVEQUIPMENTID": {
+   "empty_ratio": 0.929,
+   "kind": "text",
+   "distinct_ratio": 0.225,
+   "shapes": [
+    "A999999999",
+    "A9999999"
+   ]
+  },
+  "PREVLOCATION": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "PREVGRADE": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "PREVSUBMATERIALTYPE": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "PREVMATERIALTYPE": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "PREVPRODUCTTYPE": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "PREVSITEID": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "PREVSUBMATERIALQTY": {
+   "empty_ratio": 0.929,
+   "kind": "number",
+   "integer": true,
+   "low": 0.0,
+   "high": 0.0
+  },
+  "PREVPRODUCTORDERID": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "PREVWORKORDERID": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "ACTIVITY": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 0.002,
+   "shapes": [
+    "AAAAAAAAA",
+    "AAAAAAAA",
+    "AAAAAAAAAAAAAAAAAAAAAAA"
+   ]
+  },
+  "PREVACTIVITY": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "FinishLot": 1850,
+    "UpdateLot": 142,
+    "DispatchWorkLot": 4,
+    "CancelTrackOutLot": 3,
+    "MergeLot": 1
+   }
+  },
+  "CUSTOMACTIVITY": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "FinishLot": 1863,
+    "RuleTrackOutLot": 129,
+    "CreateLot": 4,
+    "CancelTrackOutLot": 3,
+    "RuleCancelLotSplit": 1
+   }
+  },
+  "PREVCUSTOMACTIVITY": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "FinishLot": 1863,
+    "RuleTrackOutLot": 129,
+    "CreateLot": 4,
+    "CancelTrackOutLot": 3,
+    "RuleCancelLotSplit": 1
+   }
+  },
+  "ISUSABLE": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "Usable": 2000
+   }
+  },
+  "DESCRIPTION": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "REASONCODE": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "COMMENTS": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "CREATOR": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 0.021,
+   "shapes": [
+    "99999999",
+    "AAAAAAAAA"
+   ]
+  },
+  "CREATETIME": {
+   "empty_ratio": 0.0,
+   "kind": "date"
+  },
+  "MODIFIER": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 0.021,
+   "shapes": [
+    "99999999",
+    "AAAAAAAAAA"
+   ]
+  },
+  "MODIFYTIME": {
+   "empty_ratio": 0.0,
+   "kind": "date"
+  },
+  "LASTEVENTTIME": {
+   "empty_ratio": 0.0,
+   "kind": "date"
+  },
+  "TID": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 0.857,
+   "shapes": [
+    "999999999999999999A9A9999999999999999",
+    "999999999999999999A9A99999A9999999999",
+    "999999999999999999A9A999999999999999A"
+   ]
+  },
+  "FACTORY": {
+   "empty_ratio": 0.93,
+   "kind": "code",
+   "values": {
+    "FM03": 140
+   }
+  },
+  "REWORKPROCESSLIST": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "CONCESSION": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "HISTORYFLAG": {
+   "empty_ratio": 0.005,
+   "kind": "code",
+   "values": {
+    "Y": 1989
+   }
+  },
+  "SERIALNO": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "ISFINALREPAIR": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "TRACKINUSERNAME": {
+   "empty_ratio": 1.0,
+   "kind": "text",
+   "distinct_ratio": 1.0,
+   "shapes": [
+    "가가가"
+   ]
+  },
+  "TRACKOUTUSERNAME": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "VERSION": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "COMPANYID": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "STOCKLOTID": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "FQCREWORK": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "REPOSITIONPROCESSSEGMENTID": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "RETRYCODE": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "S1": 1999,
+    "S2": 1
+   }
+  },
+  "POWERONTIME": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "POWEROFFTIME": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "DELIVERYDATE": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "CLEANSTOCKNO": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "UNIPASSNO": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "UNIPASSSEQ": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "PRINTDATE": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "CHITPRINTDATE": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "INSP_PROC_TYPE": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "PREVSERIALNO": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "SNCHANGECOUNT": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "ERPREPORTTIME": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "SUBLOCATION": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "WORKER": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "WORKERQTY": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "WORKERDEFECTQTY": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "WORKERWORKTIME": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "STARTWORKER": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "STARTWORKERWORKTIME": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "STARTEQUIPMENTID": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "WORKRANKING": {
+   "empty_ratio": 0.387,
+   "kind": "text",
+   "distinct_ratio": 0.626,
+   "shapes": [
+    "-9999",
+    "-99999",
+    "-999"
+   ]
+  },
+  "FORMINGWEIGHT": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "MBLNR": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "PROCESSSEQ": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "RTPBATCHNO": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "RTPLOTID": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "RTPUSAGE": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "SAMPLING": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "SETTINGQTY": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "SLOC": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "ZSERNO": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "AVG_CYCLETIME": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "SETUPTIME": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "PLATE": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "COATINGFACTORY": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  }
+ },
+ "CIM_LOTBATCHREL": {
+  "LOTID": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 1.0,
+   "shapes": [
+    "99999999",
+    "99999999-999"
+   ]
+  },
+  "BATCHID": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 0.36,
+   "shapes": [
+    "AAA_99999999_9999"
+   ]
+  },
+  "SITEID": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "1000": 1488,
+    "1100": 266,
+    "1032": 92,
+    "1030": 73,
+    "1010": 54
+   }
+  },
+  "QTY": {
+   "empty_ratio": 0.0,
+   "kind": "number",
+   "integer": true,
+   "low": 5.0,
+   "high": 2000.0
+  },
+  "UNITID": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "ACTIVITY": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "CreateLotBatchRel": 1973
+   }
+  },
+  "PREVACTIVITY": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "CUSTOMACTIVITY": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 0.002,
+   "shapes": [
+    "AAAAAAAAAAAAAAAAA",
+    "AAAAAAAAAAAAAAAAAAAAAAA",
+    "AAAAAAAAAAAAAAAAAAAAAAAAAA"
+   ]
+  },
+  "PREVCUSTOMACTIVITY": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "ISUSABLE": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "Usable": 1973
+   }
+  },
+  "DESCRIPTION": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "REASONCODE": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "COMMENTS": {
+   "empty_ratio": 0.884,
+   "kind": "text",
+   "distinct_ratio": 0.323,
+   "shapes": [
+    "AAAAAAAAA",
+    "가가가가",
+    "★가가★가가가가★"
+   ]
+  },
+  "CREATOR": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "12008467": 715,
+    "test": 354,
+    "12008220": 315,
+    "12010344": 304,
+    "admin": 136,
+    "10220087": 59,
+    "12009021": 40,
+    "12017762": 19,
+    "TEST": 11,
+    "12011095": 4,
+    "10240001": 3,
+    "10220098": 3,
+    "10200005": 3,
+    "42018907": 2,
+    "10220002": 2,
+    "11180021": 1,
+    "12017039": 1,
+    "10230071": 1
+   }
+  },
+  "CREATETIME": {
+   "empty_ratio": 0.0,
+   "kind": "date"
+  },
+  "MODIFIER": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "12008467": 715,
+    "test": 354,
+    "12008220": 315,
+    "12010344": 304,
+    "admin": 136,
+    "10220087": 59,
+    "12009021": 40,
+    "12017762": 19,
+    "TEST": 11,
+    "12011095": 4,
+    "10240001": 3,
+    "10220098": 3,
+    "10200005": 3,
+    "42018907": 2,
+    "10220002": 2,
+    "11180021": 1,
+    "12017039": 1,
+    "10230071": 1
+   }
+  },
+  "MODIFYTIME": {
+   "empty_ratio": 0.0,
+   "kind": "date"
+  },
+  "LASTEVENTTIME": {
+   "empty_ratio": 0.0,
+   "kind": "date"
+  },
+  "TID": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 0.334,
+   "shapes": [
+    "999999999999999999A9A9999999999999999",
+    "999999999999999999A9A9999999A9999999A",
+    "999999999999999999A9A9999999999999A99"
+   ]
+  }
+ },
+ "CIM_LOTDEFECT": {
+  "LOTID": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 0.807,
+   "shapes": [
+    "99999999",
+    "9999999999"
+   ]
+  },
+  "DEFECTID": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 0.11,
+   "shapes": [
+    "A9999999",
+    "AAAAAAAAA"
+   ]
+  },
+  "SUBPROCESSDEFINITIONID": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 0.807,
+   "shapes": [
+    "99999999"
+   ]
+  },
+  "PROCESSSEGMENTID": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 0.038,
+   "shapes": [
+    "AAAAA9",
+    "AAAAAA",
+    "AA9AAA"
+   ]
+  },
+  "REPEATCOUNT": {
+   "empty_ratio": 0.0,
+   "kind": "number",
+   "integer": true,
+   "low": 0.0,
+   "high": 1.0
+  },
+  "SITEID": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "1000": 1990,
+    "1010": 9,
+    "1100": 1
+   }
+  },
+  "PRODUCTDEFINITIONID": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 0.68,
+   "shapes": [
+    "A9A99999",
+    "A9999999",
+    "A999999999"
+   ]
+  },
+  "PROCESSDEFINITIONID": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 0.807,
+   "shapes": [
+    "99999999"
+   ]
+  },
+  "DEFECTQTY": {
+   "empty_ratio": 0.0,
+   "kind": "number",
+   "integer": true,
+   "low": 1.0,
+   "high": 5.0
+  },
+  "UNITID": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "PC": 2000
+   }
+  },
+  "ACTIVITY": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "DefectLot": 2000
+   }
+  },
+  "PREVACTIVITY": {
+   "empty_ratio": 1.0,
+   "kind": "code",
+   "values": {
+    "DefectLot": 1
+   }
+  },
+  "CUSTOMACTIVITY": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "RuleTrackOutLot": 1801,
+    "MergeLot": 199
+   }
+  },
+  "PREVCUSTOMACTIVITY": {
+   "empty_ratio": 1.0,
+   "kind": "code",
+   "values": {
+    "RuleTrackOutLot": 1
+   }
+  },
+  "ISUSABLE": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "Usable": 2000
+   }
+  },
+  "DESCRIPTION": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "REASONCODE": {
+   "empty_ratio": 0.025,
+   "kind": "text",
+   "distinct_ratio": 0.011,
+   "shapes": [
+    "999"
+   ]
+  },
+  "COMMENTS": {
+   "empty_ratio": 0.995,
+   "kind": "text",
+   "distinct_ratio": 0.1,
+   "shapes": [
+    "AAAAAAAAA"
+   ]
+  },
+  "CREATOR": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 0.133,
+   "shapes": [
+    "99999999"
+   ]
+  },
+  "CREATETIME": {
+   "empty_ratio": 0.0,
+   "kind": "date"
+  },
+  "MODIFIER": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 0.133,
+   "shapes": [
+    "99999999"
+   ]
+  },
+  "MODIFYTIME": {
+   "empty_ratio": 0.0,
+   "kind": "date"
+  },
+  "LASTEVENTTIME": {
+   "empty_ratio": 0.0,
+   "kind": "date"
+  },
+  "TID": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 0.889,
+   "shapes": [
+    "999999999999999999A9A9999999999999999",
+    "999999999999999999A9A99999A9999999999",
+    "999999999999999999A9A999999999999999A"
+   ]
+  },
+  "PROCESSNODEID": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 0.875,
+   "shapes": [
+    "99999999-9999"
+   ]
+  },
+  "ERPIFFLAG": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "N": 2000
+   }
+  },
+  "PREVLOTID": {
+   "empty_ratio": 0.9,
+   "kind": "text",
+   "distinct_ratio": 0.97,
+   "shapes": [
+    "99999999-999",
+    "9999999999"
+   ]
+  },
+  "REASONWORKCENTER": {
+   "empty_ratio": 0.923,
+   "kind": "text",
+   "distinct_ratio": 0.196,
+   "shapes": [
+    "AAAAAA",
+    "AAAAA9",
+    "AA9AAA"
+   ]
+  },
+  "PERNR": {
+   "empty_ratio": 0.042,
+   "kind": "text",
+   "distinct_ratio": 0.132,
+   "shapes": [
+    "99999999"
+   ]
+  },
+  "PECLS": {
+   "empty_ratio": 0.043,
+   "kind": "code",
+   "values": {
+    "W": 1797,
+    "E": 116,
+    "Q": 1
+   }
+  },
+  "PROCESSSEQ": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "REWORKSTATE": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  }
+ },
+ "CIM_LOTHIST": {
+  "LASTEVENTSEQ": {
+   "empty_ratio": 0.0,
+   "kind": "number",
+   "integer": true,
+   "low": 475,
+   "high": 4696285
+  },
+  "LOTID": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 0.263,
+   "shapes": [
+    "99999999",
+    "99999999-99",
+    "99999999-999"
+   ]
+  },
+  "SITEID": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "1000": 1952,
+    "1010": 34,
+    "1032": 14
+   }
+  },
+  "LOTNAME": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 0.248,
+   "shapes": [
+    "99999999",
+    "99999999-99",
+    "9999999999-99"
+   ]
+  },
+  "PRODUCTDEFINITIONID": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 0.223,
+   "shapes": [
+    "A999999999",
+    "A9A99999",
+    "A9999999"
+   ]
+  },
+  "PRODUCTCLASSID": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "11": 1607,
+    "14": 105,
+    "21": 104,
+    "15": 73,
+    "90": 45,
+    "12": 35,
+    "13": 19,
+    "19": 5,
+    "17": 5,
+    "16": 2
+   }
+  },
+  "PRODUCTTYPE": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "FERT": 1514,
+    "HALB": 443,
+    "FRT2": 43
+   }
+  },
+  "PARENTLOTID": {
+   "empty_ratio": 0.969,
+   "kind": "text",
+   "distinct_ratio": 0.565,
+   "shapes": [
+    "99999999"
+   ]
+  },
+  "ROOTPARENTLOTID": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 0.247,
+   "shapes": [
+    "99999999",
+    "99999999-99",
+    "9999999999-99"
+   ]
+  },
+  "STATE": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "Active": 1971,
+    "Finished": 24,
+    "Terminated": 5
+   }
+  },
+  "ORIGINALQTY": {
+   "empty_ratio": 0.0,
+   "kind": "number",
+   "integer": true,
+   "low": 4.0,
+   "high": 500.0
+  },
+  "QTY": {
+   "empty_ratio": 0.0,
+   "kind": "number",
+   "integer": true,
+   "low": 4.0,
+   "high": 500.0
+  },
+  "LOSSQTY": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "DEFECTQTY": {
+   "empty_ratio": 0.34,
+   "kind": "number",
+   "integer": true,
+   "low": 0.0,
+   "high": 1.0
+  },
+  "UNITID": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "PC": 2000
+   }
+  },
+  "LOCATION": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "PRODUCTORDERID": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 0.247,
+   "shapes": [
+    "99999999",
+    "99999999-99",
+    "9999999999-99"
+   ]
+  },
+  "WORKORDERID": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "PROCESSDEFINITIONID": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 0.247,
+   "shapes": [
+    "99999999",
+    "99999999-99",
+    "9999999999-99"
+   ]
+  },
+  "SUBPROCESSDEFINITIONID": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 0.247,
+   "shapes": [
+    "99999999",
+    "99999999-99",
+    "9999999999-99"
+   ]
+  },
+  "PROCESSNODEID": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 0.475,
+   "shapes": [
+    "99999999-9999",
+    "99999999-99-9999",
+    "9999999999-99-9999"
+   ]
+  },
+  "PROCESSSEGMENTID": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 0.032,
+   "shapes": [
+    "AAAAAA",
+    "AAAAA9",
+    "AAAAAAA99"
+   ]
+  },
+  "EQUIPMENTID": {
+   "empty_ratio": 0.95,
+   "kind": "text",
+   "distinct_ratio": 0.55,
+   "shapes": [
+    "A999999999",
+    "A9999999"
+   ]
+  },
+  "PORTID": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "PROCESSSEGMENTRULEID": {
+   "empty_ratio": 0.232,
+   "kind": "code",
+   "values": {
+    "MOVEOUT": 864,
+    "MOVEIN": 673
+   }
+  },
+  "RULESEQUENCE": {
+   "empty_ratio": 0.232,
+   "kind": "number",
+   "integer": true,
+   "low": 1.0,
+   "high": 2.0
+  },
+  "PROCESSINGSTATE": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 0.002,
+   "shapes": [
+    "AAAAAAAAAAAAAA",
+    "AAAAAAAAAAA",
+    "A_AAAAAAAAAAAAAAAAAAA"
+   ]
+  },
+  "NEXTSUBPROCESSDEFINITIONID": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "NEXTPROCESSSEGMENTID": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "TRACKINTIME": {
+   "empty_ratio": 0.109,
+   "kind": "date"
+  },
+  "TRACKOUTTIME": {
+   "empty_ratio": 0.247,
+   "kind": "date"
+  },
+  "LOTFINISHEDTIME": {
+   "empty_ratio": 0.988,
+   "kind": "date"
+  },
+  "LOTSHIPPEDTIME": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "PROCESSSTARTTIME": {
+   "empty_ratio": 0.207,
+   "kind": "date"
+  },
+  "PROCESSENDTIME": {
+   "empty_ratio": 0.207,
+   "kind": "date"
+  },
+  "GRADE": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "ISHOLD": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "N": 2000
+   }
+  },
+  "ISREWORK": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "N": 2000
+   }
+  },
+  "ISRESERVEDFUTUREACTION": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "N": 2000
+   }
+  },
+  "REWORKTYPE": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "TOTREWORKCOUNT": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "REWORKCOUNT": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "OWNSITE": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "DESTSITE": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "REPEATCOUNT": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "SOURCEINPUTID": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "SOURCEBATCHID": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "CUSTOMERID": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "VENDORID": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "PRIORITY": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "DUEDATE": {
+   "empty_ratio": 0.998,
+   "kind": "date"
+  },
+  "MERGELOTID": {
+   "empty_ratio": 0.998,
+   "kind": "code",
+   "values": {
+    "16900823": 2,
+    "17075987": 1,
+    "17038027": 1,
+    "16960009": 1
+   }
+  },
+  "REPLOTID": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "RECEIVEDTIME": {
+   "empty_ratio": 0.859,
+   "kind": "date"
+  },
+  "RESERVEDEQUIPMENTID": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "RESERVEDTIME": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "PROCESSSTEPID": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "PROCESSINGSPEED": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "TRACKINUSER": {
+   "empty_ratio": 0.109,
+   "kind": "text",
+   "distinct_ratio": 0.066,
+   "shapes": [
+    "99999999"
+   ]
+  },
+  "TRACKOUTUSER": {
+   "empty_ratio": 0.247,
+   "kind": "text",
+   "distinct_ratio": 0.061,
+   "shapes": [
+    "99999999"
+   ]
+  },
+  "MAINPROCESSDEFINITIONID": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 0.247,
+   "shapes": [
+    "99999999",
+    "99999999-99",
+    "9999999999-99"
+   ]
+  },
+  "ADHOCPROCESSSYSID": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "CHILDLOTID": {
+   "empty_ratio": 0.954,
+   "kind": "text",
+   "distinct_ratio": 0.62,
+   "shapes": [
+    "99999999-999"
+   ]
+  },
+  "MATERIALTYPE": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "SUBMATERIALTYPE": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "SUBMATERIALQTY": {
+   "empty_ratio": 0.924,
+   "kind": "number",
+   "integer": true,
+   "low": 0.0,
+   "high": 0.0
+  },
+  "PREVSTATE": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "Created": 1051,
+    "Active": 949
+   }
+  },
+  "PREVQTY": {
+   "empty_ratio": 0.103,
+   "kind": "number",
+   "integer": true,
+   "low": 3.0,
+   "high": 500.0
+  },
+  "PREVLOSSQTY": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "PREVPRODUCTDEFINITIONID": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "PREVPROCESSDEFINITIONID": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "PREVSUBPROCESSDEFINITIONID": {
+   "empty_ratio": 0.399,
+   "kind": "text",
+   "distinct_ratio": 0.331,
+   "shapes": [
+    "99999999",
+    "99999999-99",
+    "9999999999-99"
+   ]
+  },
+  "PREVPROCESSNODEID": {
+   "empty_ratio": 0.859,
+   "kind": "text",
+   "distinct_ratio": 0.56,
+   "shapes": [
+    "99999999-9999",
+    "99999999-99-9999",
+    "9999999999-99-9999"
+   ]
+  },
+  "PREVPROCESSSEGMENTID": {
+   "empty_ratio": 0.393,
+   "kind": "text",
+   "distinct_ratio": 0.041,
+   "shapes": [
+    "AAAAAA",
+    "AAAAA9",
+    "AAAAAAA99"
+   ]
+  },
+  "PREVEQUIPMENTID": {
+   "empty_ratio": 0.888,
+   "kind": "text",
+   "distinct_ratio": 0.33,
+   "shapes": [
+    "A999999999",
+    "A9999999"
+   ]
+  },
+  "PREVLOCATION": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "PREVGRADE": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "PREVSUBMATERIALTYPE": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "PREVMATERIALTYPE": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "PREVPRODUCTTYPE": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "PREVSITEID": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "PREVSUBMATERIALQTY": {
+   "empty_ratio": 0.927,
+   "kind": "number",
+   "integer": true,
+   "low": 0.0,
+   "high": 0.0
+  },
+  "PREVPRODUCTORDERID": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "PREVWORKORDERID": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "ACTIVITY": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "UpdateLot": 484,
+    "DispatchWorkLot": 439,
+    "TrackInLot": 432,
+    "TrackOutLot": 407,
+    "StartLot": 199,
+    "SplitLot": 25,
+    "MergeLot": 14
+   }
+  },
+  "PREVACTIVITY": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "UpdateLot": 507,
+    "TrackOutLot": 439,
+    "DispatchWorkLot": 424,
+    "TrackInLot": 407,
+    "StartLot": 167,
+    "FinishLot": 24,
+    "CancelTrackInLot": 12,
+    "SplitLot": 11,
+    "ConsumeMaterialLot": 7,
+    "MergeLot": 2
+   }
+  },
+  "CUSTOMACTIVITY": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 0.004,
+   "shapes": [
+    "AAAAAAAAAAAAAAA",
+    "AAAAAAAAAAAAAA",
+    "AAAAAAAAA"
+   ]
+  },
+  "PREVCUSTOMACTIVITY": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 0.004,
+   "shapes": [
+    "AAAAAAAAAAAAAAA",
+    "AAAAAAAAAAAAAA",
+    "AAAAAAAAA"
+   ]
+  },
+  "ISUSABLE": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "Usable": 2000
+   }
+  },
+  "DESCRIPTION": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "REASONCODE": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "COMMENTS": {
+   "empty_ratio": 0.999,
+   "kind": "text",
+   "distinct_ratio": 0.667,
+   "shapes": [
+    "가가가가 가가가가",
+    "가가가가가 / 가가"
+   ]
+  },
+  "CREATOR": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 0.021,
+   "shapes": [
+    "AAAAAAAAA",
+    "99999999"
+   ]
+  },
+  "CREATETIME": {
+   "empty_ratio": 0.0,
+   "kind": "date"
+  },
+  "MODIFIER": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 0.051,
+   "shapes": [
+    "99999999",
+    "AAAAAAAAA"
+   ]
+  },
+  "MODIFYTIME": {
+   "empty_ratio": 0.0,
+   "kind": "date"
+  },
+  "LASTEVENTTIME": {
+   "empty_ratio": 0.0,
+   "kind": "date"
+  },
+  "TID": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 0.509,
+   "shapes": [
+    "99999999999999999A9AA9A999A99999999A9",
+    "999999999999999999A9A9999999999999A99",
+    "999999999999999999A9A9999999999999A9A"
+   ]
+  },
+  "FACTORY": {
+   "empty_ratio": 0.085,
+   "kind": "code",
+   "values": {
+    "FM03": 1369,
+    "FM02": 378,
+    "FM01": 84
+   }
+  },
+  "REWORKPROCESSLIST": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "CONCESSION": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "HISTORYFLAG": {
+   "empty_ratio": 0.212,
+   "kind": "code",
+   "values": {
+    "Y": 1576
+   }
+  },
+  "SERIALNO": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "ISFINALREPAIR": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "TRACKINUSERNAME": {
+   "empty_ratio": 0.367,
+   "kind": "text",
+   "distinct_ratio": 0.064,
+   "shapes": [
+    "AAAAAAAAA",
+    "가가가"
+   ]
+  },
+  "TRACKOUTUSERNAME": {
+   "empty_ratio": 0.589,
+   "kind": "text",
+   "distinct_ratio": 0.057,
+   "shapes": [
+    "AAAAAAAAA",
+    "가가가"
+   ]
+  },
+  "VERSION": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "COMPANYID": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "STOCKLOTID": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "FQCREWORK": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "REPOSITIONPROCESSSEGMENTID": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "RETRYCODE": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "S1": 1993,
+    "S2": 7
+   }
+  },
+  "POWERONTIME": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "POWEROFFTIME": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "DELIVERYDATE": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "CLEANSTOCKNO": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "UNIPASSNO": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "UNIPASSSEQ": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "PRINTDATE": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "CHITPRINTDATE": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "INSP_PROC_TYPE": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "PREVSERIALNO": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "SNCHANGECOUNT": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "ERPREPORTTIME": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "SUBLOCATION": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "WORKER": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "WORKERQTY": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "WORKERDEFECTQTY": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "WORKERWORKTIME": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "STARTWORKER": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "STARTWORKERWORKTIME": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "STARTEQUIPMENTID": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "WORKRANKING": {
+   "empty_ratio": 0.984,
+   "kind": "code",
+   "values": {
+    "0": 32
+   }
+  },
+  "FORMINGWEIGHT": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "MBLNR": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "PROCESSSEQ": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "RTPBATCHNO": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "RTPLOTID": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "RTPUSAGE": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "SAMPLING": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "SETTINGQTY": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "SLOC": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "ZSERNO": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "AVG_CYCLETIME": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "SETUPTIME": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "PLATE": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "COATINGFACTORY": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  }
+ },
+ "CIM_LOTMATERIALLOTREL": {
+  "LOTID": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 0.926,
+   "shapes": [
+    "99999999",
+    "99999999-999"
+   ]
+  },
+  "MATERIALLOTID": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 1.0,
+   "shapes": [
+    "99999999-AAA9-AAAAAAAAA-9999",
+    "A9999999-9999-A_99999999_999",
+    "9999-9999999999-99999-99-999-9999_99999999_999"
+   ]
+  },
+  "SUBPROCESSDEFINITIONID": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 0.926,
+   "shapes": [
+    "99999999"
+   ]
+  },
+  "PROCESSSEGMENTID": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 0.022,
+   "shapes": [
+    "AAAAAA",
+    "AAAAA9",
+    "AA9AAA"
+   ]
+  },
+  "REPEATCOUNT": {
+   "empty_ratio": 0.0,
+   "kind": "number",
+   "integer": true,
+   "low": 0.0,
+   "high": 0.0
+  },
+  "SITEID": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "1000": 1915,
+    "1032": 62,
+    "1010": 23
+   }
+  },
+  "PRODUCTDEFINITIONID": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 0.769,
+   "shapes": [
+    "A9999999",
+    "AA999999",
+    "AA9999999"
+   ]
+  },
+  "PROCESSDEFINITIONID": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 0.926,
+   "shapes": [
+    "99999999"
+   ]
+  },
+  "QTY": {
+   "empty_ratio": 0.0,
+   "kind": "number",
+   "integer": true,
+   "low": 1.0,
+   "high": 300.0
+  },
+  "UNITID": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "PC": 1999,
+    "KG": 1
+   }
+  },
+  "LOCATION": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "EQUIPMENTID": {
+   "empty_ratio": 0.027,
+   "kind": "text",
+   "distinct_ratio": 0.107,
+   "shapes": [
+    "A999999999",
+    "A9999999"
+   ]
+  },
+  "ACTIVITY": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 0.001,
+   "shapes": [
+    "AAAAAAAAAAAAAAAAAAAAAAA",
+    "AAAAAAAAAAAAAAAAAA"
+   ]
+  },
+  "PREVACTIVITY": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 0.002,
+   "shapes": [
+    "AAAAAAAAAAAAAAAAAA",
+    "AAAAAAAAAAAAAAAAAAAAAAA",
+    "AAAAAAAA"
+   ]
+  },
+  "CUSTOMACTIVITY": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 0.004,
+   "shapes": [
+    "AAAAAAAAA",
+    "AAAAAAAAAAAAAAAAAAAA",
+    "AAAAAAAAAAAAAAAAA"
+   ]
+  },
+  "PREVCUSTOMACTIVITY": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 0.004,
+   "shapes": [
+    "AAAAAAAAA",
+    "AAAAAAAAAAAAAAAAAAAA",
+    "AAAAAAAAAAAAAAAAA"
+   ]
+  },
+  "ISUSABLE": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "Usable": 2000
+   }
+  },
+  "DESCRIPTION": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "REASONCODE": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "COMMENTS": {
+   "empty_ratio": 0.914,
+   "kind": "text",
+   "distinct_ratio": 0.116,
+   "shapes": [
+    "가가가가",
+    "★가가가가",
+    "가가가 가가가가가가/ ★가가가가, 가가, 가가가가!"
+   ]
+  },
+  "CREATOR": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 0.014,
+   "shapes": [
+    "99999999",
+    "AAAAAAAAA",
+    "AAAAA"
+   ]
+  },
+  "CREATETIME": {
+   "empty_ratio": 0.0,
+   "kind": "date"
+  },
+  "MODIFIER": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 0.045,
+   "shapes": [
+    "99999999",
+    "AAAAAAAAAA",
+    "AAAAAA"
+   ]
+  },
+  "MODIFYTIME": {
+   "empty_ratio": 0.0,
+   "kind": "date"
+  },
+  "LASTEVENTTIME": {
+   "empty_ratio": 0.0,
+   "kind": "date"
+  },
+  "TID": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 0.921,
+   "shapes": [
+    "999999999999999999A9A9999999999999999",
+    "999999999999999999A9A99999A9999999999",
+    "999999999999999999A9A999999AA99999999"
+   ]
+  },
+  "PROCESSNODEID": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 0.926,
+   "shapes": [
+    "99999999-9999"
+   ]
+  },
+  "SERIALNO": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "RESERVEQTY": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  }
+ },
+ "CIM_MATERIALCLASS": {
+  "MATERIALCLASSID": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "00": 5,
+    "11": 5,
+    "12": 5,
+    "13": 5,
+    "14": 5,
+    "15": 5,
+    "16": 5,
+    "17": 5,
+    "18": 5,
+    "19": 5,
+    "20": 5,
+    "21": 5,
+    "22": 5,
+    "23": 5,
+    "30": 5,
+    "40": 5,
+    "50": 5,
+    "60": 5,
+    "90": 5
+   }
+  },
+  "SITEID": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "1000": 19,
+    "1010": 19,
+    "1030": 19,
+    "1032": 19,
+    "1100": 19
+   }
+  },
+  "MATERIALCLASSNAME": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 0.2,
+   "shapes": [
+    "AAAAAA",
+    "AAA",
+    "AAA AAAA"
+   ]
+  },
+  "PARENTID": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "ACTIVITY": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "CreateMaterialClass": 95
+   }
+  },
+  "PREVACTIVITY": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "CUSTOMACTIVITY": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "CreateMaterialClass": 95
+   }
+  },
+  "PREVCUSTOMACTIVITY": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "ISUSABLE": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "Usable": 95
+   }
+  },
+  "DESCRIPTION": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "REASONCODE": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "COMMENTS": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "CREATOR": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "shsong": 95
+   }
+  },
+  "CREATETIME": {
+   "empty_ratio": 0.0,
+   "kind": "date"
+  },
+  "MODIFIER": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "shsong": 95
+   }
+  },
+  "MODIFYTIME": {
+   "empty_ratio": 0.0,
+   "kind": "date"
+  },
+  "LASTEVENTTIME": {
+   "empty_ratio": 0.0,
+   "kind": "date"
+  },
+  "TID": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 0.011,
+   "shapes": [
+    "99999999999999999A9AA9A99999A99999999"
+   ]
+  },
+  "MATKIND": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  }
+ },
+ "CIM_MATERIALDEFINITION": {
+  "MATERIALDEFINITIONID": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 0.368,
+   "shapes": [
+    "99-AA-9999",
+    "99-AAA-9999",
+    "99999999A"
+   ]
+  },
+  "SITEID": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "1000": 731,
+    "1010": 632,
+    "1032": 632,
+    "1100": 5
+   }
+  },
+  "MATERIALDEFINITIONNAME": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 0.347,
+   "shapes": [
+    "AA 99-999 A (AAAAAA) AA",
+    "AA 99-999 A (AAA9) AA",
+    "AA 99A999 A (AAAAAA) AA99"
+   ]
+  },
+  "MATERIALCLASSID": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "90": 1995,
+    "60": 5
+   }
+  },
+  "MATERIALTYPE": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "ROH3": 1995,
+    "FERT": 5
+   }
+  },
+  "QTY": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "UNITID": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "PC": 2000
+   }
+  },
+  "QUEUETIME": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "QUEUETIMEUNIT": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "UISEQUENCE": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "ACTIVITY": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 0.001,
+   "shapes": [
+    "AAAAAAAAAAAAAAAAAAAAAAAA"
+   ]
+  },
+  "PREVACTIVITY": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 0.001,
+   "shapes": [
+    "AAAAAAAAAAAAAAAAAAAAAAAA"
+   ]
+  },
+  "CUSTOMACTIVITY": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 0.001,
+   "shapes": [
+    "AAAAAAAAAAAAAAAAAAAAAAAA"
+   ]
+  },
+  "PREVCUSTOMACTIVITY": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 0.001,
+   "shapes": [
+    "AAAAAAAAAAAAAAAAAAAAAAAA"
+   ]
+  },
+  "ISUSABLE": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "Usable": 2000
+   }
+  },
+  "DESCRIPTION": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 0.001,
+   "shapes": [
+    "AA_AAAAAA_AAA-AAAAAAAAA",
+    "AA-A_AAAAAAAA A AAAA_AAAAAA"
+   ]
+  },
+  "REASONCODE": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "COMMENTS": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "CREATOR": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "12018020": 1896,
+    "12010004": 99,
+    "12010001": 2,
+    "12013930": 1,
+    "10190018": 1,
+    "10200005": 1
+   }
+  },
+  "CREATETIME": {
+   "empty_ratio": 0.0,
+   "kind": "date"
+  },
+  "MODIFIER": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 0.001,
+   "shapes": [
+    "A/A"
+   ]
+  },
+  "MODIFYTIME": {
+   "empty_ratio": 0.0,
+   "kind": "date"
+  },
+  "LASTEVENTTIME": {
+   "empty_ratio": 0.0,
+   "kind": "date"
+  },
+  "TID": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 0.002,
+   "shapes": [
+    "99999999999999999A9AA9A999A999999999A",
+    "9999999999999999999999999999999"
+   ]
+  },
+  "VENDORID": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "SPEC": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "SPEC2": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "DRAWNO": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "CBMDESCRIPTION": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "RECVINSPECTIONFLAG": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "STOCKLOCATION": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "CBM": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "UNITWEIGHT": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "UNITOFWEIGHT": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "GROSSWEIGHT": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "GROSSUNIT": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "OUTSIZE": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "INSIZE": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "THSIZE": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "ISSUEMETHOD": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "MAJORSLCD": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "ISSUEDSLCD": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "GROUPID1": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "GROUPNAME1": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "GROUPID2": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "GROUPNAME2": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "GROUPID3": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "GROUPNAME3": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "LOTFLAG": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "VALIDFLAG": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "VALIDFROMDT": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "VALIDTODT": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "ERPTYPE": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "INSPECTTYPE": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "Y": 1999,
+    "N": 1
+   }
+  },
+  "PRODUCTHIERARCHY": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "Z99070010": 1995,
+    "F30010040": 5
+   }
+  },
+  "COATINGTYPE": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "MODELNUMBER": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "RESERVATIONQTY": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "PURCHASEQTY": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "PRODUCTORDERQTY": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "ISSPART": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "STDPRICE": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "MAKER": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "MATERIALGROUP": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "20201001": 1995,
+    "INS-MIL-P": 5
+   }
+  },
+  "STANDARD1": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "STANDARD2": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "STANDARD3": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "TYPE": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "MATERIALDEFINITIONTYPE": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "REPLACEMATERIALDEFINITIONID": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "SAFETY_QTY": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "NFMAT": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "UNITPRICE": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "GROES": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "ZDFCODE": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "ATWRT": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "COBALT1": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "COBALT2": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "COBALT11": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "COBALT21": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "ZALTMAT": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "DIAMETER": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "DRAW": {
+   "empty_ratio": 0.632,
+   "kind": "code",
+   "values": {
+    "N": 735,
+    "Y": 1
+   }
+  },
+  "EXTWG": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "GRDP_PLC": {
+   "empty_ratio": 0.998,
+   "kind": "code",
+   "values": {
+    "MI": 4
+   }
+  },
+  "SORD": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "TOOLNO": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "ITEM2": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "RETRYCODE": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "CURTYPE": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "UNCOATING": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "FLUTE_LENGTH": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "BASEMAT": {
+   "empty_ratio": 0.999,
+   "kind": "code",
+   "values": {
+    "YG62": 3
+   }
+  },
+  "GRADE2": {
+   "empty_ratio": 0.998,
+   "kind": "code",
+   "values": {
+    "YG602": 5
+   }
+  },
+  "MATL_TAP": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "TAP_BASIC": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "XCHPF": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "FERTH": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "NOF": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "S_REMARK": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  }
+ },
+ "CIM_MATERIALLOT": {
+  "MATERIALLOTID": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 1.0,
+   "shapes": [
+    "9999-999999A999-99999-AA9999999999_99999999_999",
+    "9999-999999A999-99999-AA9999999999",
+    "9999-9999999999-99999-99-999-9999"
+   ]
+  },
+  "SITEID": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "1000": 1945,
+    "1010": 53,
+    "1032": 2
+   }
+  },
+  "MATERIALLOTNAME": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 0.064,
+   "shapes": [
+    "AA 9.9㎛, AA99%, 9.9A99.9 AAAAA AAAAA",
+    "AA 9.9㎛, AA99%, 99.9A99.9 AAAAA AAAAA",
+    "AA 9.9㎛, AA99%, 99.9A999.9 AAAAA AAAAA"
+   ]
+  },
+  "MATERIALDEFINITIONID": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 0.065,
+   "shapes": [
+    "AA9999999999",
+    "99-999-9999",
+    "99-999-9999A"
+   ]
+  },
+  "MATERIALCLASSID": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "40": 1910,
+    "90": 89,
+    "11": 1
+   }
+  },
+  "MATERIALTYPE": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "HALB": 1908,
+    "ROH": 59,
+    "ROH3": 21,
+    "ROH2": 9,
+    "FERT": 1,
+    "ROH1": 1,
+    "HAWA": 1
+   }
+  },
+  "PARENTMATERIALLOTID": {
+   "empty_ratio": 0.13,
+   "kind": "text",
+   "distinct_ratio": 0.109,
+   "shapes": [
+    "9999-999999A999-99999-AA9999999999",
+    "9999-999999A999-99999-AA9999999999_99999999_999",
+    "9999-999999A999-99999-AAA999999999"
+   ]
+  },
+  "ROOTPARENTMATERIALLOTID": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 0.131,
+   "shapes": [
+    "9999-999999A999-99999-AA9999999999",
+    "9999-9999999999-99999-99-999-9999",
+    "9999-99999999-99999-99-999-9999"
+   ]
+  },
+  "STATE": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "Terminated": 1896,
+    "Created": 96,
+    "Active": 8
+   }
+  },
+  "ORIGINALQTY": {
+   "empty_ratio": 0.0,
+   "kind": "number",
+   "integer": false,
+   "low": 10.0,
+   "high": 1000.0
+  },
+  "QTY": {
+   "empty_ratio": 0.0,
+   "kind": "number",
+   "integer": false,
+   "low": 0.0,
+   "high": 0.0
+  },
+  "LOSSQTY": {
+   "empty_ratio": 0.0,
+   "kind": "number",
+   "integer": true,
+   "low": 0.0,
+   "high": 0.0
+  },
+  "UNITID": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "PC": 1952,
+    "KG": 48
+   }
+  },
+  "LOCATION": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "2300": 1715,
+    "1100": 256,
+    "1089": 21,
+    "1088": 7,
+    "1200": 1
+   }
+  },
+  "PRODUCTORDERID": {
+   "empty_ratio": 0.142,
+   "kind": "text",
+   "distinct_ratio": 0.943,
+   "shapes": [
+    "99999999"
+   ]
+  },
+  "WORKORDERID": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "EQUIPMENTID": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "PORTID": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "RECEIVEDQTY": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "SOURCEINPUTID": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "MERGEMATERIALLOTID": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "VENDORID": {
+   "empty_ratio": 0.983,
+   "kind": "code",
+   "values": {
+    "103668": 7,
+    "100203": 6,
+    "118163": 3,
+    "100145": 2,
+    "108062": 2,
+    "100135": 2,
+    "100250": 1,
+    "103350": 1,
+    "100090": 1,
+    "2100": 1,
+    "115020": 1,
+    "103814": 1,
+    "100041": 1,
+    "111713": 1,
+    "104541": 1,
+    "100177": 1,
+    "100329": 1,
+    "118255": 1,
+    "100254": 1
+   }
+  },
+  "POSITION": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "MOVETIME": {
+   "empty_ratio": 0.999,
+   "kind": "date"
+  },
+  "RECEIVEDTIME": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "HOLDTIME": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "HOLDER": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "RECLAIMCOUNT": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "TIMERSTARTTIME": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "TIMERENDTIME": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "PREVSTATE": {
+   "empty_ratio": 0.046,
+   "kind": "code",
+   "values": {
+    "Active": 1144,
+    "Created": 760,
+    "Terminated": 4
+   }
+  },
+  "PREVQTY": {
+   "empty_ratio": 0.033,
+   "kind": "number",
+   "integer": false,
+   "low": 8.0,
+   "high": 608.0
+  },
+  "PREVLOCATION": {
+   "empty_ratio": 0.13,
+   "kind": "code",
+   "values": {
+    "1100": 1716,
+    "2300": 22,
+    "1200": 1
+   }
+  },
+  "ISQTYMANAGED": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "HISTORYFLAG": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "Y": 2000
+   }
+  },
+  "ACTIVITY": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "ConsumeMaterialLot": 1714,
+    "SplitMaterialLot": 180,
+    "UpdateMaterialLot": 106
+   }
+  },
+  "PREVACTIVITY": {
+   "empty_ratio": 0.044,
+   "kind": "code",
+   "values": {
+    "UpdateMaterialLot": 1742,
+    "SplitMaterialLot": 162,
+    "ConsumeMaterialLot": 7
+   }
+  },
+  "CUSTOMACTIVITY": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 0.002,
+   "shapes": [
+    "AAAAAAAAAAAAAAAAAAAAAAAAA",
+    "AAAAAAAAAAAAAAAAA",
+    "AAAAAAAAAAAAAAAAAAAA"
+   ]
+  },
+  "PREVCUSTOMACTIVITY": {
+   "empty_ratio": 0.033,
+   "kind": "text",
+   "distinct_ratio": 0.002,
+   "shapes": [
+    "AAAAAAAAAAAAAAAAAAAAAAAAA",
+    "AAAAAAAAAAAAAAAAA",
+    "AAAAAAAAAAAAAAAAAAAA"
+   ]
+  },
+  "ISUSABLE": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "Usable": 1975,
+    "UnUsable": 25
+   }
+  },
+  "DESCRIPTION": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "REASONCODE": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "COMMENTS": {
+   "empty_ratio": 0.988,
+   "kind": "text",
+   "distinct_ratio": 0.04,
+   "shapes": [
+    "99/99 A/A_AA_999 가가가 가가 가 AAAAAAAA 가가"
+   ]
+  },
+  "CREATOR": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "INTERFACE": 2000
+   }
+  },
+  "CREATETIME": {
+   "empty_ratio": 0.0,
+   "kind": "date"
+  },
+  "MODIFIER": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 0.012,
+   "shapes": [
+    "99999999",
+    "AAAAAAAAA",
+    "AAAAAAAAAA"
+   ]
+  },
+  "MODIFYTIME": {
+   "empty_ratio": 0.0,
+   "kind": "date"
+  },
+  "LASTEVENTTIME": {
+   "empty_ratio": 0.0,
+   "kind": "date"
+  },
+  "TID": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 0.942,
+   "shapes": [
+    "999999999999999999A9A9999999999999999",
+    "999999999999999999A9A99999999999999A9",
+    "999999999999999999999"
+   ]
+  },
+  "STOCKDATE": {
+   "empty_ratio": 0.0,
+   "kind": "date"
+  },
+  "EXPIREDATE": {
+   "empty_ratio": 0.0,
+   "kind": "date"
+  },
+  "PRODUCTDATE": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "FROMLOCATION": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "WMSLOTID": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "ORIGINALPRODUCTORDERID": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "BYPRODUCTLOCATION": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "BYPRODUCTLOTID": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "SERIALNO": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "QIQTY": {
+   "empty_ratio": 0.0,
+   "kind": "number",
+   "integer": true,
+   "low": 0.0,
+   "high": 0.0
+  },
+  "INSPECTTYPE": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "N": 2000
+   }
+  },
+  "PO_NO": {
+   "empty_ratio": 0.099,
+   "kind": "text",
+   "distinct_ratio": 0.062,
+   "shapes": [
+    "9999999999"
+   ]
+  },
+  "PO_ITEM": {
+   "empty_ratio": 0.071,
+   "kind": "text",
+   "distinct_ratio": 0.011,
+   "shapes": [
+    "99999"
+   ]
+  },
+  "IQCSTATE": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "DOCUMENTNO": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "FQCSTATE": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "CHARG": {
+   "empty_ratio": 0.016,
+   "kind": "text",
+   "distinct_ratio": 0.074,
+   "shapes": [
+    "999999A999",
+    "9999999999",
+    "99999999"
+   ]
+  },
+  "MBLNR": {
+   "empty_ratio": 0.028,
+   "kind": "text",
+   "distinct_ratio": 0.064,
+   "shapes": [
+    "9999999999"
+   ]
+  },
+  "MJAHR": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "SAFETY_QTY": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "SAPBATCHLOT": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "ADDITIONREQNO": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "GROUPCODE": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 0.131,
+   "shapes": [
+    "999999999999999999999"
+   ]
+  },
+  "CUSTOMERNAME": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "INVOICE": {
+   "empty_ratio": 0.996,
+   "kind": "code",
+   "values": {
+    "20220824-003": 1,
+    "925051683": 1,
+    "925057000": 1,
+    "925050098": 1,
+    "925057508": 1,
+    "925054880": 1,
+    "925006932": 1,
+    "52293": 1,
+    "203058346": 1
+   }
+  },
+  "FRBNR": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "PITCH": {
+   "empty_ratio": 0.989,
+   "kind": "text",
+   "distinct_ratio": 0.348,
+   "shapes": [
+    "가가 가가가",
+    "가가 가가 99/99",
+    "가가-가가가"
+   ]
+  },
+  "SOSTOCK": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "COMMENTS2": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "CINSM": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "CSPEM": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "ISSAMPLE": {
+   "empty_ratio": 0.997,
+   "kind": "code",
+   "values": {
+    "N": 7
+   }
+  },
+  "SPCOMMENTS": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  }
+ },
+ "CIM_PROCESSDEFINITION": {
+  "PROCESSDEFINITIONID": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 0.755,
+   "shapes": [
+    "99999999",
+    "999999999999",
+    "99999999-99"
+   ]
+  },
+  "SITEID": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "1000": 1438,
+    "1010": 276,
+    "1032": 272,
+    "1100": 14
+   }
+  },
+  "PROCESSDEFINITIONNAME": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 0.755,
+   "shapes": [
+    "99999999",
+    "999999999999",
+    "99999999-99"
+   ]
+  },
+  "PROCESSTYPE": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "Order": 1986,
+    "Main": 14
+   }
+  },
+  "ACTIVITY": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 0.002,
+   "shapes": [
+    "AAAAAAAAAAAAAAAAAAAAAAA"
+   ]
+  },
+  "PREVACTIVITY": {
+   "empty_ratio": 0.344,
+   "kind": "text",
+   "distinct_ratio": 0.002,
+   "shapes": [
+    "AAAAAAAAAAAAAAAAAAAAAAA"
+   ]
+  },
+  "CUSTOMACTIVITY": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 0.003,
+   "shapes": [
+    "AAAAAAAAAAAAAAAAAAAAAAA"
+   ]
+  },
+  "PREVCUSTOMACTIVITY": {
+   "empty_ratio": 0.344,
+   "kind": "text",
+   "distinct_ratio": 0.002,
+   "shapes": [
+    "AAAAAAAAAAAAAAAAAAAAAAA"
+   ]
+  },
+  "ISUSABLE": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "Usable": 2000
+   }
+  },
+  "DESCRIPTION": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "REASONCODE": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "COMMENTS": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "CREATOR": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "INTERFACE": 1968,
+    "hyeonuknam": 11,
+    "dykim": 8,
+    "shsong": 8,
+    "12000050": 5
+   }
+  },
+  "CREATETIME": {
+   "empty_ratio": 0.0,
+   "kind": "date"
+  },
+  "MODIFIER": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "INTERFACE": 1968,
+    "hyeonuknam": 11,
+    "dykim": 8,
+    "shsong": 8,
+    "12000050": 5
+   }
+  },
+  "MODIFYTIME": {
+   "empty_ratio": 0.0,
+   "kind": "date"
+  },
+  "LASTEVENTTIME": {
+   "empty_ratio": 0.0,
+   "kind": "date"
+  },
+  "TID": {
+   "empty_ratio": 0.036,
+   "kind": "text",
+   "distinct_ratio": 0.231,
+   "shapes": [
+    "9999999999999",
+    "99999999999999999A9AA9A9999A999999999",
+    "99999999999999999A9AA9A9999A99999999A"
+   ]
+  },
+  "BOMTYPE": {
+   "empty_ratio": 0.011,
+   "kind": "text",
+   "distinct_ratio": 0.015,
+   "shapes": [
+    "9999",
+    "A999",
+    "99A9"
+   ]
+  },
+  "MODELERYN": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "COATINGTYPE": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  }
+ },
+ "CIM_PROCESSNODE": {
+  "PROCESSNODEID": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 1.0,
+   "shapes": [
+    "99999999-9999",
+    "99999999-99-9999",
+    "9999999999-99-9999"
+   ]
+  },
+  "SITEID": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "1000": 1900,
+    "1010": 49,
+    "1032": 33,
+    "1100": 18
+   }
+  },
+  "PROCESSNODENAME": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 1.0,
+   "shapes": [
+    "99999999-9999",
+    "99999999-99-9999",
+    "9999999999-99-9999"
+   ]
+  },
+  "PROCESSDEFINITIONID": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 0.26,
+   "shapes": [
+    "99999999",
+    "99999999-99",
+    "9999999999-99"
+   ]
+  },
+  "PROCESSNODETYPE": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "S": 2000
+   }
+  },
+  "SUBPROCESSDEFINITIONID": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "PROCESSSEGMENTID": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 0.059,
+   "shapes": [
+    "AAAAAA",
+    "AAAAA9",
+    "AAAA_A"
+   ]
+  },
+  "ISSTARTNODE": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "N": 1504,
+    "Y": 496
+   }
+  },
+  "ISENDNODE": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "N": 1503,
+    "Y": 497
+   }
+  },
+  "PROCESSNODESEQUENCE": {
+   "empty_ratio": 0.0,
+   "kind": "number",
+   "integer": true,
+   "low": 10.0,
+   "high": 70.0
+  },
+  "X": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "Y": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "ACTIVITY": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 0.001,
+   "shapes": [
+    "AAAAAAAAAAAAAAAAAAAAAAA",
+    "AAAAAAAAAAAAAAAAA"
+   ]
+  },
+  "PREVACTIVITY": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "CUSTOMACTIVITY": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 0.001,
+   "shapes": [
+    "AAAAAAAAAAAAAAAAAAAAAAA",
+    "AAAAAAAAAAAAAAAAA"
+   ]
+  },
+  "PREVCUSTOMACTIVITY": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "ISUSABLE": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "Usable": 2000
+   }
+  },
+  "DESCRIPTION": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "REASONCODE": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "COMMENTS": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "CREATOR": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "INTERFACE": 1996,
+    "dykim": 4
+   }
+  },
+  "CREATETIME": {
+   "empty_ratio": 0.0,
+   "kind": "date"
+  },
+  "MODIFIER": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "INTERFACE": 1979,
+    "IF": 17,
+    "dykim": 4
+   }
+  },
+  "MODIFYTIME": {
+   "empty_ratio": 0.0,
+   "kind": "date"
+  },
+  "LASTEVENTTIME": {
+   "empty_ratio": 0.0,
+   "kind": "date"
+  },
+  "TID": {
+   "empty_ratio": 0.094,
+   "kind": "text",
+   "distinct_ratio": 0.13,
+   "shapes": [
+    "99999999999999999A9AA9A9999AA99999999",
+    "9999999999999999999999999999999",
+    "99999999999999999A9AA9A9999999999999A"
+   ]
+  },
+  "ISSAPINTERFACE": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "Y": 1982,
+    "N": 18
+   }
+  },
+  "SAPCODEID": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "ERP_OPRNO": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "STANDARDTEXTKEY": {
+   "empty_ratio": 0.002,
+   "kind": "text",
+   "distinct_ratio": 0.082,
+   "shapes": [
+    "AAAAAA",
+    "AAAAAA9",
+    "AAAAA99"
+   ]
+  },
+  "LGORT": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "AUFPL": {
+   "empty_ratio": 0.002,
+   "kind": "text",
+   "distinct_ratio": 0.259,
+   "shapes": [
+    "9999999999",
+    "9999999",
+    "99999999"
+   ]
+  },
+  "BANFN": {
+   "empty_ratio": 0.95,
+   "kind": "text",
+   "distinct_ratio": 1.0,
+   "shapes": [
+    "999999999",
+    "99999999",
+    "9999999999"
+   ]
+  },
+  "BNFPO": {
+   "empty_ratio": 0.011,
+   "kind": "code",
+   "values": {
+    "00000": 1877,
+    "00010": 101
+   }
+  },
+  "VORNR": {
+   "empty_ratio": 0.011,
+   "kind": "text",
+   "distinct_ratio": 0.011,
+   "shapes": [
+    "9999"
+   ]
+  },
+  "EBELN": {
+   "empty_ratio": 0.992,
+   "kind": "code",
+   "values": {
+    "4500674569": 1,
+    "4500669959": 1,
+    "4500670478": 1,
+    "4500656277": 1,
+    "4500667052": 1,
+    "4500705274": 1,
+    "4500691303": 1,
+    "4500691304": 1,
+    "4500691305": 1,
+    "4500691306": 1,
+    "4500667053": 1,
+    "4500667054": 1,
+    "4500667055": 1,
+    "4500673972": 1,
+    "4500708093": 1,
+    "4500672950": 1,
+    "4500667056": 1
+   }
+  },
+  "EBELP": {
+   "empty_ratio": 0.992,
+   "kind": "code",
+   "values": {
+    "00010": 17
+   }
+  },
+  "BMSCH": {
+   "empty_ratio": 0.991,
+   "kind": "number",
+   "integer": true,
+   "low": 1.0,
+   "high": 22000.0
+  },
+  "MEINH": {
+   "empty_ratio": 0.991,
+   "kind": "text",
+   "distinct_ratio": 0.056,
+   "shapes": [
+    "AA "
+   ]
+  },
+  "VGW01": {
+   "empty_ratio": 0.991,
+   "kind": "number",
+   "integer": true,
+   "low": 0.0,
+   "high": 90.0
+  },
+  "VGE01": {
+   "empty_ratio": 0.991,
+   "kind": "code",
+   "values": {
+    "MIN": 18
+   }
+  },
+  "VGW02": {
+   "empty_ratio": 0.991,
+   "kind": "number",
+   "integer": true,
+   "low": 0.0,
+   "high": 1380.0
+  },
+  "VGE02": {
+   "empty_ratio": 0.991,
+   "kind": "code",
+   "values": {
+    "MIN": 18
+   }
+  },
+  "VGW03": {
+   "empty_ratio": 0.991,
+   "kind": "number",
+   "integer": true,
+   "low": 0.0,
+   "high": 0.0
+  },
+  "VGE03": {
+   "empty_ratio": 0.991,
+   "kind": "code",
+   "values": {
+    "MIN": 18
+   }
+  },
+  "LTXA1": {
+   "empty_ratio": 0.002,
+   "kind": "text",
+   "distinct_ratio": 0.123,
+   "shapes": [
+    "가가[AAAAAAAA]",
+    "가가",
+    "가가가[AAAAA]"
+   ]
+  },
+  "STEUS": {
+   "empty_ratio": 0.959,
+   "kind": "code",
+   "values": {
+    "PP01": 80,
+    "PP02": 2
+   }
+  },
+  "DATUV": {
+   "empty_ratio": 0.991,
+   "kind": "date"
+  },
+  "DATUB": {
+   "empty_ratio": 0.991,
+   "kind": "date"
+  },
+  "DISPO": {
+   "empty_ratio": 0.991,
+   "kind": "code",
+   "values": {
+    "TA": 18
+   }
+  },
+  "MGVRG": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "SPLIT": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "UMREN": {
+   "empty_ratio": 0.95,
+   "kind": "code",
+   "values": {
+    "1": 100
+   }
+  }
+ },
+ "CIM_PROCESSPATH": {
+  "PROCESSPATHID": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "PASS": 2000
+   }
+  },
+  "PROCESSNODEID": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 1.0,
+   "shapes": [
+    "99999999-9999",
+    "99999999-99-9999",
+    "9999999999-99-9999"
+   ]
+  },
+  "SITEID": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "1000": 1870,
+    "1010": 80,
+    "1032": 26,
+    "1100": 24
+   }
+  },
+  "PROCESSPATHNAME": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "NEXTPROCESSNODEID": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 1.0,
+   "shapes": [
+    "99999999-9999",
+    "99999999-99-9999",
+    "9999999999-99-9999"
+   ]
+  },
+  "PRIORITY": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "ISAUTODISPATCH": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "Y": 2000
+   }
+  },
+  "ACTIVITY": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 0.001,
+   "shapes": [
+    "AAAAAAAAAAAAAAAAAAAAAAA",
+    "AAAAAAAAAAAAAAAAA"
+   ]
+  },
+  "PREVACTIVITY": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "CUSTOMACTIVITY": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 0.001,
+   "shapes": [
+    "AAAAAAAAAAAAAAAAAAAAAAA",
+    "AAAAAAAAAAAAAAAAA"
+   ]
+  },
+  "PREVCUSTOMACTIVITY": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "ISUSABLE": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "Usable": 2000
+   }
+  },
+  "DESCRIPTION": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "REASONCODE": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "COMMENTS": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "CREATOR": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "INTERFACE": 1998,
+    "dykim": 2
+   }
+  },
+  "CREATETIME": {
+   "empty_ratio": 0.0,
+   "kind": "date"
+  },
+  "MODIFIER": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "INTERFACE": 1998,
+    "dykim": 2
+   }
+  },
+  "MODIFYTIME": {
+   "empty_ratio": 0.0,
+   "kind": "date"
+  },
+  "LASTEVENTTIME": {
+   "empty_ratio": 0.0,
+   "kind": "date"
+  },
+  "TID": {
+   "empty_ratio": 0.09,
+   "kind": "text",
+   "distinct_ratio": 0.125,
+   "shapes": [
+    "999999999999999999A9A999999A9999999AA",
+    "99999999999999999A9AA9A999A99999999A9",
+    "9999999999999999999999999999999"
+   ]
+  }
+ },
+ "CIM_PROCESSSEGMENT": {
+  "PROCESSSEGMENTID": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 0.393,
+   "shapes": [
+    "AAAAAA",
+    "AA9AAA",
+    "AAAAA9"
+   ]
+  },
+  "SITEID": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "1030": 453,
+    "1032": 437,
+    "1010": 411,
+    "1000": 329,
+    "1100": 165
+   }
+  },
+  "PROCESSSEGMENTNAME": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 0.411,
+   "shapes": [
+    "가가가가",
+    "가가가",
+    "가가"
+   ]
+  },
+  "PROCESSSEGMENTRULECLSID": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "RULECLASS01": 1795
+   }
+  },
+  "SEGMENTTYPE": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "LEADTIME": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "LEADTIMEUNIT": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "SAPCODEID": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "ISSAPINTERFACE": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "N": 1795
+   }
+  },
+  "ACTIVITY": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 0.003,
+   "shapes": [
+    "AAAAAAAAAAAAAA(A/A)",
+    "AAAAAAAAAAAAAAAAAAAA"
+   ]
+  },
+  "PREVACTIVITY": {
+   "empty_ratio": 0.469,
+   "kind": "text",
+   "distinct_ratio": 0.005,
+   "shapes": [
+    "AAAAAAAAAAAAAA(A/A)",
+    "AAAAAAAAAAAAAAAAAAAA"
+   ]
+  },
+  "CUSTOMACTIVITY": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 0.002,
+   "shapes": [
+    "AAAAAAAAAAAAAA(A/A)",
+    "AAAAAAAAAAAAAAAAAAAA"
+   ]
+  },
+  "PREVCUSTOMACTIVITY": {
+   "empty_ratio": 0.469,
+   "kind": "text",
+   "distinct_ratio": 0.003,
+   "shapes": [
+    "AAAAAAAAAAAAAA(A/A)",
+    "AAAAAAAAAAAAAAAAAAAA"
+   ]
+  },
+  "ISUSABLE": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "Usable": 1794,
+    "UnUsable": 1
+   }
+  },
+  "DESCRIPTION": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "REASONCODE": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "COMMENTS": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "CREATOR": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 0.014,
+   "shapes": [
+    "AAAAAA",
+    "99999999",
+    "AA9AA"
+   ]
+  },
+  "CREATETIME": {
+   "empty_ratio": 0.0,
+   "kind": "date"
+  },
+  "MODIFIER": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 0.015,
+   "shapes": [
+    "AAAAAA",
+    "99999999",
+    "AAAAA"
+   ]
+  },
+  "MODIFYTIME": {
+   "empty_ratio": 0.0,
+   "kind": "date"
+  },
+  "LASTEVENTTIME": {
+   "empty_ratio": 0.0,
+   "kind": "date"
+  },
+  "TID": {
+   "empty_ratio": 0.079,
+   "kind": "text",
+   "distinct_ratio": 0.016,
+   "shapes": [
+    "9999999999999999999999999999999",
+    "999999999999999999AAA99A99999999999A9",
+    "999999999999999999AAA99A99AAA99999999"
+   ]
+  },
+  "LOCATION": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "AUTOSPLIT": {
+   "empty_ratio": 0.004,
+   "kind": "code",
+   "values": {
+    "N": 1788
+   }
+  },
+  "ISVISUAL_QMS": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "ISLASTINSPECTION_QMS": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "INSPECTION_TYPE": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "COSTCENTERID": {
+   "empty_ratio": 0.535,
+   "kind": "text",
+   "distinct_ratio": 0.11,
+   "shapes": [
+    "A9999999",
+    "A999999A"
+   ]
+  }
+ },
+ "CIM_PROCESSSEGMENTEQUIPMENTREL": {
+  "PROCESSSEGMENTID": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 0.044,
+   "shapes": [
+    "AAAAAA",
+    "AA9AAA",
+    "AAAA99"
+   ]
+  },
+  "EQUIPMENTID": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 0.535,
+   "shapes": [
+    "A999999999",
+    "A9999999",
+    "AA-99"
+   ]
+  },
+  "SITEID": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "1000": 1118,
+    "1032": 565,
+    "1030": 127,
+    "1100": 119,
+    "1010": 68,
+    "TUKR": 3
+   }
+  },
+  "ACTIVITY": {
+   "empty_ratio": 0.001,
+   "kind": "text",
+   "distinct_ratio": 0.002,
+   "shapes": [
+    "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+   ]
+  },
+  "PREVACTIVITY": {
+   "empty_ratio": 0.97,
+   "kind": "text",
+   "distinct_ratio": 0.033,
+   "shapes": [
+    "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+    "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+   ]
+  },
+  "CUSTOMACTIVITY": {
+   "empty_ratio": 0.001,
+   "kind": "text",
+   "distinct_ratio": 0.001,
+   "shapes": [
+    "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+   ]
+  },
+  "PREVCUSTOMACTIVITY": {
+   "empty_ratio": 0.97,
+   "kind": "text",
+   "distinct_ratio": 0.017,
+   "shapes": [
+    "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+   ]
+  },
+  "ISUSABLE": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "Usable": 1947,
+    "UnUsable": 53
+   }
+  },
+  "DESCRIPTION": {
+   "empty_ratio": 0.427,
+   "kind": "text",
+   "distinct_ratio": 0.003,
+   "shapes": [
+    "AAAAAA",
+    "AAAAAAAAA AA → AAA AAA",
+    "AAA AA → AAAAAAA → AAA AAA (AAAAAA AAA AAAA)"
+   ]
+  },
+  "REASONCODE": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "COMMENTS": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "CREATOR": {
+   "empty_ratio": 0.001,
+   "kind": "text",
+   "distinct_ratio": 0.004,
+   "shapes": [
+    "AAAAAA",
+    "AAAAA",
+    "99999999"
+   ]
+  },
+  "CREATETIME": {
+   "empty_ratio": 0.0,
+   "kind": "date"
+  },
+  "MODIFIER": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 0.004,
+   "shapes": [
+    "AAAAAA",
+    "AAAAA",
+    "99999999"
+   ]
+  },
+  "MODIFYTIME": {
+   "empty_ratio": 0.0,
+   "kind": "date"
+  },
+  "LASTEVENTTIME": {
+   "empty_ratio": 0.0,
+   "kind": "date"
+  },
+  "TID": {
+   "empty_ratio": 0.728,
+   "kind": "text",
+   "distinct_ratio": 0.105,
+   "shapes": [
+    "999999999999999999AAA99A99999999999A9",
+    "999999999999999999A9A99999A99999999A9",
+    "999999999999999999AAA99A99A999999999A"
+   ]
+  },
+  "STD_TEXTKEY": {
+   "empty_ratio": 0.997,
+   "kind": "text",
+   "distinct_ratio": 0.167,
+   "shapes": [
+    "AA999A"
+   ]
+  }
+ },
+ "CIM_PRODUCTCLASS": {
+  "PRODUCTCLASSID": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 0.2,
+   "shapes": [
+    "99"
+   ]
+  },
+  "SITEID": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "1000": 28,
+    "1010": 28,
+    "1030": 28,
+    "1032": 28,
+    "1100": 28
+   }
+  },
+  "PRODUCTCLASSNAME": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 0.2,
+   "shapes": [
+    "AAAAAA",
+    "AAAAA AAAAA",
+    "AAA"
+   ]
+  },
+  "PARENTID": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "ACTIVITY": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "CreateProductClass": 110,
+    "DeleteProductClass": 30
+   }
+  },
+  "PREVACTIVITY": {
+   "empty_ratio": 0.786,
+   "kind": "code",
+   "values": {
+    "CreateProductClass": 30
+   }
+  },
+  "CUSTOMACTIVITY": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "CreateProductClass": 140
+   }
+  },
+  "PREVCUSTOMACTIVITY": {
+   "empty_ratio": 0.786,
+   "kind": "code",
+   "values": {
+    "CreateProductClass": 30
+   }
+  },
+  "ISUSABLE": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "Usable": 110,
+    "UnUsable": 30
+   }
+  },
+  "DESCRIPTION": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "REASONCODE": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "COMMENTS": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "CREATOR": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "shsong": 140
+   }
+  },
+  "CREATETIME": {
+   "empty_ratio": 0.0,
+   "kind": "date"
+  },
+  "MODIFIER": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "shsong": 140
+   }
+  },
+  "MODIFYTIME": {
+   "empty_ratio": 0.0,
+   "kind": "date"
+  },
+  "LASTEVENTTIME": {
+   "empty_ratio": 0.0,
+   "kind": "date"
+  },
+  "TID": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 0.021,
+   "shapes": [
+    "999999999999999999AAA99A999999999999A",
+    "99999999999999999A9AA9A9999A9999999AA",
+    "99999999999999999A9AA9A999A99999999A9"
+   ]
+  },
+  "MATKIND": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  }
+ },
+ "CIM_PRODUCTDEFINITION": {
+  "PRODUCTDEFINITIONID": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 0.379,
+   "shapes": [
+    "99999999",
+    "99999999A"
+   ]
+  },
+  "SITEID": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "1000": 622,
+    "1100": 600,
+    "1032": 395,
+    "1010": 383
+   }
+  },
+  "PRODUCTDEFINITIONNAME": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 0.34,
+   "shapes": [
+    "AAA-AAAA99-A99A9A99-A999",
+    "A99-AAAA99-A99A9A99-A999",
+    "A99-AA99-A99A9A99-A999"
+   ]
+  },
+  "PRODUCTCLASSID": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "18": 1194,
+    "90": 806
+   }
+  },
+  "PRODUCTTYPE": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "HAWA": 1449,
+    "FERT": 551
+   }
+  },
+  "SALESCODE": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "GRADE": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "QTY": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "UNITID": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "PC": 2000
+   }
+  },
+  "PRODUCTDEFINITIONTYPE": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "CUSTOMERID": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "LOCATION": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "MATERIALTYPE": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "SUBMATERIALTYPE": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "SUBMATERIALQTY": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "UISEQUENCE": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "ACTIVITY": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 0.002,
+   "shapes": [
+    "AAAAAAAAAAAAAAAAAAAAAAA"
+   ]
+  },
+  "PREVACTIVITY": {
+   "empty_ratio": 0.06,
+   "kind": "text",
+   "distinct_ratio": 0.001,
+   "shapes": [
+    "AAAAAAAAAAAAAAAAAAAAAAA"
+   ]
+  },
+  "CUSTOMACTIVITY": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 0.002,
+   "shapes": [
+    "AAAAAAAAAAAAAAAAAAAAAAA"
+   ]
+  },
+  "PREVCUSTOMACTIVITY": {
+   "empty_ratio": 0.06,
+   "kind": "text",
+   "distinct_ratio": 0.001,
+   "shapes": [
+    "AAAAAAAAAAAAAAAAAAAAAAA"
+   ]
+  },
+  "ISUSABLE": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "Usable": 2000
+   }
+  },
+  "DESCRIPTION": {
+   "empty_ratio": 0.058,
+   "kind": "text",
+   "distinct_ratio": 0.013,
+   "shapes": [
+    "AA-A_AAAA AAAA_AAAAAAA_AAAAAA",
+    "AA-A_AAAAAAAA A AAAA_AAAAAA",
+    "AA-A_AAAAAAAA AA_AAAAAAA_AAAAAA"
+   ]
+  },
+  "REASONCODE": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "COMMENTS": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "CREATOR": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "shsong": 1132,
+    "10200005": 326,
+    "12016097": 222,
+    "10190018": 183,
+    "12010001": 66,
+    "12009016": 39,
+    "12013118": 31,
+    "12016114": 1
+   }
+  },
+  "CREATETIME": {
+   "empty_ratio": 0.0,
+   "kind": "date"
+  },
+  "MODIFIER": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 0.001,
+   "shapes": [
+    "A/A",
+    "AAAAAA"
+   ]
+  },
+  "MODIFYTIME": {
+   "empty_ratio": 0.0,
+   "kind": "date"
+  },
+  "LASTEVENTTIME": {
+   "empty_ratio": 0.0,
+   "kind": "date"
+  },
+  "TID": {
+   "empty_ratio": 0.055,
+   "kind": "text",
+   "distinct_ratio": 0.009,
+   "shapes": [
+    "9999999999999999999999999999999",
+    "99999999999999999A9AA9A999AA99999999A",
+    "99999999999999999999999999999"
+   ]
+  },
+  "PHANTOMYN": {
+   "empty_ratio": 0.434,
+   "kind": "text",
+   "distinct_ratio": 0.001,
+   "shapes": [
+    " "
+   ]
+  },
+  "TOTALPURCHASEYN": {
+   "empty_ratio": 0.434,
+   "kind": "text",
+   "distinct_ratio": 0.001,
+   "shapes": [
+    " "
+   ]
+  },
+  "LOTSIZE": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "CONVERSIONFACTOR": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "CONVERSIONUNITFROM": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "CONVERSIONUNITTO": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "IDPATTERN": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "CREATE_LOT_IDPATTERN": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "SPEC": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "DRAWNO": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "CBMDESCRIPTION": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "RECVINSPECTIONFLAG": {
+   "empty_ratio": 0.434,
+   "kind": "text",
+   "distinct_ratio": 0.001,
+   "shapes": [
+    " "
+   ]
+  },
+  "STOCKLOCATION": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "CBM": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "UNITWEIGHT": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "UNITOFWEIGHT": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "GROSSWEIGHT": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "GROSSUNIT": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "OUTSIZE": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "INSIZE": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "THSIZE": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "ISSUEMETHOD": {
+   "empty_ratio": 0.434,
+   "kind": "text",
+   "distinct_ratio": 0.001,
+   "shapes": [
+    " "
+   ]
+  },
+  "MAJORSLCD": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "ISSUEDSLCD": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "GROUPID1": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "GROUPNAME1": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "GROUPID2": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "GROUPNAME2": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "GROUPID3": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "GROUPNAME3": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "LOTFLAG": {
+   "empty_ratio": 0.434,
+   "kind": "text",
+   "distinct_ratio": 0.001,
+   "shapes": [
+    " "
+   ]
+  },
+  "VALIDFLAG": {
+   "empty_ratio": 0.434,
+   "kind": "text",
+   "distinct_ratio": 0.001,
+   "shapes": [
+    " "
+   ]
+  },
+  "VALIDFROMDT": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "VALIDTODT": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "CLFLAG": {
+   "empty_ratio": 0.434,
+   "kind": "text",
+   "distinct_ratio": 0.001,
+   "shapes": [
+    " "
+   ]
+  },
+  "ERPTYPE": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "GRADE1": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "GRADE_NM": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "REMARK_ADD1": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "PRODUCTHIERARCHY": {
+   "empty_ratio": 0.058,
+   "kind": "text",
+   "distinct_ratio": 0.012,
+   "shapes": [
+    "A99999999"
+   ]
+  },
+  "COATINGTYPE": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "OD": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "SD": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "LOC": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "OAL": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "FLUTE": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "RADIUS": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "LBS": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "MATERIALGROUP": {
+   "empty_ratio": 0.012,
+   "kind": "code",
+   "values": {
+    "A01": 1016,
+    "MIL-CUT": 526,
+    "D01": 430,
+    "B01": 3
+   }
+  },
+  "COATINGREMARK": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "UNITPRICE": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "NFMAT": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "GROES": {
+   "empty_ratio": 0.172,
+   "kind": "text",
+   "distinct_ratio": 0.324,
+   "shapes": [
+    "99A99A999(9A)/AAAA99",
+    "99A99A999(9A)/AA99",
+    "99A99A999(9A)/AAAA(A)99"
+   ]
+  },
+  "ZDFCODE": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "ATWRT": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "COBALT1": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "COBALT2": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "ZALTMAT": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "DIAMETER": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "DRAW": {
+   "empty_ratio": 0.404,
+   "kind": "code",
+   "values": {
+    "N": 1192
+   }
+  },
+  "EXTWG": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "GRDP_PLC": {
+   "empty_ratio": 0.538,
+   "kind": "code",
+   "values": {
+    "MI": 516,
+    "PG": 406,
+    "NP": 1,
+    "DL": 1
+   }
+  },
+  "SORD": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "TOOLNO": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "UNCOATING": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "FLUTE_LENGTH": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "BASEMAT": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "GRADE2": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "MATL_TAP": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "SINGLESLEEVEYN": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "TAP_BASIC": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "XCHPF": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "S_REMARK": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  }
+ },
+ "CIM_PRODUCTORDER": {
+  "PRODUCTORDERID": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 1.0,
+   "shapes": [
+    "99999999"
+   ]
+  },
+  "SITEID": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "1000": 1782,
+    "1032": 139,
+    "1010": 79
+   }
+  },
+  "PRODUCTORDERNAME": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "PRODUCTCLASSID": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "11": 710,
+    "90": 580,
+    "15": 227,
+    "14": 164,
+    "13": 147,
+    "12": 92,
+    "21": 71,
+    "16": 5,
+    "17": 3,
+    "23": 1
+   }
+  },
+  "PRODUCTDEFINITIONID": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 0.809,
+   "shapes": [
+    "AA9999999",
+    "AA999999",
+    "A9999999"
+   ]
+  },
+  "PRODUCTTYPE": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "FERT": 1367,
+    "FRT2": 577,
+    "HALB": 52,
+    "FRT3": 4
+   }
+  },
+  "PURCHASEORDER": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "SALESORDER": {
+   "empty_ratio": 0.71,
+   "kind": "text",
+   "distinct_ratio": 0.215,
+   "shapes": [
+    "9999999999"
+   ]
+  },
+  "PRODUCTORDERTYPE": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "COATING": 860,
+    "MACHINING": 559,
+    "REMACHINING": 370,
+    "RECOATING": 211
+   }
+  },
+  "STATE": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "Finished": 1969,
+    "Terminated": 31
+   }
+  },
+  "PREVSTATE": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "Active": 1969,
+    "Created": 30
+   }
+  },
+  "QTY": {
+   "empty_ratio": 0.0,
+   "kind": "number",
+   "integer": true,
+   "low": 2.0,
+   "high": 300.0
+  },
+  "RESULTQTY": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "UNITID": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "PC": 2000
+   }
+  },
+  "REQUESTTIME": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "SCHEDULESTARTTIME": {
+   "empty_ratio": 0.0,
+   "kind": "date"
+  },
+  "SCHEDULEENDTIME": {
+   "empty_ratio": 0.183,
+   "kind": "date"
+  },
+  "STARTTIME": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "ENDTIME": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "CUSTOMERID": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "WORKCENTER": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "ACTIVITY": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 0.002,
+   "shapes": [
+    "AAAAAAAAAAAAAAAAAAAAAAA",
+    "AAAAAAAAAAAAAAAAAA"
+   ]
+  },
+  "PREVACTIVITY": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 0.002,
+   "shapes": [
+    "AAAAAAAAAAAAAAAAAA",
+    "AAAAAAAAAAAAAAAAAAAAAAA"
+   ]
+  },
+  "CUSTOMACTIVITY": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "FinishProductOrder": 1956,
+    "DeleteProductorder": 31,
+    "UpdateProductorder": 12,
+    "WorkSheetPrint": 1
+   }
+  },
+  "PREVCUSTOMACTIVITY": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 0.003,
+   "shapes": [
+    "AAAAAAAAAAAAAAAAAA",
+    "AAAAAAAAAAAAAA",
+    "AAAAAAAAAAAAAAAAAAAAAAA"
+   ]
+  },
+  "ISUSABLE": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "Usable": 1969,
+    "UnUsable": 31
+   }
+  },
+  "DESCRIPTION": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "REASONCODE": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "COMMENTS": {
+   "empty_ratio": 0.895,
+   "kind": "text",
+   "distinct_ratio": 0.543,
+   "shapes": [
+    "9가",
+    "9가[가가가 가가가가가가가가]/가가가가 가가가가 가가가가가가가 가가, ",
+    "가가가가 가가가가가가 가가가 가가 가가"
+   ]
+  },
+  "CREATOR": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "12008420": 797,
+    "10210113": 373,
+    "12014853": 366,
+    "12018067": 272,
+    "12014085": 190,
+    "12008220": 2
+   }
+  },
+  "CREATETIME": {
+   "empty_ratio": 0.0,
+   "kind": "date"
+  },
+  "MODIFIER": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 0.021,
+   "shapes": [
+    "99999999",
+    "AAAAAAA"
+   ]
+  },
+  "MODIFYTIME": {
+   "empty_ratio": 0.0,
+   "kind": "date"
+  },
+  "LASTEVENTTIME": {
+   "empty_ratio": 0.0,
+   "kind": "date"
+  },
+  "TID": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 0.521,
+   "shapes": [
+    "999999999999999999A9A99999AA999999999",
+    "999999999999999999A9A9999999999999999",
+    "999999999999999999A9A99999999999999A9"
+   ]
+  },
+  "PRIORITY": {
+   "empty_ratio": 0.995,
+   "kind": "text",
+   "distinct_ratio": 0.5,
+   "shapes": [
+    "가가가",
+    "99",
+    " 9가"
+   ]
+  },
+  "VENDORID": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "FACTORY": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "FM01": 1071,
+    "FM02": 519,
+    "FM03": 410
+   }
+  },
+  "PRIORITYTYPE": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "BATCHNO": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "IFSEQ": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "FIRMFLAG": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "RELEASEDT": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "MTSFLAG": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "DELAYFLAG": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "PROCURTYPE": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "ERPROUTINGCODE": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "BPCD": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "PURCHASEGROUP": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "SALESGROUP": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "SALESORDERSEQ": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "SOLDTOPARTY": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "REFTYPE": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "INPUTPATH": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "PLAN1UPDTDT": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "PLAN1COMPTQTY": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "PRODADDQTY": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "PLAN2COMPTDT": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "PLAN2UPDTDT": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "PLAN2COMPTQTY": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "PLAN3COMPTDT": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "PLAN3UPDTDT": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "PLAN3COMPTQTY": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "PLAN4COMPTDT": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "PLAN4UPDTDT": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "PLAN4COMPTQTY": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "REMARK": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "REMARK1": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "REMARK2": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "REMARK3": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "CLEANSTOCKNO": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "SO_PRC": {
+   "empty_ratio": 0.306,
+   "kind": "number",
+   "integer": true,
+   "low": 55716.0,
+   "high": 4365516.0
+  },
+  "DESSIN_CTRL": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "ISFIRST": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "PR_NO": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "PR_ITEM": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "REQUEST_NO": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "REQUEST_ITEM": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "SERIAL_NO": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "BATCH_ID": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "GATE_NO": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "INPUTREMARK": {
+   "empty_ratio": 0.992,
+   "kind": "text",
+   "distinct_ratio": 0.375,
+   "shapes": [
+    "AAAA AAAA",
+    "AAA 가가",
+    "#9999(999999)"
+   ]
+  },
+  "DAUAT": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "PP01": 1364,
+    "ZP90": 581,
+    "ZP01": 55
+   }
+  },
+  "PLANNEDORDERID": {
+   "empty_ratio": 0.032,
+   "kind": "text",
+   "distinct_ratio": 1.0,
+   "shapes": [
+    "9999999999",
+    "999999999"
+   ]
+  },
+  "RSNUM": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 1.0,
+   "shapes": [
+    "9999999999"
+   ]
+  },
+  "INSMK": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "X": 2000
+   }
+  },
+  "CUSTOMERNAME": {
+   "empty_ratio": 0.812,
+   "kind": "text",
+   "distinct_ratio": 0.989,
+   "shapes": [
+    "가가가가9가-9999--99999999-999-AAAAA99999-AAAAA-",
+    "가가가가-9999--99999999-99-AA9999999-A9",
+    "가가가가-9999--99999999-99-AAAAA99999-A9"
+   ]
+  },
+  "LGORT": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "3001": 1948,
+    "2100": 52
+   }
+  },
+  "VERID": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 0.011,
+   "shapes": [
+    "A999",
+    "9999",
+    "AAAA"
+   ]
+  },
+  "KDPOS": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 0.024,
+   "shapes": [
+    "999999"
+   ]
+  },
+  "UNITPRICE": {
+   "empty_ratio": 0.306,
+   "kind": "number",
+   "integer": true,
+   "low": 3266.0,
+   "high": 42772.0
+  },
+  "DELIVERYDATE": {
+   "empty_ratio": 0.55,
+   "kind": "date"
+  },
+  "AUFPL": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 1.0,
+   "shapes": [
+    "9999999999"
+   ]
+  },
+  "PRODUCTORDERDATE": {
+   "empty_ratio": 0.0,
+   "kind": "date"
+  },
+  "PRINTCOUNT": {
+   "empty_ratio": 0.538,
+   "kind": "number",
+   "integer": true,
+   "low": 1.0,
+   "high": 3.0
+  },
+  "DEGREEID": {
+   "empty_ratio": 0.726,
+   "kind": "text",
+   "distinct_ratio": 0.199,
+   "shapes": [
+    "99999999999"
+   ]
+  },
+  "WEMPF": {
+   "empty_ratio": 0.547,
+   "kind": "text",
+   "distinct_ratio": 0.019,
+   "shapes": [
+    "99999999",
+    "9가9가",
+    "A"
+   ]
+  },
+  "ABLAD": {
+   "empty_ratio": 0.724,
+   "kind": "text",
+   "distinct_ratio": 0.149,
+   "shapes": [
+    "AAAAA(999999)",
+    "AAAAA(999999)_AA",
+    "AAAAA(999999)#9999"
+   ]
+  },
+  "APRIO": {
+   "empty_ratio": 0.829,
+   "kind": "code",
+   "values": {
+    "2": 186,
+    "1": 79,
+    "D": 31,
+    "M": 21,
+    "C": 14,
+    "B": 7,
+    "A": 3,
+    "8": 1,
+    "5": 1
+   }
+  },
+  "PLNUM": {
+   "empty_ratio": 0.032,
+   "kind": "text",
+   "distinct_ratio": 1.0,
+   "shapes": [
+    "9999999999",
+    "999999999"
+   ]
+  },
+  "COATING": {
+   "empty_ratio": 0.854,
+   "kind": "text",
+   "distinct_ratio": 0.503,
+   "shapes": [
+    "AAAAA99999",
+    "AA999999999",
+    "AA9999999"
+   ]
+  },
+  "SITEM": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "PRODUCTCOMMENTS": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "BEU": {
+   "empty_ratio": 0.999,
+   "kind": "text",
+   "distinct_ratio": 0.5,
+   "shapes": [
+    " "
+   ]
+  },
+  "REFNR": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "SPLSTAT": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "RESULTREPORTTARGET": {
+   "empty_ratio": 0.997,
+   "kind": "text",
+   "distinct_ratio": 0.143,
+   "shapes": [
+    "가가"
+   ]
+  },
+  "DISPO": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "WORKSHEETHEADERCOLOR": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  }
+ },
+ "CIM_PRODUCTPROCESSREL": {
+  "PRODUCTDEFINITIONID": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 0.174,
+   "shapes": [
+    "99999999",
+    "AA9A9999",
+    "A9999999"
+   ]
+  },
+  "PROCESSDEFINITIONID": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 0.965,
+   "shapes": [
+    "99999999-99",
+    "AA9A9999-99",
+    "9999999999-99"
+   ]
+  },
+  "SITEID": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "1000": 1879,
+    "1100": 49,
+    "1010": 36,
+    "1032": 36
+   }
+  },
+  "ISDEFAULT": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "N": 2000
+   }
+  },
+  "SEQUENCE": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "ACTIVITY": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 0.002,
+   "shapes": [
+    "AAAAAAAAAAAAAAAAAAAAAAA"
+   ]
+  },
+  "PREVACTIVITY": {
+   "empty_ratio": 0.958,
+   "kind": "text",
+   "distinct_ratio": 0.024,
+   "shapes": [
+    "AAAAAAAAAAAAAAAAAAAAAAA"
+   ]
+  },
+  "CUSTOMACTIVITY": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 0.003,
+   "shapes": [
+    "AAAAAAAAAAAAAAAAAAAAAAA"
+   ]
+  },
+  "PREVCUSTOMACTIVITY": {
+   "empty_ratio": 0.958,
+   "kind": "text",
+   "distinct_ratio": 0.024,
+   "shapes": [
+    "AAAAAAAAAAAAAAAAAAAAAAA"
+   ]
+  },
+  "ISUSABLE": {
+   "empty_ratio": 0.0,
+   "kind": "code",
+   "values": {
+    "Usable": 2000
+   }
+  },
+  "DESCRIPTION": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "REASONCODE": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "COMMENTS": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "CREATOR": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 0.013,
+   "shapes": [
+    "99999999",
+    "AAAAAAAAA",
+    "AAAAAA"
+   ]
+  },
+  "CREATETIME": {
+   "empty_ratio": 0.0,
+   "kind": "date"
+  },
+  "MODIFIER": {
+   "empty_ratio": 0.0,
+   "kind": "text",
+   "distinct_ratio": 0.013,
+   "shapes": [
+    "99999999",
+    "AAAAAAAAA",
+    "AAAAAA"
+   ]
+  },
+  "MODIFYTIME": {
+   "empty_ratio": 0.0,
+   "kind": "date"
+  },
+  "LASTEVENTTIME": {
+   "empty_ratio": 0.0,
+   "kind": "date"
+  },
+  "TID": {
+   "empty_ratio": 0.053,
+   "kind": "text",
+   "distinct_ratio": 0.257,
+   "shapes": [
+    "9999999999999999999999999999999",
+    "999999999999999999A9A999999A999999999",
+    "999999999999999999A9A9999999999999999"
+   ]
+  },
+  "ERPROUTINGID": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  },
+  "DIVISION": {
+   "empty_ratio": 1.0,
+   "kind": "empty"
+  }
+ }
+}
