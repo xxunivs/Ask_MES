@@ -28,7 +28,7 @@ SPEC = json.loads((Path(__file__).parent / "column_spec.json").read_text(encodin
 SCHEMA = {t["name"]: t for t in json.loads((ROOT / "backend/data/mes_schema.json").read_text(encoding="utf-8"))["tables"]}
 SITE_ID = "1000"
 # 가상 데이터 날짜 범위
-DATE_START = datetime(2025, 11, 1)
+DATE_START = datetime(2024, 10, 1)
 DATE_END = datetime(2026, 10, 20)
 BATCH = 500
 
@@ -45,6 +45,15 @@ ROW_COUNTS = {
     "CIM_PRODUCTORDER": 1000, "CIM_LOT": 5000, "CIM_LOTHIST": 15000,
     "CIM_BATCH": 200, "CIM_LOTBATCHREL": 1000, "CIM_LOTDEFECT": 1500, "CIM_LOTMATERIALLOTREL": 3000,
 }
+
+# 실제 표본에서는 비어 있었지만 데모 질문에 필요한 칸 (채우는 비율, 값 종류)
+DEMO_FILL = {
+    ("CIM_MATERIALDEFINITION", "SAFETY_QTY"): (0.6, "number"),
+    ("CIM_EQUIPMENT", "ALARMID"): (0.15, "alarm"),
+    ("CIM_LOT", "DUEDATE"): (0.8, "date"),
+    ("CIM_MATERIALLOT", "RECEIVEDTIME"): (0.9, "date"),
+}
+YN_FLAG = re.compile(r"^IS|FLAG$|YN$")
 
 # 스키마 파일에 없는 참조 관계
 EXTRA_REFS = {
@@ -183,6 +192,24 @@ def generic_value(table: str, col: dict, spec: dict, n: int, base: datetime):
     return None
 
 
+def is_yn_flag(col: dict, spec: dict) -> bool:
+    """Y/N 표시 칸 (코드값이 Y, N 뿐이거나 IS, FLAG, YN 이름)"""
+    if spec.get("kind") == "code":
+        return set(spec["values"]) <= {"Y", "N"}
+    return col["type"] in ("char", "varchar", "nchar", "nvarchar") and bool(YN_FLAG.search(col["name"]))
+
+
+def demo_fill_value(table: str, col: dict, n: int, base: datetime):
+    ratio, kind = DEMO_FILL[(table, col["name"])]
+    if rng.random() >= ratio:
+        return None
+    if kind == "number":
+        return rng.randint(10, 500)
+    if kind == "alarm":
+        return f"ALM{rng.randint(1, 40):03d}"
+    return random_date(base, col["name"])
+
+
 def build_rows(table: str, columns: list[dict]) -> list[dict]:
     count = ROW_COUNTS[table]
     spec = SPEC.get(table, {})
@@ -206,6 +233,10 @@ def build_rows(table: str, columns: list[dict]) -> list[dict]:
                 value = n if numeric else make_id(table, name, n, cspec)
             elif parent and generated_ids.get(parent):
                 value = rng.choice(generated_ids[parent])
+            elif (table, name) in DEMO_FILL:
+                value = demo_fill_value(table, col, n, base)
+            elif is_yn_flag(col, cspec):
+                value = "Y" if rng.random() < 0.1 else "N"
             elif not col["pk"] and col["nullable"] and rng.random() < cspec.get("empty_ratio", 1.0):
                 value = None
             else:
