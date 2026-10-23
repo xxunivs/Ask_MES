@@ -1,5 +1,6 @@
 -- 공개용 데모 DB 테이블 정의 (MES 테이블 구조만, 데이터 없음)
-IF DB_ID('MES_DEMO') IS NULL CREATE DATABASE MES_DEMO;
+-- 한글을 varchar 에도 담을 수 있게 한국어 정렬 규칙 사용
+IF DB_ID('MES_DEMO') IS NULL CREATE DATABASE MES_DEMO COLLATE Korean_Wansung_CI_AS;
 GO
 USE MES_DEMO;
 GO

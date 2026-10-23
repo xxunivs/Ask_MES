@@ -1,7 +1,7 @@
 """
 공개용 데모 DB에 가상 데이터 채우기
 
-column_spec.json (칸별 값 종류와 범위)과 데모 DB의 표 정의를 읽어,
+column_spec.json (칸별 값 종류와 범위), vocab.py (업종 어휘), 데모 DB 표 정의를 읽어
 표끼리 ID가 맞물리는 가상 데이터를 만든다. 실제 기록은 쓰지 않는다.
 같은 SEED 로 돌리면 항상 같은 데이터가 나온다.
 
@@ -14,14 +14,17 @@ import json
 import random
 import re
 import sys
+import uuid
 from datetime import datetime, timedelta
 from decimal import Decimal
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "backend"))
+sys.path.insert(0, str(Path(__file__).parent))
 
 from app.core.demo_db import connect  # noqa: E402
+import vocab  # noqa: E402
 
 SEED = 42
 SPEC = json.loads((Path(__file__).parent / "column_spec.json").read_text(encoding="utf-8"))
@@ -36,15 +39,16 @@ BATCH = 500
 ROW_COUNTS = {
     "CIM_CODECLASS": 20, "CIM_CODE": 200,
     "CIM_FACILITY": 20, "CIM_FACILITYMAP": 20,
-    "CIM_EQUIPMENTCLASS": 30, "CIM_EQUIPMENT": 200,
+    "CIM_EQUIPMENTCLASS": 12, "CIM_EQUIPMENT": 200,
     "CIM_PRODUCTCLASS": 10, "CIM_PRODUCTDEFINITION": 100,
-    "CIM_PROCESSDEFINITION": 10, "CIM_PROCESSSEGMENT": 30, "CIM_PROCESSNODE": 60, "CIM_PROCESSPATH": 60,
+    "CIM_PROCESSDEFINITION": 10, "CIM_PROCESSSEGMENT": 14, "CIM_PROCESSNODE": 60, "CIM_PROCESSPATH": 60,
     "CIM_PRODUCTPROCESSREL": 100, "CIM_PROCESSSEGMENTEQUIPMENTREL": 100,
     "CIM_MATERIALCLASS": 10, "CIM_MATERIALDEFINITION": 100, "CIM_MATERIALLOT": 1000,
-    "CIM_DEFECTCLASS": 10, "CIM_DEFECT": 50,
+    "CIM_DEFECTCLASS": 10, "CIM_DEFECT": 20,
     "CIM_PRODUCTORDER": 1000, "CIM_LOT": 5000, "CIM_LOTHIST": 15000,
     "CIM_BATCH": 200, "CIM_LOTBATCHREL": 1000, "CIM_LOTDEFECT": 1500, "CIM_LOTMATERIALLOTREL": 3000,
 }
+LOT_TABLES = {"CIM_LOT", "CIM_LOTHIST", "CIM_LOTDEFECT", "CIM_LOTBATCHREL", "CIM_LOTMATERIALLOTREL", "CIM_MATERIALLOT", "CIM_BATCH"}
 
 # 실제 표본에서는 비어 있었지만 데모 질문에 필요한 칸 (채우는 비율, 값 종류)
 DEMO_FILL = {
@@ -54,6 +58,8 @@ DEMO_FILL = {
     ("CIM_MATERIALLOT", "RECEIVEDTIME"): (0.9, "date"),
 }
 YN_FLAG = re.compile(r"^IS|FLAG$|YN$")
+# 다른 표 ID 를 가리키는 칸의 앞말 (PREVPROCESSNODEID -> PROCESSNODEID)
+REF_PREFIXES = ("PREV", "NEXT", "ROOTPARENT", "PARENT", "SOURCE", "RESERVED", "START", "ORIGINAL", "MERGE", "CHILD", "REPLACE", "SUB")
 
 # 스키마 파일에 없는 참조 관계
 EXTRA_REFS = {
@@ -63,6 +69,10 @@ EXTRA_REFS = {
 
 rng = random.Random(SEED)
 generated_ids: dict[str, list[str]] = {}
+# 표별 ID -> 대표 이름 (자식 표 이름을 만들 때 참고)
+names: dict[str, dict[str, str]] = {}
+# 표별 ID -> 행 (자식 표가 부모 값을 따라갈 때 참고)
+rows_by_id: dict[str, dict[str, dict]] = {}
 
 
 def load_columns(cur) -> dict[str, list[dict]]:
@@ -91,10 +101,16 @@ def owner_table(table: str, column: str) -> str | None:
     for fk in SCHEMA.get(table, {}).get("foreign_keys", []):
         if fk["column"] == column and "via" not in fk.get("label", "") and fk["ref_table"] in ROW_COUNTS:
             return fk["ref_table"]
-    if column.endswith("ID"):
-        candidate = "CIM_" + column[:-2]
-        if candidate in ROW_COUNTS and candidate != table:
-            return candidate
+    if not column.endswith("ID"):
+        return None
+    base = column
+    for prefix in REF_PREFIXES:
+        if base.startswith(prefix) and "CIM_" + base[len(prefix):-2] in ROW_COUNTS:
+            base = base[len(prefix):]
+            break
+    candidate = "CIM_" + base[:-2]
+    if candidate in ROW_COUNTS and (candidate != table or base != column):
+        return candidate
     return None
 
 
@@ -106,37 +122,17 @@ def own_id_column(table: str, columns: list[dict]) -> str | None:
     return None
 
 
-def fill_shape(shape: str, number: int) -> str:
-    """모양 문자열의 9 자리는 번호로, A 는 고정 영문, 가 는 한글로 채움"""
-    digits = str(number)
-    out = []
-    slots = shape.count("9")
-    padded = digits.zfill(slots)[-slots:] if slots else ""
-    i = 0
-    for ch in shape:
-        if ch == "9":
-            out.append(padded[i]); i += 1
-        elif ch == "A":
-            out.append("D")
-        elif ch == "가":
-            out.append("가")
-        else:
-            out.append(ch)
-    return "".join(out)
-
-
-# 표별 ID 시작 번호 (0이 길게 이어지지 않도록 큰 수에서 시작)
-id_starts: dict[str, int] = {}
-
-
-def make_id(table: str, column: str, n: int, spec: dict) -> str:
-    shapes = [s for s in spec.get("shapes", []) if "9" in s]
-    if not shapes:
+def make_id(table: str, column: str, n: int) -> str:
+    fmt = vocab.ID_FORMATS.get(table)
+    if table == "CIM_PRODUCTCLASS":
+        return vocab.PRODUCT_CLASSES[(n - 1) % len(vocab.PRODUCT_CLASSES)][0]
+    if not fmt:
         return f"{column[:3]}{n:06d}"
-    slots = shapes[0].count("9")
-    if table not in id_starts:
-        id_starts[table] = rng.randint(10 ** (slots - 1), 5 * 10 ** (slots - 1))
-    return fill_shape(shapes[0], id_starts[table] + n * 7)
+    return fmt.format(n=vocab.ID_OFFSETS.get(table, 0) + n, n2=(n * 37) % 10000)
+
+
+def random_code(length: int) -> str:
+    return "".join(rng.choice("ABCDEFGHJKLMNPRSTUVWXYZ0123456789") for _ in range(length))
 
 
 def random_date(base: datetime, column: str) -> datetime:
@@ -144,11 +140,15 @@ def random_date(base: datetime, column: str) -> datetime:
     upper = column.upper()
     if any(k in upper for k in ("START", "TRACKIN", "CREATE", "RELEASE", "PLAN")):
         return base + timedelta(minutes=rng.randint(0, 120))
-    if any(k in upper for k in ("END", "TRACKOUT", "LASTEVENT", "COMPLETE", "FINISH", "UPDATE")):
+    if any(k in upper for k in ("END", "TRACKOUT", "LASTEVENT", "COMPLETE", "FINISH", "UPDATE", "MODIFY")):
         return base + timedelta(hours=rng.randint(2, 48))
-    if "DELIVERY" in upper or "DUE" in upper:
-        return base + timedelta(days=rng.randint(3, 30))
+    if "DELIVERY" in upper or "DUE" in upper or "EXPIRE" in upper:
+        return base + timedelta(days=rng.randint(3, 60))
     return base + timedelta(minutes=rng.randint(0, 2880))
+
+
+def is_text(col: dict) -> bool:
+    return col["type"] in ("varchar", "nvarchar", "char", "nchar")
 
 
 def fit(value, col: dict):
@@ -156,9 +156,15 @@ def fit(value, col: dict):
     if value is None:
         return None
     t = col["type"]
-    if t in ("varchar", "nvarchar", "char", "nchar"):
+    if is_text(col):
         s = str(value)
-        return s[: col["length"]] if col["length"] and col["length"] > 0 else s
+        # varchar 는 한글 한 글자가 2바이트 (Korean_Wansung)
+        limit = col["length"] if col["length"] and col["length"] > 0 else None
+        if limit and t in ("varchar", "char"):
+            while len(s.encode("cp949", errors="replace")) > limit:
+                s = s[:-1]
+            return s
+        return s[:limit] if limit else s
     if t in ("int", "bigint"):
         return int(float(value))
     if t in ("numeric", "decimal"):
@@ -166,6 +172,30 @@ def fit(value, col: dict):
     if t == "float":
         return float(value)
     return value
+
+
+def is_yn_flag(col: dict, spec: dict) -> bool:
+    """Y/N 표시 칸 (코드값이 Y, N 뿐이거나 IS, FLAG, YN 이름)"""
+    if spec.get("kind") == "code":
+        return set(spec["values"]) <= {"Y", "N"}
+    return is_text(col) and bool(YN_FLAG.search(col["name"]))
+
+
+def common_text(table: str, name: str, n: int):
+    """여러 표에 공통으로 있는 칸의 값. 해당 없으면 None"""
+    if name in ("ACTIVITY", "PREVACTIVITY"):
+        return rng.choice(vocab.LOT_ACTIVITIES if table in LOT_TABLES else vocab.MASTER_ACTIVITIES)
+    if name in ("CUSTOMACTIVITY", "PREVCUSTOMACTIVITY"):
+        return None
+    if name in ("CREATOR", "MODIFIER", "WORKER", "STARTWORKER", "TRANSFERUSER") or "USER" in name:
+        return rng.choice(vocab.USERS)
+    if name == "TID":
+        return uuid.UUID(int=rng.getrandbits(128)).hex
+    if re.match(r"^(DESCRIPTION|COMMENTS\d?|REMARK.*|S_REMARK|SPCOMMENTS)$", name):
+        return rng.choice(vocab.COMMENTS) if rng.random() < 0.15 else None
+    if name == "CUSTOMERNAME":
+        return rng.choice(vocab.CUSTOMERS)
+    return None
 
 
 def generic_value(table: str, col: dict, spec: dict, n: int, base: datetime):
@@ -181,25 +211,11 @@ def generic_value(table: str, col: dict, spec: dict, n: int, base: datetime):
         v = rng.uniform(low, high)
         return round(v) if spec.get("integer") else round(v, 2)
     if kind == "text":
-        if re.search(r"USER", name):
-            return f"user{rng.randint(1, 30):02d}"
-        if re.search(r"NAME", name):
-            return f"{SCHEMA.get(table, {}).get('label', table)}-{n:04d}"
-        if re.search(r"DESC|COMMENT|NOTE|REMARK|TEXT", name):
-            return f"가상 데이터 {n}"
-        shapes = spec.get("shapes") or ["A999"]
-        return fill_shape(rng.choice(shapes), rng.randint(1, 10 ** 6))
+        return random_code(min(8, col["length"] or 8))
     return None
 
 
-def is_yn_flag(col: dict, spec: dict) -> bool:
-    """Y/N 표시 칸 (코드값이 Y, N 뿐이거나 IS, FLAG, YN 이름)"""
-    if spec.get("kind") == "code":
-        return set(spec["values"]) <= {"Y", "N"}
-    return col["type"] in ("char", "varchar", "nchar", "nvarchar") and bool(YN_FLAG.search(col["name"]))
-
-
-def demo_fill_value(table: str, col: dict, n: int, base: datetime):
+def demo_fill_value(table: str, col: dict, base: datetime):
     ratio, kind = DEMO_FILL[(table, col["name"])]
     if rng.random() >= ratio:
         return None
@@ -208,6 +224,95 @@ def demo_fill_value(table: str, col: dict, n: int, base: datetime):
     if kind == "alarm":
         return f"ALM{rng.randint(1, 40):03d}"
     return random_date(base, col["name"])
+
+
+def name_of(table: str, key) -> str:
+    return names.get(table, {}).get(key, "")
+
+
+def apply_domain_rules(table: str, row: dict, n: int) -> str | None:
+    """업무상 말이 되는 이름과 값으로 맞춤. 이 행의 대표 이름을 돌려줌"""
+    def pick(items):
+        return items[(n - 1) % len(items)]
+
+    def size():
+        return rng.choice([3, 4, 5, 6, 8, 10, 12, 16, 20])
+
+    label = None
+    def parent_row(parent: str, key: str) -> dict:
+        return rows_by_id.get(parent, {}).get(row.get(key), {})
+
+    if table in ("CIM_LOT", "CIM_PRODUCTORDER"):
+        product = parent_row("CIM_PRODUCTDEFINITION", "PRODUCTDEFINITIONID")
+        if product:
+            row["PRODUCTCLASSID"] = product.get("PRODUCTCLASSID")
+            if "PRODUCTTYPE" in row:
+                row["PRODUCTTYPE"] = product.get("PRODUCTCLASSID")
+    if table == "CIM_LOT":
+        row["ROOTPARENTLOTID"] = row.get("LOTID")
+        qty = rng.randint(20, 400)
+        loss = round(qty * rng.uniform(0, 0.05))
+        row.update(QTY=qty, LOSSQTY=loss, ORIGINALQTY=qty + loss)
+        row["ISHOLD"] = "Y" if rng.random() < 0.05 else "N"
+        row["LOTNAME"] = row.get("LOTID")
+    elif table == "CIM_LOTHIST":
+        row["LOTNAME"] = row.get("LOTID")
+    elif table == "CIM_LOTDEFECT":
+        row["DEFECTQTY"] = float(rng.randint(1, 20))
+    elif table == "CIM_PROCESSSEGMENT":
+        label = pick(vocab.PROCESS_SEGMENTS)
+        row["PROCESSSEGMENTNAME"] = label
+    elif table == "CIM_PROCESSDEFINITION":
+        label = pick(vocab.PROCESS_DEFINITIONS)
+        row["PROCESSDEFINITIONNAME"] = label
+    elif table == "CIM_PROCESSNODE":
+        label = f"{name_of('CIM_PROCESSDEFINITION', row.get('PROCESSDEFINITIONID'))} / {name_of('CIM_PROCESSSEGMENT', row.get('PROCESSSEGMENTID'))}"
+        row["PROCESSNODENAME"] = label
+    elif table == "CIM_EQUIPMENTCLASS":
+        label = pick(vocab.EQUIPMENT_CLASSES)
+        row["EQUIPMENTCLASSNAME"] = label
+    elif table == "CIM_EQUIPMENT":
+        label = f"{name_of('CIM_EQUIPMENTCLASS', row.get('EQUIPMENTCLASSID')) or '설비'} #{n:03d}"
+        row["EQUIPMENTNAME"] = label
+    elif table == "CIM_FACILITY":
+        label = pick(vocab.FACILITIES)
+        row["FACILITYNAME"] = label
+    elif table == "CIM_PRODUCTCLASS":
+        label = pick(vocab.PRODUCT_CLASSES)[1]
+        row["PRODUCTCLASSNAME"] = label
+    elif table == "CIM_PRODUCTDEFINITION":
+        row["PRODUCTCLASSID"] = rng.choices(["FERT", "HALB"], [7, 3])[0]
+        d = size()
+        label = rng.choice(vocab.PRODUCT_SHAPES).format(f=rng.choice([2, 3, 4]), d=f"{d}.0", r=d / 2, m=rng.choice([6, 8, 10, 12]))
+        row["PRODUCTDEFINITIONNAME"] = label
+    elif table == "CIM_MATERIALCLASS":
+        label = pick(vocab.MATERIAL_CLASSES)
+        row["MATERIALCLASSNAME"] = label
+    elif table == "CIM_MATERIALDEFINITION":
+        label = rng.choice(vocab.MATERIAL_SHAPES).format(d=size())
+        row["MATERIALDEFINITIONNAME"] = label
+    elif table == "CIM_MATERIALLOT":
+        row["MATERIALLOTNAME"] = row.get("MATERIALLOTID")
+    elif table == "CIM_DEFECTCLASS":
+        label = pick(vocab.DEFECT_CLASSES)
+        row["DEFECTCLASSNAME"] = label
+    elif table == "CIM_DEFECT":
+        label = pick(vocab.DEFECTS)
+        cls = next((c for k, c in vocab.DEFECT_CLASS_RULES if k in label), "가공 불량")
+        row["DEFECTCLASSID"] = next(i for i, nm in names["CIM_DEFECTCLASS"].items() if nm == cls)
+        row["DEFECTNAME"] = label
+        row["DEFECTCLASSNAME"] = name_of("CIM_DEFECTCLASS", row.get("DEFECTCLASSID"))
+        row["DEFECTTYPENAME"] = label
+    elif table == "CIM_CODECLASS":
+        label = pick(vocab.CODE_CLASSES)
+        row["CODECLASSNAME"] = label
+    elif table == "CIM_CODE":
+        label = f"{name_of('CIM_CODECLASS', row.get('CODECLASSID'))} {n:03d}"
+        row["CODENAME"] = label
+        row["CODENAME_KO"] = label
+    elif table == "CIM_BATCH":
+        row["BATCHNAME"] = row.get("BATCHID")
+    return label
 
 
 def build_rows(table: str, columns: list[dict]) -> list[dict]:
@@ -229,52 +334,49 @@ def build_rows(table: str, columns: list[dict]) -> list[dict]:
             if name == "SITEID":
                 value = SITE_ID
             elif name == own:
-                numeric = col["type"] not in ("varchar", "nvarchar", "char", "nchar")
-                value = n if numeric else make_id(table, name, n, cspec)
+                value = make_id(table, name, n) if is_text(col) else n
+            elif parent == table:
+                # 같은 표를 가리키는 칸 (부모 LOT 등) 은 비우고, 필요한 것만 규칙에서 채움
+                value = None
             elif parent and generated_ids.get(parent):
                 value = rng.choice(generated_ids[parent])
+                if not col["pk"] and col["nullable"] and name != parent[4:] + "ID" and rng.random() < 0.5:
+                    value = None
             elif (table, name) in DEMO_FILL:
-                value = demo_fill_value(table, col, n, base)
+                value = demo_fill_value(table, col, base)
             elif is_yn_flag(col, cspec):
                 value = "Y" if rng.random() < 0.1 else "N"
+            elif is_text(col) and (common := common_text(table, name, n)) is not None:
+                value = common
+            elif is_text(col) and name in ("CUSTOMACTIVITY", "PREVCUSTOMACTIVITY"):
+                value = None
             elif not col["pk"] and col["nullable"] and rng.random() < cspec.get("empty_ratio", 1.0):
                 value = None
             else:
                 value = generic_value(table, col, cspec, n, base)
                 if value is None and (col["pk"] or not col["nullable"]):
-                    value = f"{name[:3]}{n:06d}" if col["type"] in ("varchar", "nvarchar", "char", "nchar") else 0
-            row[name] = fit(value, col)
-        apply_domain_rules(table, row)
+                    value = make_id(table, name, n) if is_text(col) else 0
+            row[name] = value
+        label = apply_domain_rules(table, row, n)
+        row = {c["name"]: fit(row[c["name"]], c) for c in columns}
         key = tuple(row.get(c) for c in pk_cols)
         if key in seen_pk:
             continue
         seen_pk.add(key)
         rows.append(row)
+        if own and label:
+            names.setdefault(table, {})[row[own]] = label
     if own:
         generated_ids[table] = [r[own] for r in rows]
+        rows_by_id[table] = {r[own]: r for r in rows}
     return rows
 
 
-def apply_domain_rules(table: str, row: dict) -> None:
-    """업무상 말이 되도록 맞추는 값"""
-    if table == "CIM_LOT" and row.get("QTY") is not None:
-        qty = float(row["QTY"])
-        loss = round(qty * rng.uniform(0, 0.05))
-        if "LOSSQTY" in row:
-            row["LOSSQTY"] = type(row["QTY"])(loss) if not isinstance(row["QTY"], Decimal) else Decimal(loss)
-        if "ORIGINALQTY" in row:
-            row["ORIGINALQTY"] = type(row["QTY"])(qty + loss) if not isinstance(row["QTY"], Decimal) else Decimal(qty + loss)
-    if table == "CIM_LOT" and "ISHOLD" in row:
-        row["ISHOLD"] = "Y" if rng.random() < 0.05 else "N"
-    if table == "CIM_LOTDEFECT" and "DEFECTQTY" in row:
-        row["DEFECTQTY"] = float(rng.randint(1, 20))
-
-
 def insert(cur, conn, table: str, columns: list[dict], rows: list[dict]) -> None:
-    names = [c["name"] for c in columns]
-    sql = f"INSERT INTO [{table}] ({', '.join('[' + n + ']' for n in names)}) VALUES ({', '.join(['%s'] * len(names))})"
+    cols = [c["name"] for c in columns]
+    sql = f"INSERT INTO [{table}] ({', '.join('[' + n + ']' for n in cols)}) VALUES ({', '.join(['%s'] * len(cols))})"
     for i in range(0, len(rows), BATCH):
-        cur.executemany(sql, [tuple(r[n] for n in names) for r in rows[i:i + BATCH]])
+        cur.executemany(sql, [tuple(r[n] for n in cols) for r in rows[i:i + BATCH]])
         conn.commit()
 
 
