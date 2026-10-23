@@ -1,0 +1,42 @@
+[
+  {
+    "preset": "B0",
+    "VS_pct": 100.0,
+    "EX_exec_pct": 37.0,
+    "EX_loose_pct": 38.5,
+    "Table_F1_avg": 0.74,
+    "n": 200
+  },
+  {
+    "preset": "B1",
+    "VS_pct": 100.0,
+    "EX_exec_pct": 68.5,
+    "EX_loose_pct": 69.0,
+    "Table_F1_avg": 0.773,
+    "n": 200
+  },
+  {
+    "preset": "B2",
+    "VS_pct": 100.0,
+    "EX_exec_pct": 66.0,
+    "EX_loose_pct": 66.5,
+    "Table_F1_avg": 0.752,
+    "n": 200
+  },
+  {
+    "preset": "B3",
+    "VS_pct": 100.0,
+    "EX_exec_pct": 80.0,
+    "EX_loose_pct": 80.5,
+    "Table_F1_avg": 0.913,
+    "n": 200
+  },
+  {
+    "preset": "FULL",
+    "VS_pct": 100.0,
+    "EX_exec_pct": 89.5,
+    "EX_loose_pct": 90.5,
+    "Table_F1_avg": 0.898,
+    "n": 200
+  }
+]

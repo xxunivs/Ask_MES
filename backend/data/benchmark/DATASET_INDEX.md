@@ -2,8 +2,31 @@
 
 | 버전 | 파일 | 문항 수 | 용도 |
 |------|------|---------|------|
-| v1 | `mes_nl2sql_gold_v1.jsonl` | 20 | 파일럿·스모크 테스트 |
-| **v2** | **`mes_nl2sql_gold_v2.jsonl`** | **50** | **논문 본실험 (권장)** |
+| v1 | `mes_nl2sql_gold_v1.jsonl` | 20 | 파일럿, 스모크 테스트 |
+| v2 | `mes_nl2sql_gold_v2.jsonl` | 50 | 개발용 (v3 의 Q001~Q050 과 동일) |
+| **v3** | **`mes_nl2sql_gold_v3.jsonl`** | **200** | **논문 본실험** |
+
+## v3 구성 (200문항)
+
+| 난이도 | 개수 |
+|--------|------|
+| easy | 80 |
+| medium | 78 |
+| hard | 42 |
+
+| query_type | 개수 |
+|------------|------|
+| list | 76 |
+| aggregate | 53 |
+| filter | 41 |
+| timeseries | 30 |
+
+| requires_join | 개수 |
+|---------------|------|
+| false | 129 |
+| true | 71 |
+
+논문 실험 결과는 `backend/eval/paper_results/` 참고.
 
 ## v2 구성 (50문항)
 
