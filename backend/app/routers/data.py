@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 from functools import lru_cache
 
 from fastapi import APIRouter, HTTPException
@@ -18,6 +19,7 @@ from app.core.sql_executor import execute_sql
 router = APIRouter()
 
 _SCHEMA_PATH = os.path.join(os.path.dirname(__file__), "../../data/mes_schema.json")
+_EXTRA_LABELS_PATH = os.path.join(os.path.dirname(__file__), "../../data/display_labels_extra.json")
 PAGE_SIZE = 50
 
 # 사용자 화면용 데이터 종류 묶음
@@ -32,6 +34,55 @@ GROUPS: list[tuple[str, list[str]]] = [
 ]
 
 
+# 화면에 보이는 표 이름
+TABLE_LABELS = {
+    "CIM_LOT": "생산 로트", "CIM_LOTHIST": "로트 이력", "CIM_BATCH": "배치",
+    "CIM_LOTBATCHREL": "로트-배치 관계", "CIM_LOTMATERIALLOTREL": "로트-자재로트 관계",
+    "CIM_EQUIPMENT": "설비", "CIM_EQUIPMENTCLASS": "설비 분류", "CIM_FACILITY": "공정 구역",
+    "CIM_FACILITYMAP": "공정 구역 계층", "CIM_PROCESSSEGMENTEQUIPMENTREL": "공정-설비 관계",
+    "CIM_LOTDEFECT": "로트 불량", "CIM_DEFECT": "불량 코드", "CIM_DEFECTCLASS": "불량 분류",
+    "CIM_PRODUCTORDER": "제품 작업지시", "CIM_PRODUCTDEFINITION": "제품 정의", "CIM_PRODUCTCLASS": "품목 구분",
+    "CIM_PRODUCTPROCESSREL": "제품-공정 관계", "CIM_MATERIALLOT": "자재 로트", "CIM_MATERIALDEFINITION": "자재 정의",
+    "CIM_MATERIALCLASS": "자재 클래스", "CIM_PROCESSDEFINITION": "공정 정의", "CIM_PROCESSNODE": "공정 노드",
+    "CIM_PROCESSPATH": "공정 경로", "CIM_PROCESSSEGMENT": "공정 세그먼트", "CIM_CODE": "공통 코드",
+    "CIM_CODECLASS": "코드 분류",
+}
+
+
+def _clean(label: str) -> str:
+    return re.sub(r"\s*\(FK\)", "", label or "").strip()
+
+
+@lru_cache(maxsize=1)
+def _column_labels() -> tuple[dict[str, dict[str, str]], dict[str, str]]:
+    """칸 화면 이름: 표별 설명, 같은 칸 이름의 다른 표 설명, 추가 이름표 순"""
+    by_table: dict[str, dict[str, str]] = {}
+    by_name: dict[str, str] = {}
+    for name, t in _schema().items():
+        for c in t.get("columns", []):
+            label = _clean(c.get("description", ""))
+            if label:
+                by_table.setdefault(name, {})[c["name"]] = label
+                by_name.setdefault(c["name"], label)
+    with open(_EXTRA_LABELS_PATH, encoding="utf-8") as f:
+        extra = {k: v for k, v in json.load(f).items() if not k.startswith("_")}
+    for k, v in extra.items():
+        by_name.setdefault(k, v)
+    return by_table, by_name
+
+
+@lru_cache(maxsize=1)
+def _label_overrides() -> dict[str, str]:
+    """스키마 설명이 영어인 칸의 한글 이름"""
+    with open(_EXTRA_LABELS_PATH, encoding="utf-8") as f:
+        return json.load(f).get("_override", {})
+
+
+def _column_label(table: str, column: str) -> str:
+    by_table, by_name = _column_labels()
+    return _label_overrides().get(column) or by_table.get(table, {}).get(column) or by_name.get(column, "")
+
+
 @lru_cache(maxsize=1)
 def _schema() -> dict[str, dict]:
     with open(_SCHEMA_PATH, encoding="utf-8") as f:
@@ -42,7 +93,7 @@ def _table_summary(name: str) -> dict:
     t = _schema().get(name, {})
     return {
         "name": name,
-        "label": t.get("label") or name,
+        "label": TABLE_LABELS.get(name) or t.get("label") or name,
         "description": t.get("description", ""),
     }
 
@@ -71,12 +122,11 @@ async def read_table(name: str, page: int = 1):
     except Exception as e:
         raise HTTPException(status_code=502, detail=f"DB 조회 실패: {e}")
 
-    labels = {c["name"]: c.get("description") or "" for c in _schema()[name].get("columns", [])}
     return {
         **_table_summary(name),
         "page": page,
         "page_size": PAGE_SIZE,
-        "columns": [{"name": c, "label": labels.get(c, "")} for c in result.get("columns", [])],
+        "columns": [{"name": c, "label": _column_label(name, c)} for c in result.get("columns", [])],
         "rows": result.get("rows", []),
     }
 
