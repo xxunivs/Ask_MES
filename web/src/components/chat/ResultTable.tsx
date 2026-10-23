@@ -7,7 +7,7 @@ export default function ResultTable({ data }: { data: QueryData }) {
   }
 
   return (
-    <div className="max-h-80 overflow-auto rounded-md border border-hairline">
+    <div className="max-h-64 overflow-auto rounded-md border border-hairline">
       <table className="w-full text-left text-xs">
         <thead className="sticky top-0 bg-canvas-soft text-ink-mute">
           <tr>
