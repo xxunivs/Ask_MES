@@ -1,10 +1,16 @@
 import type { Metadata } from "next";
-import { Geist_Mono, Inter } from "next/font/google";
+import { Geist_Mono } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
 
-const inter = Inter({
-  variable: "--font-inter",
-  subsets: ["latin"],
+// Spoqa Han Sans Neo (SIL OFL, src/fonts/LICENSE.txt)
+const spoqa = localFont({
+  variable: "--font-spoqa",
+  src: [
+    { path: "../fonts/SpoqaHanSansNeo-Regular.woff2", weight: "400" },
+    { path: "../fonts/SpoqaHanSansNeo-Medium.woff2", weight: "500" },
+    { path: "../fonts/SpoqaHanSansNeo-Bold.woff2", weight: "700" },
+  ],
 });
 
 const geistMono = Geist_Mono({
@@ -21,7 +27,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="ko"
-      className={`${inter.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${spoqa.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">{children}</body>
     </html>

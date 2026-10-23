@@ -1,20 +1,14 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { askQuestion, type NlToSqlResponse } from "@/lib/api";
+import { askQuestion } from "@/lib/api";
 import ChatInput from "./ChatInput";
 import ChatMessage, { type Message } from "./ChatMessage";
 import FrequentQueries from "./FrequentQueries";
 
 // 채팅 화면
-export default function ChatPage({ onAnalyze }: { onAnalyze: (result: NlToSqlResponse) => void }) {
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: 0,
-      role: "assistant",
-      text: "안녕하세요! MES 데이터에 대해 질문하시면 SQL로 바꿔 조회해 드립니다.",
-    },
-  ]);
+export default function ChatPage() {
+  const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
 
@@ -44,15 +38,15 @@ export default function ChatPage({ onAnalyze }: { onAnalyze: (result: NlToSqlRes
   }
 
   return (
-    <div className="mx-auto flex h-full max-w-4xl flex-col">
+    <div className="mx-auto flex h-full w-full max-w-4xl flex-col">
       <header className="px-6 pt-8 pb-4">
-        <h1 className="text-[28px] leading-[1.14] font-medium tracking-[-0.63px]">MES AI 어시스턴트</h1>
-        <p className="mt-1 text-sm text-ink-mute">자연어 질문을 SQL로 바꿔 MES 데이터를 조회합니다</p>
+        <h1 className="text-[28px] leading-[1.14] font-medium tracking-[-0.63px]">Ask MES!</h1>
+        <p className="mt-1 text-sm text-ink-mute">MES 데이터 조회 시스템</p>
       </header>
 
       <main className="flex-1 space-y-4 overflow-y-auto px-6 py-4">
         {messages.map((m) => (
-          <ChatMessage key={m.id} message={m} onAnalyze={onAnalyze} />
+          <ChatMessage key={m.id} message={m} />
         ))}
         <div ref={bottomRef} />
       </main>

@@ -43,7 +43,8 @@ export default function AutoChart({ data }: { data: QueryData }) {
   }));
 
   return (
-    <div className="grid gap-4 md:grid-cols-2">
+    <div className="@container">
+    <div className="grid gap-4 @2xl:grid-cols-2">
       <div className="rounded-lg border border-hairline bg-canvas p-4 shadow-card">
         <p className="mb-2 text-xs font-semibold">{numericCols.slice(0, 2).join(" / ")} 비교</p>
         <ResponsiveContainer width="100%" height={200}>
@@ -71,6 +72,7 @@ export default function AutoChart({ data }: { data: QueryData }) {
           </PieChart>
         </ResponsiveContainer>
       </div>
+    </div>
     </div>
   );
 }

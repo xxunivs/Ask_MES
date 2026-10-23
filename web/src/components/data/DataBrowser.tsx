@@ -1,127 +1,122 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { listTables, readTable, type TableGroup, type TablePage } from "@/lib/api";
+import { useEffect, useRef, useState } from "react";
+import { listTables, type TableGroup } from "@/lib/api";
+import TableScreen from "./TableScreen";
 
-// 데이터 둘러보기: 왼쪽 표 목록, 오른쪽 표 내용 50줄씩
+// 데이터 둘러보기: 위 메뉴(대분류 > 표)에서 표 선택, 아래 조회 화면
 export default function DataBrowser() {
   const [groups, setGroups] = useState<TableGroup[]>([]);
   const [selected, setSelected] = useState("CIM_LOT");
-  const [page, setPage] = useState(1);
-  const [data, setData] = useState<TablePage | null>(null);
   const [error, setError] = useState("");
-  // 받아 둔 데이터가 지금 고른 표, 페이지와 다르면 불러오는 중
-  const loading = !error && (data?.name !== selected || data?.page !== page);
 
   useEffect(() => {
     listTables().then(setGroups).catch((e) => setError(e.message));
   }, []);
 
+  const currentGroup = groups.find((g) => g.tables.some((t) => t.name === selected));
+  const currentTable = currentGroup?.tables.find((t) => t.name === selected);
+
+  return (
+    <div className="flex h-full flex-col text-[12px] text-[#1f2124]">
+      <div className="flex items-center gap-3 border-b border-panel-line bg-ribbon px-3 py-1.5">
+        <TableMenu groups={groups} selected={selected} onSelect={setSelected}>
+          <span className="text-[#5c6168]">{currentGroup?.group}</span>
+          {currentGroup && <span className="mx-1.5 text-[#9aa1ab]">›</span>}
+          <span className="font-bold">{currentTable?.label ?? selected}</span>
+        </TableMenu>
+        {error && <p className="text-mark">{error}</p>}
+      </div>
+
+      <div className="min-h-0 flex-1">
+        <TableScreen key={selected} table={selected} />
+      </div>
+    </div>
+  );
+}
+
+// 대분류 목록, 마우스를 올리면 옆에 표 목록이 펼쳐지는 메뉴
+function TableMenu({
+  groups,
+  selected,
+  onSelect,
+  children,
+}: {
+  groups: TableGroup[];
+  selected: string;
+  onSelect: (name: string) => void;
+  children: React.ReactNode;
+}) {
+  const [open, setOpen] = useState(false);
+  const [hovered, setHovered] = useState(0);
+  const ref = useRef<HTMLDivElement>(null);
+
+  // 메뉴 바깥을 누르면 닫기
   useEffect(() => {
-    let cancelled = false;
-    readTable(selected, page)
-      .then((d) => !cancelled && setData(d))
-      .catch((e) => !cancelled && setError(e.message));
-    return () => {
-      cancelled = true;
-    };
-  }, [selected, page]);
+    if (!open) return;
+    function close(e: MouseEvent) {
+      if (!ref.current?.contains(e.target as Node)) setOpen(false);
+    }
+    document.addEventListener("mousedown", close);
+    return () => document.removeEventListener("mousedown", close);
+  }, [open]);
 
-  function choose(name: string) {
-    setError("");
-    setSelected(name);
-    setPage(1);
-  }
-
-  function movePage(delta: number) {
-    setError("");
-    setPage((p) => p + delta);
+  function toggle() {
+    const idx = groups.findIndex((g) => g.tables.some((t) => t.name === selected));
+    setHovered(Math.max(idx, 0));
+    setOpen((v) => !v);
   }
 
   return (
-    <div className="grid h-full grid-cols-[240px_1fr] overflow-hidden">
-      <aside className="space-y-5 overflow-y-auto border-r border-hairline bg-canvas p-4">
-        {groups.map((g) => (
-          <div key={g.group}>
-            <p className="mb-1 text-xs font-semibold text-ink-mute">{g.group}</p>
-            <ul>
-              {g.tables.map((t) => (
+    <div ref={ref} className="relative">
+      <button
+        onClick={toggle}
+        className={`flex items-center gap-1 rounded-md border border-[#aeb4bd] bg-gradient-to-b from-white to-[#eef0f3] px-3 py-1 text-[13px] shadow-[0_1px_2px_rgba(0,0,0,0.12),inset_0_1px_0_#fff] hover:border-[#8c939d] hover:to-[#e2e5e9] active:shadow-inner ${
+          open ? "border-link" : ""
+        }`}
+      >
+        {children}
+        <span className="ml-2 border-l border-[#cdd2d8] pl-2 text-[10px] text-[#5c6168]">▼</span>
+      </button>
+
+      {open && (
+        <div className="absolute top-full left-0 z-30 mt-1 flex text-[13px]">
+          <ul className="w-44 rounded-md border border-panel-line bg-white py-1 shadow-float">
+            {groups.map((g, i) => (
+              <li key={g.group}>
+                <button
+                  onMouseEnter={() => setHovered(i)}
+                  onClick={() => setHovered(i)}
+                  className={`flex w-full items-center justify-between px-3 py-1.5 text-left ${
+                    i === hovered ? "bg-link text-white" : ""
+                  }`}
+                >
+                  {g.group}
+                  <span>›</span>
+                </button>
+              </li>
+            ))}
+          </ul>
+          {groups[hovered] && (
+            <ul className="-ml-px w-56 self-start rounded-md border border-panel-line bg-white py-1 shadow-float">
+              {groups[hovered].tables.map((t) => (
                 <li key={t.name}>
                   <button
-                    onClick={() => choose(t.name)}
-                    className={`w-full rounded-md px-3 py-1.5 text-left text-sm ${
-                      t.name === selected ? "bg-primary text-white" : "hover:bg-canvas-soft"
-                    }`}
+                    onClick={() => {
+                      onSelect(t.name);
+                      setOpen(false);
+                    }}
+                    className="flex w-full items-center gap-2 px-3 py-1.5 text-left hover:bg-link hover:text-white"
                   >
+                    <span className="w-3 text-[11px]">{t.name === selected ? "✓" : ""}</span>
                     {t.label}
-                    <span className={`block text-[11px] ${t.name === selected ? "text-white/60" : "text-ink-faint"}`}>
-                      {t.name}
-                    </span>
                   </button>
                 </li>
               ))}
             </ul>
-          </div>
-        ))}
-      </aside>
-
-      <section className="flex min-w-0 flex-col overflow-hidden p-6">
-        <div className="mb-4 flex items-end justify-between gap-4">
-          <div className="min-w-0">
-            <h2 className="text-[22px] leading-[1.1] font-normal tracking-[-0.315px]">{data?.label ?? selected}</h2>
-            <p className="mt-1 truncate text-sm text-ink-mute">
-              {data?.description} {data && `· 칸 ${data.columns.length}개`}
-            </p>
-          </div>
-          <div className="flex shrink-0 items-center gap-2 text-sm">
-            <button
-              onClick={() => movePage(-1)}
-              disabled={page === 1 || loading}
-              className="rounded-md border border-hairline-dark px-3 py-1.5 disabled:opacity-30"
-            >
-              이전
-            </button>
-            <span className="w-16 text-center">{page} 페이지</span>
-            <button
-              onClick={() => movePage(1)}
-              disabled={loading || (data?.rows.length ?? 0) < (data?.page_size ?? 50)}
-              className="rounded-md border border-hairline-dark px-3 py-1.5 disabled:opacity-30"
-            >
-              다음
-            </button>
-          </div>
-        </div>
-
-        {error && <p className="text-sm text-red-600">{error}</p>}
-
-        <div className={`min-h-0 flex-1 overflow-auto rounded-md border border-hairline bg-canvas ${loading ? "opacity-50" : ""}`}>
-          {data && (
-            <table className="text-left text-xs">
-              <thead className="sticky top-0 bg-canvas-soft">
-                <tr>
-                  {data.columns.map((c) => (
-                    <th key={c.name} className="px-3 py-2 align-bottom whitespace-nowrap">
-                      <span className="block font-semibold">{c.label || c.name}</span>
-                      {c.label && <span className="block text-[10px] font-normal text-ink-faint">{c.name}</span>}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {data.rows.map((row, i) => (
-                  <tr key={i} className="border-t border-hairline">
-                    {data.columns.map((c) => (
-                      <td key={c.name} className="px-3 py-1.5 whitespace-nowrap">
-                        {String(row[c.name] ?? "")}
-                      </td>
-                    ))}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
           )}
         </div>
-      </section>
+      )}
     </div>
   );
 }

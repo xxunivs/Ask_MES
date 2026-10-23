@@ -44,12 +44,6 @@ export function askQuestion(question: string, limit = 100) {
   return post<NlToSqlResponse>("/chat/nl-to-sql", { question, limit });
 }
 
-// 조회된 데이터에 대한 분석 질문
-export async function analyzeData(question: string, data: QueryData | null) {
-  const result = await post<{ answer: string }>("/chat/analyze", { question, data });
-  return result.answer;
-}
-
 // 데이터 둘러보기
 
 export type TableSummary = {
