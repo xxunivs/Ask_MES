@@ -8,7 +8,15 @@ from dataclasses import dataclass
 import chromadb
 from chromadb.utils import embedding_functions
 
-from app.config import CHROMA_PATH, RAG_TOP_K, EMBED_MODEL, EMBED_BACKEND, OLLAMA_URL
+from app.config import (
+    CHROMA_PATH,
+    DEEPINFRA_API_KEY,
+    DEEPINFRA_URL,
+    EMBED_BACKEND,
+    EMBED_MODEL,
+    OLLAMA_URL,
+    RAG_TOP_K,
+)
 from app.retrieval.fk_resolver import FKPathResolver, get_resolver
 from app.retrieval.ontology_loader import get_concept_engine
 
@@ -37,9 +45,35 @@ class OllamaEmbeddingFunction(embedding_functions.EmbeddingFunction):
         return vectors
 
 
+class DeepInfraEmbeddingFunction(embedding_functions.EmbeddingFunction):
+
+    def __init__(self, model: str):
+        self._model = model
+
+    def name(self) -> str:
+        return f"deepinfra-{self._model}"
+
+    def __call__(self, input):
+        import httpx
+
+        vectors = []
+        with httpx.Client(timeout=120.0) as client:
+            for i in range(0, len(input), 64):
+                resp = client.post(
+                    f"{DEEPINFRA_URL}/embeddings",
+                    json={"model": self._model, "input": list(input[i:i + 64])},
+                    headers={"Authorization": f"Bearer {DEEPINFRA_API_KEY}"},
+                )
+                resp.raise_for_status()
+                vectors.extend(d["embedding"] for d in resp.json()["data"])
+        return vectors
+
+
 def _embedding_function():
     if EMBED_BACKEND == "ollama":
         return OllamaEmbeddingFunction(EMBED_MODEL, OLLAMA_URL)
+    if EMBED_BACKEND == "deepinfra":
+        return DeepInfraEmbeddingFunction(EMBED_MODEL)
     return embedding_functions.DefaultEmbeddingFunction()
 
 
@@ -76,8 +110,9 @@ class RetrievalConfig:
 
 
 def _schema_hash() -> str:
+    # 임베딩 방식이 바뀌면 기존 벡터와 섞이지 않도록 색인 재생성
     with open(SCHEMA_PATH, "rb") as f:
-        return hashlib.md5(f.read()).hexdigest()
+        return f"{hashlib.md5(f.read()).hexdigest()}:{EMBED_BACKEND}:{EMBED_MODEL}"
 
 
 def _saved_hash() -> str:

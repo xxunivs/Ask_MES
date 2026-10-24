@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import httpx
 from app.config import (
+    DEEPINFRA_API_KEY,
+    DEEPINFRA_URL,
     LLM_PROVIDER,
     LLM_MODEL,
     OLLAMA_URL,
@@ -10,6 +12,14 @@ from app.config import (
     VLLM_API_KEY,
 )
 
+_OPENAI_COMPATIBLE = {"vllm", "openai", "deepinfra"}
+
+
+def _openai_endpoint() -> tuple[str, str]:
+    if LLM_PROVIDER == "deepinfra":
+        return DEEPINFRA_URL, DEEPINFRA_API_KEY
+    return VLLM_API_URL.rstrip("/"), VLLM_API_KEY
+
 
 async def llm_generate(
     prompt: str,
@@ -17,7 +27,7 @@ async def llm_generate(
     max_tokens: int = 512,
     seed: int | None = 0,
 ) -> str:
-    if LLM_PROVIDER in {"vllm", "openai"}:
+    if LLM_PROVIDER in _OPENAI_COMPATIBLE:
         return await _vllm_generate(prompt, temperature, max_tokens, seed)
     return await _ollama_generate(prompt, temperature, max_tokens, seed)
 
@@ -65,16 +75,17 @@ async def _vllm_generate(
         "temperature": temperature,
         "max_tokens": max_tokens,
     }
-    if LLM_PROVIDER == "vllm":
+    if LLM_PROVIDER in {"vllm", "deepinfra"}:
         # 응답 지연 방지용 Qwen thinking 모드 비활성화 (vLLM 방식)
         payload["chat_template_kwargs"] = {"enable_thinking": False}
         if seed is not None:
             payload["seed"] = seed
-    headers = {"Authorization": f"Bearer {VLLM_API_KEY}"}
+    url, key = _openai_endpoint()
+    headers = {"Authorization": f"Bearer {key}"}
     try:
         async with httpx.AsyncClient(timeout=180.0) as client:
             resp = await client.post(
-                f"{VLLM_API_URL.rstrip('/')}/chat/completions",
+                f"{url}/chat/completions",
                 json=payload,
                 headers=headers,
             )
@@ -84,7 +95,7 @@ async def _vllm_generate(
     except httpx.ReadTimeout:
         raise RuntimeError("vLLM 응답 타임아웃 (180초 초과) — 모델 로딩 중이거나 과부하 상태")
     except httpx.ConnectError:
-        raise RuntimeError(f"vLLM 연결 실패 — {VLLM_API_URL} 서버 확인 필요")
+        raise RuntimeError(f"vLLM 연결 실패 — {url} 서버 확인 필요")
     except httpx.HTTPStatusError as e:
         raise RuntimeError(f"vLLM HTTP 오류: {e.response.status_code} — {e.response.text[:200]}")
     except (KeyError, IndexError) as e:
@@ -94,11 +105,9 @@ async def _vllm_generate(
 async def check_ollama() -> bool:
     try:
         async with httpx.AsyncClient(timeout=5.0) as client:
-            if LLM_PROVIDER in {"vllm", "openai"}:
-                resp = await client.get(
-                    f"{VLLM_API_URL.rstrip('/')}/models",
-                    headers={"Authorization": f"Bearer {VLLM_API_KEY}"},
-                )
+            if LLM_PROVIDER in _OPENAI_COMPATIBLE:
+                url, key = _openai_endpoint()
+                resp = await client.get(f"{url}/models", headers={"Authorization": f"Bearer {key}"})
                 return resp.status_code == 200
             resp = await client.get(f"{OLLAMA_URL}/api/tags")
             return resp.status_code == 200

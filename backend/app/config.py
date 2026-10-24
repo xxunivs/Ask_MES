@@ -12,7 +12,13 @@ OLLAMA_MODEL = LLM_MODEL
 VLLM_API_URL = os.getenv("VLLM_API_URL", "http://127.0.0.1:8008/v1")
 VLLM_API_KEY = os.getenv("VLLM_API_KEY", "EMPTY")
 
+DEEPINFRA_URL = "https://api.deepinfra.com/v1/openai"
+DEEPINFRA_API_KEY = os.getenv("DEEPINFRA_API_KEY", "")
+
 DB_BACKEND = os.getenv("DB_BACKEND", "demo").strip().lower()
+SQLITE_PATH = os.getenv(
+    "SQLITE_PATH", os.path.join(os.path.dirname(__file__), "..", "data", "mes_demo.sqlite")
+)
 
 MES_API_URL = os.getenv("MES_API_URL", "http://localhost:8000")
 MES_API_KEY = os.getenv("MES_API_KEY", "my-secret-api-key")
