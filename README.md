@@ -4,7 +4,7 @@
 
 자연어 질문을 SQL로 바꿔 MES(제조실행시스템) DB를 조회하는 시스템
 
-공개용 데모는 가상 데이터 기반으로 동작한다.
+**데모: https://ask-mes.web.app** (공개용 데모는 가상 데이터 기반으로 동작한다)
 
 | 기간 | 구분 | 역할 |
 |------|------|------|
@@ -115,5 +115,6 @@ backend/
 demo-db/                       데모 DB (가상 데이터) 테이블 정의, 생성 스크립트
 web/                           웹 화면 (Next.js, React, TypeScript)
 img/                           README 그림
+hosting/                       ask-mes.web.app 연결 설정 (Firebase Hosting)
 docker-compose.yml             데모 DB (SQL Server)
 ```
