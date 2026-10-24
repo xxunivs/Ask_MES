@@ -41,6 +41,7 @@ def _rule_sections() -> list[tuple[str, list[str]]]:
         (
             "집계, 추이",
             [
+                "'A별 B' 집계는 A 컬럼으로만 GROUP BY, 질문에 없는 LOTID 같은 컬럼은 SELECT, GROUP BY 에 넣지 않기",
                 "일별 추이는 CONVERT(date, 날짜컬럼)",
                 "월별 추이는 CONVERT(char(7), 날짜컬럼, 120) 으로 월 단위로 묶고, 기간이 없으면 최근 12개월",
                 "'A별 추이'처럼 항목이 함께 나오면 날짜와 A 컬럼을 SELECT, GROUP BY 에 모두 넣기",
