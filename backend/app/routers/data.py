@@ -53,7 +53,7 @@ def _clean(label: str) -> str:
 
 @lru_cache(maxsize=1)
 def _column_labels() -> tuple[dict[str, dict[str, str]], dict[str, str]]:
-    """칸 화면 이름: 표별 설명, 같은 칸 이름의 다른 표 설명, 추가 이름표 순"""
+    """칸 화면 이름 사전, 우선순위는 표별 설명, 같은 칸 이름의 다른 표 설명, 추가 이름표 순"""
     by_table: dict[str, dict[str, str]] = {}
     by_name: dict[str, str] = {}
     for name, t in _schema().items():
@@ -98,7 +98,6 @@ def _table_summary(name: str) -> dict:
 
 @router.get("/tables")
 def list_tables():
-    """종류별 표 목록"""
     return [
         {"group": group, "tables": [_table_summary(n) for n in names]}
         for group, names in GROUPS
@@ -107,7 +106,7 @@ def list_tables():
 
 @router.get("/tables/{name}")
 async def read_table(name: str, page: int = 1):
-    """표 내용 한 페이지. 표 이름은 스키마 목록에 있는 것만 허용"""
+    """표 내용 한 페이지, SQL 에 직접 넣는 표 이름이라 스키마 목록만 허용"""
     if name not in _schema():
         raise HTTPException(status_code=404, detail=f"없는 표: {name}")
     page = max(page, 1)

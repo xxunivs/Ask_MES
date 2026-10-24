@@ -1,7 +1,7 @@
 """
-eval/run_all_ablations.py — B0~FULL 5조건 연속 실험 + 논문용 리포트
+B0~FULL 5조건 ablation 연속 실행 및 리포트 생성
 
-Usage (mes-llm-api 루트, Ollama + MES API 필요):
+실행 방법 (backend/ 에서, LLM 서버와 DB 필요):
   python eval/run_all_ablations.py --execute
   python eval/run_all_ablations.py --presets B1,FULL --execute
   python eval/run_all_ablations.py --dry-run
@@ -36,7 +36,6 @@ def run_one(python: str, preset: str, gold: Path, execute: bool, limit: int, out
     if proc.returncode != 0:
         raise RuntimeError(f"run_benchmark failed for {preset} (exit {proc.returncode})")
 
-    # 가장 최근 결과 CSV 찾기
     results_dir = EVAL_DIR / "results"
     candidates = sorted(
         results_dir.glob(f"run_{preset.upper()}_*.csv"),
@@ -93,7 +92,6 @@ def main():
         encoding="utf-8",
     )
 
-    # 리포트 생성
     report_cmd = [
         args.python,
         str(EVAL_DIR / "report.py"),

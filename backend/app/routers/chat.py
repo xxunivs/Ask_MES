@@ -22,10 +22,7 @@ class NlToSqlRequest(BaseModel):
 
 @router.post("/nl-to-sql")
 async def nl_to_sql(req: NlToSqlRequest):
-    """
-    반환: { success, sql, data: {columns, rows, count} | null, db_error, trace }
-    success 는 DB 실행까지 성공했는지
-    """
+    """질문의 SQL 생성 및 실행, success 는 DB 실행까지의 성공 여부"""
     try:
         result = await run_pipeline(req.question, limit=req.limit)
     except Exception as e:
@@ -43,7 +40,6 @@ async def nl_to_sql(req: NlToSqlRequest):
 
 @router.get("/health")
 async def chat_health():
-    """LLM 연결 상태 확인"""
     llm_ok = await check_ollama()
     return {
         "provider": LLM_PROVIDER,

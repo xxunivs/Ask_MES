@@ -38,12 +38,12 @@ async function post<T>(path: string, body: unknown): Promise<T> {
   return resp.json() as Promise<T>;
 }
 
-// 자연어 질문을 SQL로 바꿔 실행
+// 자연어 질문의 SQL 변환 및 실행
 export function askQuestion(question: string, limit = 100) {
   return post<NlToSqlResponse>("/chat/nl-to-sql", { question, limit });
 }
 
-// 데이터 둘러보기
+// 데이터 둘러보기용 타입과 요청
 
 export type TableSummary = {
   name: string;
@@ -63,6 +63,7 @@ export type TablePage = TableSummary & {
   rows: Record<string, unknown>[];
 };
 
+// 공통 GET 요청
 async function get<T>(path: string): Promise<T> {
   const resp = await fetch(`${API_URL}${path}`);
   if (!resp.ok) {

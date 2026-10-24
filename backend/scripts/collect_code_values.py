@@ -1,7 +1,7 @@
 """
-운영 DB에서 코드 컬럼 DISTINCT 수집 → data/mes_code_values.json 갱신
+DB 코드 컬럼 DISTINCT 값 수집 및 data/mes_code_values.json 갱신
 
-Usage (mes-llm-api 루트, MES API·.env 설정 필요):
+실행 방법 (backend/ 에서, .env 의 DB 설정 필요):
   python scripts/collect_code_values.py
   python scripts/collect_code_values.py --dry-run
 """

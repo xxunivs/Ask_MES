@@ -1,15 +1,12 @@
 """
-MES 날짜 기준 정책.
-
-- dev_last_year: 개발 DB 평가용. 최근 데이터는 테스트/비운영이라 의미가 없고,
-  약 1년 전 구간이 운영 DB와 동일한 실데이터이므로 기준일을 1년 전으로 둠.
-- production: 운영 DB 연결 시. 사용자가 날짜를 지정하지 않으면 GETDATE() 기준.
+MES 날짜 기준 정책 (dev_last_year: 1년 전 기준, production: GETDATE() 기준)
+개발 DB 는 최근 데이터가 비운영이고 약 1년 전 구간만 운영과 같은 실데이터
 """
 from __future__ import annotations
 
 import os
 
-# dev_last_year | production
+# dev_last_year 또는 production
 MES_DATE_MODE = os.getenv("MES_DATE_MODE", "dev_last_year").strip().lower()
 
 _DEV_LAST_YEAR_RULES = """4. [개발 DB / 벤치마크 모드] 기본 기준일은 **1년 전**이다.

@@ -4,13 +4,13 @@ import { useEffect, useState } from "react";
 import { readTable, type TablePage } from "@/lib/api";
 import { ConditionField, ConditionPanel, GridFooter, ListTab } from "@/components/mes/MesParts";
 
-// 표 한 개 조회 화면: 조회 조건, LIST 표, 합계 줄
+// 표 한 개 조회 화면 (조회 조건, LIST 표, 합계 줄)
 export default function TableScreen({ table }: { table: string }) {
   const [page, setPage] = useState(1);
   const [data, setData] = useState<TablePage | null>(null);
   const [error, setError] = useState("");
   const [picked, setPicked] = useState<number | null>(null);
-  // 받아 둔 데이터가 지금 페이지와 다르면 불러오는 중
+  // 별도 상태 대신 받아 둔 데이터와 현재 페이지 비교로 불러오는 중 판단
   const loading = !error && data?.page !== page;
 
   useEffect(() => {
@@ -105,7 +105,7 @@ export default function TableScreen({ table }: { table: string }) {
   );
 }
 
-// 날짜는 "2026-08-05 11:29:15" 형식으로
+// 칸 값 표시 문자열, 날짜는 "2026-08-05 11:29:15" 형식
 function formatCell(v: unknown): string {
   if (v === null || v === undefined) return "";
   if (typeof v === "string" && /^\d{4}-\d{2}-\d{2}T/.test(v)) return v.slice(0, 19).replace("T", " ");

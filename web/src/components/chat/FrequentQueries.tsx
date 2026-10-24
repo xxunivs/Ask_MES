@@ -1,5 +1,3 @@
-// 추천 질문 버튼
-
 const QUESTIONS = [
   "홀드 상태인 LOT 목록 보여줘",
   "LOT ID와 제품명을 함께 보여줘",
@@ -7,6 +5,7 @@ const QUESTIONS = [
   "설비별 TrackIn 건수 추이를 일별로 보여줘",
 ];
 
+// 추천 질문 버튼 목록
 export default function FrequentQueries({
   onSelect,
   disabled,

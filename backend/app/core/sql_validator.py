@@ -1,7 +1,6 @@
 """
-생성 SQL의 테이블·컬럼을 mes_schema.json 화이트리스트와 대조.
-
-LLM 환각 테이블(예: CIM_MATERIAL)을 DB 실행 전에 차단하고 수정 힌트를 제공한다.
+생성 SQL 의 테이블, 컬럼과 mes_schema.json 화이트리스트 대조
+DB 실행 전 환각 테이블(예: CIM_MATERIAL) 차단 및 수정 힌트 제공
 """
 from __future__ import annotations
 
@@ -32,13 +31,13 @@ SELECT_STAR_RE = re.compile(
     re.IGNORECASE,
 )
 
-# SELECT DISTINCT without TOP — causes HTTP 500 on some MES tables
+# TOP 없는 SELECT DISTINCT, 일부 MES 테이블에서 HTTP 500 유발
 SELECT_DISTINCT_RE = re.compile(r"\bSELECT\s+DISTINCT\b(?!\s+TOP\b)", re.IGNORECASE)
 
-# Single-quoted column aliases — not supported by MES API
+# MES API 미지원 작은따옴표 컬럼 alias
 SINGLE_QUOTE_ALIAS_RE = re.compile(r"\bAS\s+'[^']*'", re.IGNORECASE)
 
-# alias placed after WITH(NOLOCK) — wrong order
+# WITH(NOLOCK) 뒤에 온 alias, T-SQL 문법 오류
 NOLOCK_BEFORE_ALIAS_RE = re.compile(
     r"\bWITH\s*\(\s*NOLOCK\s*\)\s+(?!ON\b|WHERE\b|INNER\b|LEFT\b|RIGHT\b|JOIN\b|GROUP\b|ORDER\b|HAVING\b|SELECT\b)[A-Z][A-Z0-9]*\b",
     re.IGNORECASE,
@@ -46,7 +45,7 @@ NOLOCK_BEFORE_ALIAS_RE = re.compile(
 
 NOLOCK_RE = re.compile(r"\bWITH\s*\(\s*NOLOCK\s*\)", re.IGNORECASE)
 
-# 스키마에 없는 환각 컬럼 (단독 출현 시 차단, PROCESSNODENAME 등 정식명은 제외)
+# 스키마에 없는 환각 컬럼, 단독 출현 시만 차단 (PROCESSNODENAME 등 정식명 제외)
 FORBIDDEN_COLUMNS: dict[str, str] = {
     "NODENAME": "PROCESSNODENAME 을 사용하세요.",
     "SEGMENTNAME": "PROCESSSEGMENTNAME 을 사용하세요.",
@@ -59,7 +58,7 @@ FORBIDDEN_COL_RE = re.compile(
     re.IGNORECASE,
 )
 
-# LLM이 자주 만드는不存在 테이블 → 안내 문구
+# LLM 이 자주 지어내는 테이블별 안내 문구
 INVALID_TABLE_HINTS: dict[str, str] = {
     "CIM_MATERIAL": (
         "CIM_MATERIAL 테이블은 MES 스키마에 없습니다. "
@@ -160,7 +159,7 @@ def _check_sql_syntax(sql: str) -> Optional[str]:
 def _check_invalid_fk_columns(
     sql: str, reg: MesSchemaRegistry
 ) -> list[tuple[str, str]]:
-    """존재하지 않는 FK 컬럼 (예: CIM_BATCH.LOTID)."""
+    """존재하지 않는 FK 컬럼 탐지 (예: CIM_BATCH.LOTID)"""
     bad: list[tuple[str, str]] = []
     for table, col in extract_qualified_columns(sql):
         if reg.has_table(table) and not reg.has_column(table, col):
@@ -175,9 +174,7 @@ def validate_sql(
     registry: Optional[MesSchemaRegistry] = None,
     check_columns: bool = True,
 ) -> ValidationResult:
-    """
-    SQL에 등장하는 CIM_* 테이블·CIM_테이블.컬럼 참조를 스키마와 대조.
-    """
+    """SQL 내 CIM_* 테이블 및 테이블.컬럼 참조의 스키마 대조"""
     if not sql or not sql.strip():
         return ValidationResult(ok=False, hints=["SQL이 비어 있습니다."])
 
@@ -259,7 +256,7 @@ def validate_sql(
 
 
 def allowed_tables_hint(max_names: int = 30) -> str:
-    """프롬프트에 넣을 짧은 화이트리스트 안내."""
+    """프롬프트용 짧은 화이트리스트 안내"""
     names = sorted(get_schema_registry().table_names)
     listed = ", ".join(names[:max_names])
     extra = len(names) - max_names

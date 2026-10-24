@@ -1,7 +1,5 @@
 """
-LLM 프롬프트 모음
-
-SQL 생성 프롬프트와 오류 교정 프롬프트, LLM 응답 해석.
+SQL 생성 및 오류 교정 프롬프트, LLM 응답 JSON 해석
 """
 from __future__ import annotations
 
@@ -78,7 +76,7 @@ JSON 응답:"""
 
 
 def static_prompt_hints() -> dict:
-    """이식한 검증 모듈들이 만드는 프롬프트 절. NL_TO_SQL_PROMPT 의 고정 슬롯을 채운다."""
+    """NL_TO_SQL_PROMPT 고정 슬롯용 검증 모듈 규칙 절"""
     return {
         "date_rules": date_rules_for_prompt(),
         "schema_whitelist": allowed_tables_hint(),
@@ -93,7 +91,7 @@ def build_schema_correction_prompt(
     invalid_sql: str,
     validation: ValidationResult,
 ) -> str:
-    """스키마 오류 시 LLM 재생성용 프롬프트."""
+    """스키마 검증 실패 시 재생성 프롬프트"""
     err = validation.error_message()
     valid_sample = ", ".join(sorted(get_schema_registry().table_names)[:12])
     cv = code_values_prompt_hint() or "(없음)"
@@ -138,7 +136,7 @@ def build_db_correction_prompt(
     failed_sql: str,
     db_error: str,
 ) -> str:
-    """DB 실행 실패 시 LLM 재생성용 프롬프트."""
+    """DB 실행 실패 시 재생성 프롬프트"""
     cv = code_values_prompt_hint() or "(없음)"
     return f"""이전 SQL은 스키마 검증은 통과했으나 MES DB 실행에 실패했습니다. 오류를 참고해 단순하고 실행 가능한 SELECT로 다시 작성하세요.
 
@@ -171,11 +169,11 @@ JSON 응답:"""
 
 
 def parse_llm_json(raw: str) -> dict[str, Any]:
-    """LLM 응답에서 첫 JSON 객체를 추출."""
-    # 마크다운 코드블록 제거. ```json 뿐 아니라 ```sql, ```tsql 등도 벗긴다.
+    """LLM 응답의 첫 JSON 객체 추출"""
+    # ```json 외에 ```sql, ```tsql 등 모든 코드펜스 제거
     raw = re.sub(r"```[a-zA-Z]*", "", raw).strip().rstrip("`").strip()
 
-    # JSON 블록 추출 시도: 모델이 뒤에 예시를 이어 쓰는 경우가 있어 첫 valid object만 사용
+    # 모델이 뒤에 예시를 이어 쓰는 경우 대비, 첫 유효 객체만 사용
     decoder = json.JSONDecoder()
     for match in re.finditer(r"\{", raw):
         try:
@@ -185,9 +183,7 @@ def parse_llm_json(raw: str) -> dict[str, Any]:
         except json.JSONDecodeError:
             continue
 
-    # Fallback: SELECT 구문 직접 추출.
-    # 못 찾으면 빈 문자열을 준다. 예전에는 raw 를 그대로 돌려줘서, 모델이
-    # 코드펜스만 뱉고 끊긴 경우(```sql) 찌꺼기 "sql" 이 SQL 로 실행됐다.
+    # SELECT 구문 직접 추출, 실패 시 빈 문자열 (raw 반환 시 코드펜스 찌꺼기가 SQL 로 실행됨)
     sql_match = re.search(r'(SELECT\s.+?)(?:;|$)', raw, re.DOTALL | re.IGNORECASE)
     sql = sql_match.group(1).strip() if sql_match else ""
     return {"sql": sql, "description": ""}

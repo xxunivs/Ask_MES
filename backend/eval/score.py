@@ -1,7 +1,7 @@
 """
-eval/score.py — 벤치마크 결과 집계 (VS / EX / Table F1)
+벤치마크 결과 집계 (VS, EX, Table F1)
 
-Usage:
+실행 방법:
   python eval/score.py eval/results/run_FULL_20260602.csv
   python eval/score.py eval/results/run_FULL_20260602.csv --by difficulty
 """
@@ -116,7 +116,7 @@ def group_aggregate(scored: list[dict], key: str) -> dict[str, dict]:
 
 
 def resolve_results_path(target: Path) -> Path:
-    """CSV 경로 해석: 파일 / experiment 폴더 / glob / latest.csv"""
+    """CSV 경로 해석 (파일, experiment 폴더, glob 패턴, latest.csv)"""
     root = Path(__file__).resolve().parents[1]
     results_dir = Path(__file__).resolve().parent / "results"
 

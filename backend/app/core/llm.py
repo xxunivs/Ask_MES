@@ -1,6 +1,6 @@
 """
-LLM REST API 클라이언트.
-기본은 Ollama이고, LLM_PROVIDER=vllm이면 OpenAI-compatible vLLM API를 호출합니다.
+LLM REST API 클라이언트
+기본 Ollama, LLM_PROVIDER=vllm 이면 OpenAI 호환 vLLM API 호출
 """
 from __future__ import annotations
 
@@ -21,12 +21,7 @@ async def llm_generate(
     max_tokens: int = 512,
     seed: int | None = 0,
 ) -> str:
-    """설정된 LLM provider 호출 → 응답 텍스트 반환
-
-    seed 는 재현성을 위한 것으로 기본 0 이다. vLLM 경로는 이미 0 으로 고정돼
-    있었고 Ollama 경로만 빠져 있어서, 같은 프롬프트로도 런마다 다른 SQL 이
-    나왔다. None 을 주면 provider 기본값(비결정적)을 쓴다.
-    """
+    """설정된 LLM provider 호출, seed 는 재현성용 고정값(None 이면 비결정적)"""
     if LLM_PROVIDER in {"vllm", "openai"}:
         return await _vllm_generate(prompt, temperature, max_tokens, seed)
     return await _ollama_generate(prompt, temperature, max_tokens, seed)
@@ -35,11 +30,10 @@ async def llm_generate(
 async def _ollama_generate(
     prompt: str, temperature: float, max_tokens: int, seed: int | None = 0
 ) -> str:
-    """Ollama /api/generate 호출"""
     options = {
         "temperature": temperature,
         "num_predict": max_tokens,
-        # 스키마 컨텍스트 전체(약 3천 토큰)가 잘리지 않는 컨텍스트 길이
+        # 스키마 컨텍스트(약 3천 토큰) 잘림 방지용 길이
         "num_ctx": 8192,
     }
     if seed is not None:
@@ -48,7 +42,7 @@ async def _ollama_generate(
         "model": OLLAMA_MODEL,
         "prompt": prompt,
         "stream": False,
-        # vLLM 경로와 동일하게 Qwen thinking 모드 비활성화
+        # 응답 지연 방지용 Qwen thinking 모드 비활성화
         "think": False,
         "options": options,
     }
@@ -71,7 +65,6 @@ async def _ollama_generate(
 async def _vllm_generate(
     prompt: str, temperature: float, max_tokens: int, seed: int | None = 0
 ) -> str:
-    """vLLM/OpenAI-compatible chat completions 호출."""
     payload = {
         "model": LLM_MODEL,
         "messages": [{"role": "user", "content": prompt}],
@@ -79,8 +72,7 @@ async def _vllm_generate(
         "max_tokens": max_tokens,
     }
     if LLM_PROVIDER == "vllm":
-        # Qwen thinking mode is unnecessary for structured SQL output and
-        # otherwise consumes most of the latency/token budget.
+        # SQL 출력에 불필요하고 지연과 토큰을 대부분 소모하는 Qwen thinking 모드 비활성화
         payload["chat_template_kwargs"] = {"enable_thinking": False}
         if seed is not None:
             payload["seed"] = seed

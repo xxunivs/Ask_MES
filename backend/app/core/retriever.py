@@ -1,24 +1,6 @@
 """
-app/core/retriever.py  (v2 — Ontology-Guided Hybrid RAG)
-=====================================================
-v1 대비 변경사항:
-  1. FKPathResolver 통합 → ChromaDB가 찾은 테이블 간 JOIN 경로 자동 계산
-  2. ConceptMapper 통합 → 한국어 개념어 → 관련 테이블/컬럼 보강 검색
-  3. retrieve_context() 반환값에 "## JOIN 힌트" 섹션 추가
-  4. 싱글턴 초기화 순서: init_chroma() → FKResolver / ConceptMapper 동시 초기화
-
-아키텍처:
-  NL Query
-    ↓
-  [ConceptMapper] 개념어 인식 → 추가 테이블 후보 확보
-    ↓
-  [ChromaDB] 벡터 유사도 검색 → 관련 컬럼/테이블 top-k
-    ↓
-  [FKPathResolver] 식별된 테이블 간 Dijkstra 최단 JOIN 경로 계산
-    ↓
-  Prompt Context (스키마 청크 + JOIN 힌트 + 개념 매핑)
-    ↓
-  Ollama Qwen2.5:7b → SQL 생성
+스키마 벡터 검색, 온톨로지 개념 매핑, FK JOIN 힌트를 묶은 하이브리드 RAG 컨텍스트 생성
+파이프라인 1단계 관련 테이블 찾기와 2단계 JOIN 경로 계산 담당
 """
 
 import hashlib
@@ -35,18 +17,9 @@ from app.core.config import CHROMA_PATH, RAG_TOP_K, EMBED_MODEL, EMBED_BACKEND, 
 from app.core.fk_resolver import FKPathResolver, get_resolver
 from app.core.ontology_loader import get_concept_engine
 
-# ──────────────────────────────────────────────────────────────────
-# 임베딩 함수
-# ──────────────────────────────────────────────────────────────────
-
 
 class OllamaEmbeddingFunction(embedding_functions.EmbeddingFunction):
-    """Ollama /api/embeddings 를 부르는 Chroma 임베딩 함수.
-
-    논문 구성이 bge-m3 이고, 4월 프로토타입도 OllamaEmbeddings(model="bge-m3")
-    를 썼다. Chroma 기본 임베딩(all-MiniLM-L6-v2)은 영어 전용이라 한국어
-    질의에서 검색 품질이 무너진다.
-    """
+    """Ollama 기반 Chroma 임베딩 함수, 영어 전용 기본 임베딩의 한국어 검색 품질 저하 대응"""
 
     def __init__(self, model: str, base_url: str):
         self._model = model
@@ -76,18 +49,11 @@ def _embedding_function():
     return embedding_functions.DefaultEmbeddingFunction()
 
 
-# ──────────────────────────────────────────────────────────────────
-# 경로 설정
-# ──────────────────────────────────────────────────────────────────
-
 _BASE_DIR       = os.path.dirname(__file__)
 SCHEMA_PATH     = os.path.join(_BASE_DIR, "../../data/mes_schema.json")
 COLLECTION_NAME = "mes_schema"
 HASH_FILE       = os.path.join(CHROMA_PATH, ".schema_hash")
 
-# ──────────────────────────────────────────────────────────────────
-# 전역 싱글턴
-# ──────────────────────────────────────────────────────────────────
 
 _collection:     Optional[chromadb.Collection] = None
 _fk_resolver:    Optional[FKPathResolver]       = None
@@ -96,7 +62,7 @@ _concept_engine = None
 
 @dataclass(frozen=True)
 class RetrievalConfig:
-    """벤치마크 ablation용 RAG 구성."""
+    """벤치마크 ablation용 RAG 구성"""
     use_rag: bool = True
     use_ontology: bool = True
     use_fk: bool = True
@@ -116,10 +82,6 @@ class RetrievalConfig:
         return presets[key]
 
 
-# ──────────────────────────────────────────────────────────────────
-# ChromaDB 초기화 및 시딩
-# ──────────────────────────────────────────────────────────────────
-
 def _schema_hash() -> str:
     with open(SCHEMA_PATH, "rb") as f:
         return hashlib.md5(f.read()).hexdigest()
@@ -138,13 +100,9 @@ def _save_hash(h: str):
 
 
 def init_chroma():
-    """
-    앱 시작 시 1회 호출.
-    ChromaDB + FKPathResolver + ConceptMapper 동시 초기화.
-    """
+    """ChromaDB, FKPathResolver, 개념 엔진 초기화, 앱 시작 시 1회 호출"""
     global _collection, _fk_resolver, _concept_engine
 
-    # ── ChromaDB ──
     client = chromadb.PersistentClient(path=CHROMA_PATH)
     ef = _embedding_function()
     current_hash = _schema_hash()
@@ -155,7 +113,7 @@ def init_chroma():
             client.delete_collection(COLLECTION_NAME)
         except Exception:
             pass
-        # 논문 구성은 코사인 유사도. Chroma 기본은 L2 라서 명시해야 한다.
+        # Chroma 기본값이 L2라 코사인 거리 명시
         _collection = client.create_collection(
             name=COLLECTION_NAME,
             embedding_function=ef,
@@ -176,17 +134,15 @@ def init_chroma():
         else:
             print(f"[ChromaDB] 기존 컬렉션 로드 완료 ({_collection.count()} 문서)")
 
-    # ── FKPathResolver ──
     _fk_resolver = get_resolver(SCHEMA_PATH)
 
-    # ── ConceptEngine (OWL 또는 JSON 폴백) ──
     _concept_engine = get_concept_engine()
 
     print("[Retriever] Ontology-Guided Hybrid RAG 초기화 완료")
 
 
 def _seed_schema():
-    """mes_schema.json을 읽어 테이블/컬럼 단위 문서로 ChromaDB에 삽입"""
+    """mes_schema.json의 테이블, 컬럼 단위 문서 ChromaDB 적재"""
     with open(SCHEMA_PATH, encoding="utf-8") as f:
         schema = json.load(f)
 
@@ -239,12 +195,8 @@ def _seed_schema():
     print(f"[ChromaDB] 시딩 완료: {len(docs)} 문서 ({len(schema['tables'])} 테이블)")
 
 
-# ──────────────────────────────────────────────────────────────────
-# 핵심 함수: Ontology-Guided Hybrid RAG 컨텍스트 생성
-# ──────────────────────────────────────────────────────────────────
-
 def minimal_schema_context(max_tables: int = 40) -> str:
-    """B0 베이스라인: 테이블·PK 목록만 제공."""
+    """B0 베이스라인용 테이블 및 PK 목록"""
     with open(SCHEMA_PATH, encoding="utf-8") as f:
         schema = json.load(f)
     lines = ["[MES 스키마 요약 — 테이블 목록만]"]
@@ -260,20 +212,7 @@ def retrieve_context(
     n: int = None,
     config: Optional[RetrievalConfig] = None,
 ) -> str:
-    """
-    자연어 쿼리에 대한 하이브리드 RAG 컨텍스트 반환.
-
-    3단계 파이프라인:
-      1. ConceptMapper  → 개념어 기반 테이블/컬럼 후보 식별
-      2. ChromaDB       → 벡터 유사도 top-k 검색
-      3. FKPathResolver → 식별된 테이블 간 JOIN 경로 계산
-
-    config: RetrievalConfig — ablation 시 B0~FULL 프리셋 사용.
-            생략하면 세 단계를 모두 사용한다(기존 동작).
-
-    Returns:
-      프롬프트에 주입할 컨텍스트 문자열
-    """
+    """자연어 질의에 대한 프롬프트 주입용 하이브리드 RAG 컨텍스트"""
     cfg = config or RetrievalConfig()
 
     if not cfg.use_rag and not cfg.use_ontology and not cfg.use_fk:
@@ -284,14 +223,12 @@ def retrieve_context(
 
     k = n or RAG_TOP_K
 
-    # ── Step 1: 개념어 기반 테이블 식별 (OntologyEngine / JSON 폴백) ──
     concept_tables: list[str] = []
     concept_hint:   str       = ""
     if cfg.use_ontology and _concept_engine:
         concept_tables = _concept_engine.find_tables(query)
         concept_hint   = _concept_engine.get_concept_hint(query)
 
-    # ── Step 2: ChromaDB 벡터 검색 ──
     chroma_docs: list[str] = []
     chroma_tables: list[str] = []
     if cfg.use_rag:
@@ -299,28 +236,24 @@ def retrieve_context(
         chroma_docs   = results["documents"][0]
         chroma_metas  = results["metadatas"][0]
 
-        # 검색된 테이블 목록 추출 (순서 유지 dedup)
         for m in chroma_metas:
             t = m.get("table", "")
             if t and t not in chroma_tables:
                 chroma_tables.append(t)
 
-    # ConceptMapper + ChromaDB 결과 병합 (중복 제거, 개념 테이블 우선)
+    # 온톨로지 개념 테이블 우선 배치
     all_tables: list[str] = list(concept_tables)
     for t in chroma_tables:
         if t not in all_tables:
             all_tables.append(t)
 
-    # ── Step 3: Dijkstra FK-path JOIN 힌트 ──
     join_hint = ""
     if cfg.use_fk and _fk_resolver and len(all_tables) >= 2:
         join_sql = _fk_resolver.get_join_sql(all_tables[:5], max_hops=4)
         if join_sql:
             join_hint = f"\n\n## JOIN 경로 힌트 (Dijkstra 최단경로)\n{join_sql}"
-            # 경유 테이블을 컨텍스트에 추가 (스키마 청크 보강)
             _augment_intermediate_tables(join_sql, all_tables)
 
-    # ── 컨텍스트 조립 ──
     sections: list[str] = []
     if chroma_docs:
         sections.append("\n---\n".join(chroma_docs))
@@ -341,10 +274,7 @@ def retrieve_context(
 
 
 def _augment_intermediate_tables(join_sql: str, all_tables: list[str]):
-    """
-    JOIN SQL에서 경유 테이블을 파싱해 ChromaDB에서 추가 문서 확보.
-    (컨텍스트 직접 주입 대신 all_tables 리스트 보강)
-    """
+    """JOIN SQL의 경유 테이블로 all_tables 보강"""
     import re
     for match in re.finditer(r"JOIN\s+(CIM_\w+)\s+WITH", join_sql):
         t = match.group(1)

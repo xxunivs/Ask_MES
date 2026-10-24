@@ -1,3 +1,6 @@
+"""
+FastAPI 앱 진입점, 라우터 및 CORS 등록
+"""
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
@@ -7,7 +10,6 @@ from app.core.retriever import init_chroma
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # 시작 시 ChromaDB 초기화 & 스키마 시딩
     print("[Startup] ChromaDB 초기화 중...")
     init_chroma()
     print("[Startup] 완료 — MES LLM API 준비됨")
@@ -23,7 +25,7 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],          # 운영 시 특정 도메인으로 제한
+    allow_origins=["*"],          # 운영 시 특정 도메인으로 제한 필요
     allow_methods=["GET", "POST"],
     allow_headers=["*"],
 )

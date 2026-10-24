@@ -1,5 +1,6 @@
 """
-MES 코드값 사전 — DB DISTINCT 수집 결과를 SQL 검증·프롬프트·RAG에 반영.
+DB DISTINCT로 수집한 MES 코드값 사전, SQL 리터럴 검증과 프롬프트 및 RAG 힌트에 사용
+파이프라인 6단계 검증 담당
 """
 from __future__ import annotations
 
@@ -15,7 +16,7 @@ _BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 CODE_VALUES_PATH = os.path.join(_BASE_DIR, "../../data/mes_code_values.json")
 CODE_PROFILE_PATH = os.path.join(_BASE_DIR, "../../data/mes_code_profile.json")
 
-# Y/N 계열 DB에서 흔히 금지할 LLM 추측값
+# Y/N 코드 컬럼에서 LLM이 흔히 추측하는 잘못된 값
 DEFAULT_FORBIDDEN_YN = ["TRUE", "FALSE", "true", "false", "1", "0", "YES", "NO"]
 
 LITERAL_EQ_RE = re.compile(
@@ -34,7 +35,7 @@ LITERAL_EQ_NUM_RE = re.compile(
 
 @dataclass
 class CodeColumnRule:
-    key: str  # CIM_LOT.ISHOLD
+    key: str  # 예: CIM_LOT.ISHOLD
     table: str
     column: str
     label: str
@@ -99,7 +100,7 @@ class CodeValuesRegistry:
         return self.rules.get(f"{table.upper()}.{column.upper()}")
 
     def rules_by_column(self) -> dict[str, list[CodeColumnRule]]:
-        """column name -> rules (여러 테이블에 동일 컬럼명)"""
+        """컬럼명별 규칙 목록, 여러 테이블의 동일 컬럼명 대응"""
         out: dict[str, list[CodeColumnRule]] = {}
         for rule in self.rules.values():
             out.setdefault(rule.column, []).append(rule)
@@ -116,7 +117,7 @@ def _parse_in_list(raw: str) -> list[str]:
 
 
 def extract_column_literals(sql: str) -> list[tuple[Optional[str], str, str]]:
-    """(table|None, column, literal)"""
+    """SQL의 컬럼 문자열 리터럴 비교 목록, 테이블 미지정 시 None"""
     found: list[tuple[Optional[str], str, str]] = []
     for m in LITERAL_EQ_RE.finditer(sql):
         t = m.group("table")
@@ -133,7 +134,7 @@ def extract_column_literals(sql: str) -> list[tuple[Optional[str], str, str]]:
 
 
 def extract_numeric_equalities(sql: str) -> list[tuple[Optional[str], str, str]]:
-    """(table|None, column, numeric_str)"""
+    """SQL의 컬럼 숫자 비교 목록, 테이블 미지정 시 None"""
     out = []
     for m in LITERAL_EQ_NUM_RE.finditer(sql):
         t = m.group("table")
@@ -148,6 +149,7 @@ def validate_code_literals(
     referenced_tables: Optional[list[str]] = None,
     registry: Optional[CodeValuesRegistry] = None,
 ) -> CodeValidationResult:
+    """SQL 리터럴의 수집 코드값 위반 검사"""
     reg = registry or get_code_registry()
     if not reg.rules:
         return CodeValidationResult(ok=True)
@@ -212,7 +214,6 @@ def validate_code_literals(
             invalid.append((rule.key, num, msg))
             hints.append(msg)
 
-    # dedupe hints
     seen = set()
     unique_hints = []
     for h in hints:
@@ -245,7 +246,7 @@ def code_values_prompt_hint(max_rules: int = 8) -> str:
 
 
 def rag_documents_for_code_values() -> list[tuple[str, str, dict]]:
-    """ChromaDB 시딩용 (document, id, metadata)."""
+    """ChromaDB 시딩용 코드값 문서 목록"""
     reg = get_code_registry()
     out = []
     for rule in reg.rules.values():
@@ -274,7 +275,7 @@ def save_code_values(
     path: str = CODE_VALUES_PATH,
     source: str = "mes_api_distinct",
 ) -> str:
-    """수집 스크립트가 호출."""
+    """수집 스크립트용 코드값 저장 및 레지스트리 캐시 초기화"""
     payload = {
         "_comment": "scripts/collect_code_values.py 로 갱신",
         "collected_at": datetime.now(timezone.utc).isoformat(),

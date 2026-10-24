@@ -1,11 +1,8 @@
 """
-공개용 데모 DB에 가상 데이터 채우기
+column_spec.json, vocab.py, 데모 DB 표 정의 기반의 공개용 데모 DB 가상 데이터 생성
+표 간 ID 가 맞물리는 데이터, 실제 기록 미사용, 같은 SEED 면 같은 결과
 
-column_spec.json (칸별 값 종류와 범위), vocab.py (업종 어휘), 데모 DB 표 정의를 읽어
-표끼리 ID가 맞물리는 가상 데이터를 만든다. 실제 기록은 쓰지 않는다.
-같은 SEED 로 돌리면 항상 같은 데이터가 나온다.
-
-실행: backend/ 에서
+실행 방법 (backend/ 에서):
   ./venv/bin/python ../demo-db/generate_demo_data.py
 """
 from __future__ import annotations
@@ -30,12 +27,11 @@ SEED = 42
 SPEC = json.loads((Path(__file__).parent / "column_spec.json").read_text(encoding="utf-8"))
 SCHEMA = {t["name"]: t for t in json.loads((ROOT / "backend/data/mes_schema.json").read_text(encoding="utf-8"))["tables"]}
 SITE_ID = "1000"
-# 가상 데이터 날짜 범위
 DATE_START = datetime(2024, 10, 1)
 DATE_END = datetime(2026, 10, 20)
 BATCH = 500
 
-# 표별 행 수 (부모 표가 먼저 오도록 정렬)
+# 표별 행 수, 부모 표가 먼저 오는 순서 유지 필요
 ROW_COUNTS = {
     "CIM_CODECLASS": 20, "CIM_CODE": 200,
     "CIM_FACILITY": 20, "CIM_FACILITYMAP": 20,
@@ -50,7 +46,7 @@ ROW_COUNTS = {
 }
 LOT_TABLES = {"CIM_LOT", "CIM_LOTHIST", "CIM_LOTDEFECT", "CIM_LOTBATCHREL", "CIM_LOTMATERIALLOTREL", "CIM_MATERIALLOT", "CIM_BATCH"}
 
-# 실제 표본에서는 비어 있었지만 데모 질문에 필요한 칸 (채우는 비율, 값 종류)
+# 실제 표본에선 비었지만 데모 질문에 필요한 칸 (채우는 비율, 값 종류)
 DEMO_FILL = {
     ("CIM_MATERIALDEFINITION", "SAFETY_QTY"): (0.6, "number"),
     ("CIM_EQUIPMENT", "ALARMID"): (0.15, "alarm"),
@@ -58,7 +54,7 @@ DEMO_FILL = {
     ("CIM_MATERIALLOT", "RECEIVEDTIME"): (0.9, "date"),
 }
 YN_FLAG = re.compile(r"^IS|FLAG$|YN$")
-# 다른 표 ID 를 가리키는 칸의 앞말 (PREVPROCESSNODEID -> PROCESSNODEID)
+# 다른 표 ID 참조 칸의 접두어 (PREVPROCESSNODEID -> PROCESSNODEID)
 REF_PREFIXES = ("PREV", "NEXT", "ROOTPARENT", "PARENT", "SOURCE", "RESERVED", "START", "ORIGINAL", "MERGE", "CHILD", "REPLACE", "SUB")
 
 # 스키마 파일에 없는 참조 관계
@@ -69,9 +65,9 @@ EXTRA_REFS = {
 
 rng = random.Random(SEED)
 generated_ids: dict[str, list[str]] = {}
-# 표별 ID -> 대표 이름 (자식 표 이름을 만들 때 참고)
+# 표별 ID 와 대표 이름 (자식 표 이름 생성용)
 names: dict[str, dict[str, str]] = {}
-# 표별 ID -> 행 (자식 표가 부모 값을 따라갈 때 참고)
+# 표별 ID 와 행 (자식 표의 부모 값 참조용)
 rows_by_id: dict[str, dict[str, dict]] = {}
 
 
@@ -136,7 +132,7 @@ def random_code(length: int) -> str:
 
 
 def random_date(base: datetime, column: str) -> datetime:
-    """행 기준 시각 주변 날짜. 시작 계열은 앞, 종료 계열은 뒤"""
+    """행 기준 시각 주변 날짜, 시작 계열은 가깝게, 종료 계열은 뒤로"""
     upper = column.upper()
     if any(k in upper for k in ("START", "TRACKIN", "CREATE", "RELEASE", "PLAN")):
         return base + timedelta(minutes=rng.randint(0, 120))
@@ -152,13 +148,13 @@ def is_text(col: dict) -> bool:
 
 
 def fit(value, col: dict):
-    """칸 종류와 길이에 맞게 값 변환"""
+    """칸 종류와 길이에 맞춘 값 변환"""
     if value is None:
         return None
     t = col["type"]
     if is_text(col):
         s = str(value)
-        # varchar 는 한글 한 글자가 2바이트 (Korean_Wansung)
+        # varchar 는 한글 한 글자당 2바이트 (Korean_Wansung)
         limit = col["length"] if col["length"] and col["length"] > 0 else None
         if limit and t in ("varchar", "char"):
             while len(s.encode("cp949", errors="replace")) > limit:
@@ -182,7 +178,7 @@ def is_yn_flag(col: dict, spec: dict) -> bool:
 
 
 def common_text(table: str, name: str, n: int):
-    """여러 표에 공통으로 있는 칸의 값. 해당 없으면 None"""
+    """여러 표 공통 칸의 값, 해당 없으면 None"""
     if name in ("ACTIVITY", "PREVACTIVITY"):
         return rng.choice(vocab.LOT_ACTIVITIES if table in LOT_TABLES else vocab.MASTER_ACTIVITIES)
     if name in ("CUSTOMACTIVITY", "PREVCUSTOMACTIVITY"):
@@ -231,7 +227,7 @@ def name_of(table: str, key) -> str:
 
 
 def apply_domain_rules(table: str, row: dict, n: int) -> str | None:
-    """업무상 말이 되는 이름과 값으로 맞춤. 이 행의 대표 이름을 돌려줌"""
+    """업무상 자연스러운 이름과 값 보정, 행의 대표 이름 반환"""
     def pick(items):
         return items[(n - 1) % len(items)]
 
@@ -336,7 +332,7 @@ def build_rows(table: str, columns: list[dict]) -> list[dict]:
             elif name == own:
                 value = make_id(table, name, n) if is_text(col) else n
             elif parent == table:
-                # 같은 표를 가리키는 칸 (부모 LOT 등) 은 비우고, 필요한 것만 규칙에서 채움
+                # 같은 표 참조 칸(부모 LOT 등)은 비움, 필요한 값만 규칙에서 보충
                 value = None
             elif parent and generated_ids.get(parent):
                 value = rng.choice(generated_ids[parent])

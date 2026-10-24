@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-// 질문 입력창
+// 질문 입력칸과 보내기 버튼
 export default function ChatInput({
   onSend,
   disabled,

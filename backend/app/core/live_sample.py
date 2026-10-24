@@ -1,8 +1,6 @@
 """
-Generate compact live-DB context for SQL generation.
-
-The retriever tells the LLM which tables are likely relevant. This module
-checks those tables against the real MES API with small, read-only probes.
+retriever가 고른 테이블의 실제 MES DB 샘플, 날짜 범위, 주요값 조회 결과 요약
+파이프라인 3단계 실제 값 확인 담당
 """
 from __future__ import annotations
 
@@ -60,7 +58,7 @@ def _load_schema() -> dict[str, dict[str, Any]]:
 
 
 def extract_context_tables(schema_context: str, max_tables: int = 4) -> list[str]:
-    """Extract table names mentioned in retriever context, preserving order."""
+    """retriever 컨텍스트에 언급된 테이블 목록, 등장 순서 유지"""
     schema = _load_schema()
     found: list[str] = []
 
@@ -179,12 +177,7 @@ def _format_rows(result: dict[str, Any], max_rows: int = 3) -> str:
 
 
 async def build_live_db_context(schema_context: str, max_tables: int = 3) -> str:
-    """
-    Probe the real MES DB with tiny SELECT queries and return compact context.
-
-    Each probe is best-effort. Failures are included as hints instead of raising,
-    so SQL generation can continue even when one table is unavailable.
-    """
+    """소형 SELECT 조회 기반 실DB 컨텍스트, 실패는 예외 대신 힌트로 포함해 SQL 생성 지속"""
     tables = extract_context_tables(schema_context, max_tables=max_tables)
     if not tables:
         return ""

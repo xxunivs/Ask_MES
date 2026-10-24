@@ -1,14 +1,10 @@
 """
-실제 MES DB의 값 모양 조사 (가상 데이터 생성 참고용)
+실제 MES DB 표본의 칸별 값 모양 조사 (가상 데이터 생성 참고용)
+실제 기록, ID, 사람 이름 칸의 값은 미보관, 코드성 칸만 값 목록 보관
 
-표마다 최근 2,000행을 표본으로 읽어 칸별 특징만 기록한다.
-실제 기록이나 ID 값은 남기지 않고, 값 종류가 적은 코드성 칸만 값 목록을 남긴다.
-사람 이름이 들어갈 수 있는 칸은 값 목록을 남기지 않는다.
-
-실행: backend/ 에서
+실행 방법 (backend/ 에서):
   ./venv/bin/python ../demo-db/profile_real_db.py
-결과: demo-db/value_profile.md (사람이 읽는 요약, git 제외)
-      demo-db/column_spec.json (가상 데이터 생성용 칸 규칙, 실제 값 미포함)
+결과: demo-db/value_profile.md (요약, git 제외), demo-db/column_spec.json (칸 규칙, 실제 값 미포함)
 """
 from __future__ import annotations
 
@@ -25,18 +21,18 @@ sys.path.insert(0, str(ROOT / "backend"))
 from app.core.sql_executor import execute_sql  # noqa: E402
 
 SAMPLE_ROWS = 2000
-# 값 종류가 이 개수 이하인 칸만 코드성 칸으로 보고 값 목록을 남김
+# 코드성 칸 판정용 값 종류 상한
 CODE_MAX_DISTINCT = 20
-# 사람 이름, 자유 서술이 들어갈 수 있는 칸
+# 사람 이름, 자유 서술 가능 칸 (값 비공개)
 PRIVATE_COLUMN = re.compile(r"USER|NAME|DESC|COMMENT|TEXT|NOTE|REMARK|EMAIL|PHONE", re.IGNORECASE)
 OUTPUT = Path(__file__).resolve().parent / "value_profile.md"
 SPEC_OUTPUT = Path(__file__).resolve().parent / "column_spec.json"
-# 공개해도 되는 코드값: 영문, 숫자, 밑줄, 하이픈으로만 된 짧은 값
+# 공개 가능한 코드값 (영문, 숫자, 밑줄, 하이픈만의 짧은 값)
 SAFE_CODE = re.compile(r"^[A-Za-z0-9_\-]{1,20}$")
 
 
 def shape_of(value: str) -> str:
-    """값의 모양: 숫자는 9, 영문은 A, 한글은 가, 나머지 문자는 그대로"""
+    """값 모양 (숫자 9, 영문 A, 한글 가, 나머지 문자 유지)"""
     value = re.sub(r"[가-힣]", "가", value)
     return re.sub(r"[A-Za-z]", "A", re.sub(r"\d", "9", value))
 
@@ -68,7 +64,7 @@ def describe(column: str, values: list) -> str:
 
 
 def spec_of(column: str, values: list) -> dict:
-    """가상 데이터 생성 규칙. 실제 값은 공개 가능한 코드값만 남김"""
+    """가상 데이터 생성 규칙, 실제 값은 공개 가능한 코드값만 포함"""
     filled = [v for v in values if v not in (None, "")]
     spec: dict = {"empty_ratio": round(1 - len(filled) / max(len(values), 1), 3)}
     if not filled:

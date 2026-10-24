@@ -1,4 +1,8 @@
-"""Quick validator smoke test — python eval/check_validator.py"""
+"""
+sql_validator 간이 동작 확인
+
+실행 방법: python eval/check_validator.py
+"""
 import sys
 from pathlib import Path
 

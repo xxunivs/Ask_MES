@@ -1,10 +1,6 @@
 """
-생성된 SQL 실행
-
-DB_BACKEND 설정에 따라 둘 중 하나로 실행한다.
-  demo    : 로컬 데모 DB(가상 데이터)에 읽기 전용 계정으로 직접 실행
-  mes_api : 원격 MES API(실제 DB)의 POST /chat/sql-execute 로 위임
-반환 형태는 같다: { success, columns, rows, count }
+생성 SQL 실행, DB_BACKEND 에 따라 로컬 데모 DB(demo) 또는 원격 MES API(mes_api)
+두 경로 공통 반환 형태 { success, columns, rows, count }
 """
 from __future__ import annotations
 
@@ -17,7 +13,7 @@ import httpx
 from app.core.config import DB_BACKEND, MES_API_KEY, MES_API_URL
 from app.core.demo_db import connect_reader
 
-# 원격 서버가 python 계열 기본 User-Agent 를 봇으로 보고 403 을 준다.
+# python 기본 User-Agent 는 원격 서버가 봇으로 보고 403 반환
 _HEADERS = {
     "X-API-Key": MES_API_KEY,
     "User-Agent": (
@@ -28,19 +24,13 @@ _HEADERS = {
 
 
 async def execute_sql(sql: str, limit: int = 100) -> dict:
-    """
-    SQL 실행 후 { success, count, columns, rows } 반환
-
-    DB 오류는 예외로 올린다. 실패를 빈 결과로 돌려주면 호출부가
-    "실행됐는데 0행"으로 오해하기 때문이다.
-    """
+    """SQL 실행, DB 오류는 빈 결과(0행)로 오인되지 않도록 예외 발생"""
     if DB_BACKEND == "mes_api":
         return await _execute_remote(sql, limit)
     return await asyncio.to_thread(_execute_demo, sql, limit)
 
 
 def _to_json(value):
-    """JSON 으로 보낼 수 있는 값으로 변환"""
     if isinstance(value, (datetime, date)):
         return value.isoformat()
     if isinstance(value, Decimal):
@@ -70,7 +60,7 @@ async def _execute_remote(sql: str, limit: int) -> dict:
         resp.raise_for_status()
         data = resp.json()
 
-    # DB 문법 오류여도 HTTP 는 200 이고 본문이 {"success": false, "error": ...} 로 온다.
+    # DB 오류도 HTTP 200 과 {"success": false} 본문으로 오므로 예외로 전환
     if isinstance(data, dict) and data.get("success") is False:
         raise RuntimeError(data.get("error") or "SQL 실행 실패 (원인 미상)")
     return data

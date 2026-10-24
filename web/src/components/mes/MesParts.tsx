@@ -1,5 +1,6 @@
-// MES 화면 공통 부품: 조회 조건 칸, LIST 탭, 합계 줄
+// MES 화면 공통 부품 (조회 조건 칸, LIST 탭, 합계 줄)
 
+// 조회 조건 영역
 export function ConditionPanel({ children, action }: { children: React.ReactNode; action?: React.ReactNode }) {
   return (
     <div className="flex items-center gap-6 border-b border-panel-line bg-panel px-4 py-3">
@@ -9,6 +10,7 @@ export function ConditionPanel({ children, action }: { children: React.ReactNode
   );
 }
 
+// 조회 조건 한 칸
 export function ConditionField({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <label className="flex items-center gap-2">
@@ -19,6 +21,7 @@ export function ConditionField({ label, children }: { label: string; children: R
   );
 }
 
+// 표 위 LIST 탭
 export function ListTab({ title = "LIST" }: { title?: string }) {
   return (
     <span className="mt-1 w-fit border border-b-0 border-panel-line bg-ribbon px-2 py-0.5 font-semibold">
@@ -27,6 +30,7 @@ export function ListTab({ title = "LIST" }: { title?: string }) {
   );
 }
 
+// 표 아래 합계 줄과 페이지 이동
 export function GridFooter({
   page,
   from,

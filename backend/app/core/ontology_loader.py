@@ -1,24 +1,6 @@
 """
-app/core/ontology_loader.py
-========================
-OWL/Turtle 온톨로지(mes_ontology.ttl)를 로드해서 두 가지 역할을 수행:
-
-  1. 개념 검색 (ConceptResolver)
-     자연어 쿼리에서 skos:altLabel 매핑으로 관련 테이블/컬럼 식별
-     → 자연어 개념어를 OWL 기반으로 테이블·컬럼에 매핑
-
-  2. JOIN 힌트 추출 (OntologyJoinHinter)
-     mfg:joinCondition 어노테이션에서 JOIN ON 절 직접 추출
-     → FKPathResolver와 협업 (온톨로지 우선, FK 그래프 보완)
-
-사용법:
-  from app.core.ontology_loader import get_ontology
-  onto = get_ontology()
-  tables = onto.find_tables("홀드 상태인 LOT")
-  join  = onto.get_join_hint(["CIM_LOT", "CIM_EQUIPMENTCLASS"])
-
-설치:
-  pip install rdflib
+mes_ontology.ttl 기반 자연어 개념어의 테이블, 컬럼 매핑과 JOIN 힌트 추출
+파이프라인 1단계 관련 테이블 찾기 담당
 """
 
 import os
@@ -34,26 +16,14 @@ except ImportError:
     RDF = RDFS = OWL = SKOS = XSD = None
     RDFLIB_OK = False
 
-# ──────────────────────────────────────────────────────────────────
-# 네임스페이스
-# ──────────────────────────────────────────────────────────────────
-
 MFG = Namespace("http://neurofactory.skku.ac.kr/mes#") if RDFLIB_OK else None
 
 _BASE_DIR     = os.path.dirname(__file__)
 ONTOLOGY_PATH = os.path.join(_BASE_DIR, "../../data/mes_ontology.ttl")
 
 
-# ──────────────────────────────────────────────────────────────────
-# OWL 기반 개념 리졸버
-# ──────────────────────────────────────────────────────────────────
-
 class OntologyEngine:
-    """
-    rdflib로 파싱한 OWL 그래프를 기반으로:
-    - 자연어 개념어 → 테이블/컬럼 매핑
-    - 클래스 간 ObjectProperty에서 JOIN 힌트 추출
-    """
+    """OWL 그래프 기반 개념어 매핑 및 ObjectProperty JOIN 힌트 엔진"""
 
     def __init__(self, ttl_path: str):
         if not RDFLIB_OK:
@@ -65,21 +35,15 @@ class OntologyEngine:
         self._g.parse(ttl_path, format="turtle")
         print(f"[OntologyEngine] 파싱 완료: {len(self._g)} 트리플")
 
-        # 사전 인덱스 구성
-        self._alias_table:  dict[str, list[str]] = {}  # 개념어 → 테이블 목록
-        self._alias_column: dict[str, list[str]] = {}  # 개념어 → 컬럼 목록
-        self._join_index:   dict[tuple, str]     = {}  # (tbl_a, tbl_b) → JOIN 조건
+        self._alias_table:  dict[str, list[str]] = {}
+        self._alias_column: dict[str, list[str]] = {}
+        self._join_index:   dict[tuple, str]     = {}  # 정렬된 테이블 쌍 기준 JOIN 조건
 
         self._build_alias_index()
         self._build_join_index()
 
-    # ── 인덱스 구성 ────────────────────────────────────────────────
-
     def _build_alias_index(self):
-        """
-        rdfs:label, skos:altLabel → mfg:mapsToTable / mfg:mapsToColumn 인덱싱
-        """
-        # 클래스 레벨: rdfs:label + skos:altLabel → mapsToTable
+        """rdfs:label 및 skos:altLabel 기준 테이블, 컬럼 별칭 인덱스"""
         for cls in self._g.subjects(RDF.type, OWL.Class):
             labels = list(self._g.objects(cls, RDFS.label)) + \
                      list(self._g.objects(cls, SKOS.altLabel))
@@ -91,7 +55,6 @@ class OntologyEngine:
                     if str(tbl) not in self._alias_table[key]:
                         self._alias_table[key].append(str(tbl))
 
-        # 데이터속성 레벨: rdfs:label + skos:altLabel → mapsToColumn
         for prop in self._g.subjects(RDF.type, OWL.DatatypeProperty):
             labels  = list(self._g.objects(prop, RDFS.label)) + \
                       list(self._g.objects(prop, SKOS.altLabel))
@@ -102,7 +65,7 @@ class OntologyEngine:
                     self._alias_column.setdefault(key, [])
                     if str(col) not in self._alias_column[key]:
                         self._alias_column[key].append(str(col))
-                    # 컬럼에서 테이블도 추출
+                    # 컬럼 별칭으로도 소속 테이블 검색 가능하도록 등록
                     tbl = str(col).split(".")[0] if "." in str(col) else ""
                     if tbl:
                         self._alias_table.setdefault(key, [])
@@ -112,9 +75,7 @@ class OntologyEngine:
         print(f"[OntologyEngine] 별칭 인덱스: {len(self._alias_table)} 항목")
 
     def _build_join_index(self):
-        """
-        mfg:joinCondition 어노테이션에서 (src_table, dst_table) → JOIN 조건 추출
-        """
+        """mfg:joinCondition 어노테이션 기반 테이블 쌍별 JOIN 조건 인덱스"""
         for prop in self._g.subjects(RDF.type, OWL.ObjectProperty):
             domain_list = list(self._g.objects(prop, RDFS.domain))
             range_list  = list(self._g.objects(prop, RDFS.range))
@@ -135,17 +96,15 @@ class OntologyEngine:
                 for dst in dst_tables:
                     key = tuple(sorted([src, dst]))
                     join_cond = str(joins[0])
-                    # viaTable이 있으면 2-hop JOIN으로 처리
+                    # viaTable 관계는 2홉 JOIN이라 경유 테이블 표시
                     if via:
                         join_cond = f"[via {str(via[0])}] " + join_cond
                     self._join_index[key] = join_cond
 
         print(f"[OntologyEngine] JOIN 인덱스: {len(self._join_index)} 쌍")
 
-    # ── 공개 API ──────────────────────────────────────────────────
-
     def find_tables(self, query: str) -> list[str]:
-        """쿼리에서 관련 테이블 목록 반환"""
+        """질의 문자열의 별칭 부분 일치 기반 관련 테이블 목록"""
         q = query.lower()
         found: list[str] = []
         for alias, tables in self._alias_table.items():
@@ -156,7 +115,7 @@ class OntologyEngine:
         return found
 
     def find_columns(self, query: str) -> list[str]:
-        """쿼리에서 관련 컬럼 목록 반환"""
+        """질의 문자열의 별칭 부분 일치 기반 관련 컬럼 목록"""
         q = query.lower()
         found: list[str] = []
         for alias, columns in self._alias_column.items():
@@ -167,10 +126,7 @@ class OntologyEngine:
         return found
 
     def get_join_hint(self, tables: list[str]) -> str:
-        """
-        테이블 목록에서 온톨로지 기반 JOIN 힌트 문자열 반환.
-        viaTable 포함 관계는 2-hop JOIN으로 표현.
-        """
+        """테이블 목록의 온톨로지 기반 JOIN 힌트, viaTable 관계는 2홉 JOIN으로 표현"""
         hints: list[str] = []
         for i, t1 in enumerate(tables):
             for t2 in tables[i+1:]:
@@ -178,10 +134,8 @@ class OntologyEngine:
                 if key in self._join_index:
                     cond = self._join_index[key]
                     if cond.startswith("[via "):
-                        # 경유 테이블 파싱
                         via_tbl = cond.split("]")[0].replace("[via ", "").strip()
                         raw     = cond.split("] ")[1]
-                        # AND로 분리
                         parts = [p.strip() for p in raw.split("AND")]
                         for part in parts:
                             hint = f"JOIN {part.split('=')[1].strip().split('.')[0]} WITH (NOLOCK) ON {part.strip()}"
@@ -195,7 +149,7 @@ class OntologyEngine:
         return "\n".join(hints)
 
     def get_concept_hint(self, query: str) -> str:
-        """프롬프트 주입용 개념 힌트 문자열"""
+        """프롬프트 주입용 개념 힌트"""
         tables  = self.find_tables(query)
         columns = self.find_columns(query)
         lines = []
@@ -206,7 +160,7 @@ class OntologyEngine:
         return "\n".join(lines)
 
     def sparql(self, query: str):
-        """SPARQL 쿼리 실행 (디버그/확장용)"""
+        """디버그 및 확장용 SPARQL 실행"""
         return self._g.query(query)
 
     def stats(self) -> dict:
@@ -220,15 +174,11 @@ class OntologyEngine:
         }
 
 
-# ──────────────────────────────────────────────────────────────────
-# 싱글턴
-# ──────────────────────────────────────────────────────────────────
-
 _engine_instance: Optional[OntologyEngine] = None
 
 
 def get_ontology(ttl_path: str = None) -> OntologyEngine:
-    """OntologyEngine 싱글턴 반환"""
+    """OntologyEngine 싱글턴"""
     global _engine_instance
     if _engine_instance is None:
         path = ttl_path or ONTOLOGY_PATH
@@ -237,13 +187,9 @@ def get_ontology(ttl_path: str = None) -> OntologyEngine:
 
 
 def get_concept_engine(ttl_path: str = None):
-    """온톨로지(.ttl) 기반 개념 엔진을 반환한다."""
+    """retriever용 개념 엔진 진입점"""
     return get_ontology(ttl_path)
 
-
-# ──────────────────────────────────────────────────────────────────
-# 단독 실행 테스트
-# ──────────────────────────────────────────────────────────────────
 
 if __name__ == "__main__":
     import sys
@@ -283,8 +229,8 @@ if __name__ == "__main__":
         ["CIM_LOT", "CIM_EQUIPMENT"],
         ["CIM_LOT", "CIM_EQUIPMENTCLASS"],
         ["CIM_MATERIALLOT", "CIM_MATERIALCLASS"],
-        ["CIM_LOT", "CIM_BATCH"],   # viaTable 케이스
-        ["CIM_LOT", "CIM_MATERIALLOT"],  # viaTable 케이스
+        ["CIM_LOT", "CIM_BATCH"],   # viaTable 경유
+        ["CIM_LOT", "CIM_MATERIALLOT"],  # viaTable 경유
     ]
     for tables in join_tests:
         hint = engine.get_join_hint(tables)
@@ -295,7 +241,6 @@ if __name__ == "__main__":
         else:
             print("    (직접 JOIN 없음 → FKResolver 위임)")
 
-    # SPARQL 샘플
     print("\n  ─── SPARQL 테스트 ───")
     result = engine.sparql("""
         PREFIX mfg: <http://neurofactory.skku.ac.kr/mes#>

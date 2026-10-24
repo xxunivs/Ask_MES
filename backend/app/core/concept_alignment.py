@@ -1,7 +1,6 @@
 """
-질의 개념 ↔ SQL 테이블 정합성 검증 (테이블 혼동 방지).
-
-명시 규칙의 허용 테이블이 SQL에 하나도 없으면 DB 실행 전 차단.
+질의 개념과 SQL 테이블 정합성 검증, 허용 테이블이 SQL에 없으면 실행 전 차단
+파이프라인 6단계 검증 담당
 """
 from __future__ import annotations
 
@@ -15,8 +14,8 @@ _CIM_TABLE_RE = re.compile(r"\b(CIM_[A-Z][A-Z0-9_]*)\b", re.IGNORECASE)
 def _extract_cim_tables(sql: str) -> set[str]:
     return {m.upper() for m in _CIM_TABLE_RE.findall(sql)}
 
-# (질의에 포함될 문자열들, 허용 테이블(하나 이상 필요), 단독 사용 시 오류인 테이블)
-# 온톨로지 매핑은 후보 생성용이라 차단 근거로 쓰지 않음 (정답 SQL 오차단 방지)
+# 항목 구성: 질의 트리거 문자열, 하나 이상 필요한 허용 테이블, 대신 쓰면 오류인 테이블
+# 정답 SQL 오차단 방지를 위해 온톨로지 매핑 대신 명시 규칙만 차단 근거로 사용
 _TABLE_ALIGNMENT_RULES: list[tuple[list[str], list[str], list[str]]] = [
     (["자재 lot", "자재로트", "material lot"], ["CIM_MATERIALLOT", "CIM_LOTMATERIALLOTREL"], ["CIM_LOT"]),
     (["공정 구역", "작업장", "facility"], ["CIM_FACILITY"], []),
