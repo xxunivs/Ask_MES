@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { askQuestion } from "@/lib/api";
 import ChatInput from "./ChatInput";
@@ -39,9 +40,12 @@ export default function ChatPage() {
 
   return (
     <div className="mx-auto flex h-full w-full max-w-4xl flex-col">
-      <header className="px-6 pt-8 pb-4">
-        <h1 className="text-[28px] leading-[1.14] font-medium tracking-[-0.63px]">Ask MES!</h1>
-        <p className="mt-1 text-sm text-ink-mute">MES 데이터 조회 시스템</p>
+      <header className="flex items-center gap-3 px-6 pt-8 pb-4">
+        <Image src="/icon.svg" alt="" width={52} height={52} unoptimized />
+        <div>
+          <h1 className="text-[28px] leading-[1.14] font-medium tracking-[-0.63px]">Ask MES!</h1>
+          <p className="mt-1 text-sm text-ink-mute">MES 데이터 조회 시스템</p>
+        </div>
       </header>
 
       <main className="flex-1 space-y-4 overflow-y-auto px-6 py-4">

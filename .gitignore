@@ -6,26 +6,23 @@ __pycache__/
 *.pyd
 .Python
 
-# 환경변수 (API 키, URL 포함 — 절대 업로드 금지)
+# 환경변수 (API 키, 비밀번호 포함, 업로드 금지)
 .env
 
-# ChromaDB (자동 재생성됨)
+# 벡터 검색 인덱스 (실행 시 자동 생성)
 vector_index/
-# 이름 변경(a83546e) 전의 인덱스 경로. 옛 기본값으로 도는 코드가 있으면 다시 생긴다.
-chroma_db/
-
 
 # 기타
 .DS_Store
 Thumbs.db
 *.log
 
-# 특허·논문 자료, 시연 영상 (용량 크고 비공개)
+# 특허 및 논문 자료, 시연 영상 (비공개)
 docs/
 
 # 벤치마크 실행 결과 (재생성 가능)
 backend/eval/results/
 
-# 실제 DB 값 조사 결과 (실제 업무 정보 포함, 로컬 참고용)
+# 실제 DB 값 조사 결과 (실제 업무 정보 포함)
 demo-db/value_profile.md
 

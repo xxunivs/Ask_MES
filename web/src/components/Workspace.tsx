@@ -27,10 +27,6 @@ export default function Workspace() {
 
   return (
     <div className="flex h-screen flex-col bg-canvas-soft">
-      <nav className="flex items-center bg-primary px-6 py-3 text-white">
-        <span className="text-base font-medium tracking-tight">NeuroFactory</span>
-      </nav>
-
       <div ref={areaRef} className={`flex min-h-0 flex-1 ${dragging ? "cursor-col-resize select-none" : ""}`}>
         <section className="min-h-0 min-w-0 flex-1">
           <DataBrowser />

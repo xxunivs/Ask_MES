@@ -89,7 +89,7 @@ async def main_async(dry_run: bool) -> int:
 
     path = save_code_values(column_values)
     print(f"\n저장 완료: {path} ({len(column_values)} 컬럼, errors={errors})")
-    print("ChromaDB 반영: chroma_db 삭제 후 서버 재시작 또는 mes_schema.json touch")
+    print("ChromaDB 반영: vector_index 삭제 후 서버 재시작 또는 mes_schema.json touch")
     return 0 if errors == 0 else 2
 
 
