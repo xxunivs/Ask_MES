@@ -3,6 +3,7 @@
 @theme {
   --color-primary: #1b1938;
   --color-primary-deep: #0e0c1f;
+  --color-primary-light: #2e2b55;
   --color-violet-soft: #c9b4fa;
 
   --color-canvas: #ffffff;
@@ -22,6 +23,10 @@
   --radius-lg: 12px;
   --radius-xl: 16px;
 
+  --color-control-line: #cfd3d9;
+
+  --color-mes-ink: #1f2124;
+  --color-mes-sub: #5c6168;
   --color-frame-line: #55595f;
   --color-ribbon: #e3e5e9;
   --color-panel: #d4d7dc;

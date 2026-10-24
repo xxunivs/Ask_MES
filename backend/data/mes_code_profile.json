@@ -1,5 +1,5 @@
 {
-  "_comment": "DISTINCT 수집 대상 컬럼. scripts/collect_code_values.py 가 MES API로 조회 후 mes_code_values.json 갱신",
+  "_comment": "코드값 수집 대상 컬럼 (scripts/collect_code_values.py)",
   "columns": [
     {"table": "CIM_LOT", "column": "ISHOLD", "label": "홀드 여부"},
     {"table": "CIM_LOT", "column": "ISREWORK", "label": "재작업 여부"},

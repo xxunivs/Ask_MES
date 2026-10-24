@@ -4,6 +4,7 @@
   python eval/run_benchmark.py --preset B1 --execute --ids Q001,Q002
   python eval/run_benchmark.py --gold-only --execute
 """
+
 from __future__ import annotations
 
 import argparse
@@ -18,18 +19,28 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
+from app.execution.sql_executor import execute_sql  # noqa: E402
 from app.pipeline import run_pipeline  # noqa: E402
 from app.retrieval.retriever import init_chroma  # noqa: E402
-from app.execution.sql_executor import execute_sql  # noqa: E402
 
 DEFAULT_GOLD = ROOT / "data" / "benchmark" / "mes_nl2sql_gold_v3.jsonl"
 RESULTS_DIR = Path(__file__).resolve().parent / "results"
 FIELDNAMES = [
-    "id", "preset", "question", "difficulty", "requires_join",
-    "gold_sql", "pred_sql", "description",
-    "valid_sql", "exec_ok", "gold_exec_ok",
-    "pred_row_count", "gold_row_count",
-    "db_error", "gold_db_error", "llm_error",
+    "id",
+    "preset",
+    "question",
+    "difficulty",
+    "requires_join",
+    "gold_sql",
+    "pred_sql",
+    "valid_sql",
+    "exec_ok",
+    "gold_exec_ok",
+    "pred_row_count",
+    "gold_row_count",
+    "db_error",
+    "gold_db_error",
+    "llm_error",
 ]
 
 
@@ -45,13 +56,25 @@ async def run_sql(sql: str, limit: int) -> tuple[bool, str, int]:
         return False, str(e), 0
 
 
-async def process_item(item: dict, preset: str, *, gold_only: bool, execute: bool, limit: int, top_k: int | None) -> dict:
+async def process_item(
+    item: dict, preset: str, *, gold_only: bool, execute: bool, limit: int, top_k: int | None
+) -> dict:
     row = {
-        "id": item["id"], "preset": "GOLD" if gold_only else preset, "question": item["question"],
-        "difficulty": item.get("difficulty", ""), "requires_join": item.get("requires_join", ""),
-        "gold_sql": item.get("gold_sql", ""), "pred_sql": "", "description": "",
-        "valid_sql": False, "exec_ok": False, "gold_exec_ok": False,
-        "pred_row_count": "", "gold_row_count": "", "db_error": "", "gold_db_error": "", "llm_error": "",
+        "id": item["id"],
+        "preset": "GOLD" if gold_only else preset,
+        "question": item["question"],
+        "difficulty": item.get("difficulty", ""),
+        "requires_join": item.get("requires_join", ""),
+        "gold_sql": item.get("gold_sql", ""),
+        "pred_sql": "",
+        "valid_sql": False,
+        "exec_ok": False,
+        "gold_exec_ok": False,
+        "pred_row_count": "",
+        "gold_row_count": "",
+        "db_error": "",
+        "gold_db_error": "",
+        "llm_error": "",
     }
 
     if execute and row["gold_sql"]:
@@ -81,7 +104,6 @@ async def main_async(args: argparse.Namespace) -> int:
         items = [it for it in items if it["id"] in allow]
 
     if not args.gold_only:
-        print("[Benchmark] ChromaDB / 온톨로지 / FK 초기화...")
         init_chroma()
 
     preset = args.preset.upper()
@@ -91,9 +113,16 @@ async def main_async(args: argparse.Namespace) -> int:
     rows = []
     for i, item in enumerate(items, 1):
         print(f"  [{i}/{len(items)}] {item['id']} {item['question'][:40]}...", flush=True)
-        rows.append(await process_item(
-            item, preset, gold_only=args.gold_only, execute=args.execute, limit=args.limit, top_k=args.top_k,
-        ))
+        rows.append(
+            await process_item(
+                item,
+                preset,
+                gold_only=args.gold_only,
+                execute=args.execute,
+                limit=args.limit,
+                top_k=args.top_k,
+            )
+        )
 
     with out_path.open("w", newline="", encoding="utf-8-sig") as f:
         w = csv.DictWriter(f, fieldnames=FIELDNAMES, extrasaction="ignore")
@@ -104,23 +133,28 @@ async def main_async(args: argparse.Namespace) -> int:
     latest.unlink(missing_ok=True)
     latest.symlink_to(out_path.name)
 
-    print(f"\n[Benchmark] 완료 → {out_path}")
+    print(f"\n결과: {out_path}")
     if not args.gold_only:
-        print(f"  점수 집계: python eval/score.py {out_path} --gold {args.gold}")
+        print(f"채점: python eval/score.py {out_path}")
     return 0
 
 
 def main():
-    parser = argparse.ArgumentParser(description="MES NL→SQL benchmark runner")
-    parser.add_argument("--preset", default="FULL", type=str.upper, choices=["B0", "B1", "B2", "B3", "FULL"],
-                        help="검색 구성 (ablation)")
+    parser = argparse.ArgumentParser(description="200문항 벤치마크 실행")
+    parser.add_argument(
+        "--preset",
+        default="FULL",
+        type=str.upper,
+        choices=["B0", "B1", "B2", "B3", "FULL"],
+        help="검색 구성 (ablation)",
+    )
     parser.add_argument("--gold", type=Path, default=DEFAULT_GOLD, help="정답 질문 세트 JSONL")
     parser.add_argument("--ids", default="", help="쉼표로 구분한 질문 ID")
     parser.add_argument("--execute", action="store_true", help="생성 SQL 과 정답 SQL 을 DB 에서 실행")
     parser.add_argument("--gold-only", action="store_true", help="정답 SQL 실행만 확인 (LLM 미사용)")
     parser.add_argument("--limit", type=int, default=100, help="결과 행 수 상한")
     parser.add_argument("--top-k", type=int, default=None, help="벡터 검색 top-k")
-    exit(asyncio.run(main_async(parser.parse_args())))
+    sys.exit(asyncio.run(main_async(parser.parse_args())))
 
 
 if __name__ == "__main__":

@@ -3,29 +3,22 @@ from __future__ import annotations
 import asyncio
 
 import httpx
-from app.config import (
-    DEEPINFRA_API_KEY,
-    DEEPINFRA_URL,
-    LLM_PROVIDER,
-    LLM_MODEL,
-    OLLAMA_URL,
-    OLLAMA_MODEL,
-    VLLM_API_URL,
-    VLLM_API_KEY,
-)
+
+from app.config import DEEPINFRA_API_KEY, DEEPINFRA_URL, LLM_MODEL, LLM_PROVIDER, OLLAMA_URL, VLLM_API_KEY, VLLM_API_URL
 
 _OPENAI_COMPATIBLE = {"vllm", "openai", "deepinfra"}
+_TIMEOUT = 180.0
 
 _client: httpx.AsyncClient | None = None
 _client_loop: asyncio.AbstractEventLoop | None = None
 
 
+# 연결 재사용 (이벤트 루프가 바뀌면 새로 생성)
 def _shared_client() -> httpx.AsyncClient:
-    # 요청마다 연결을 새로 맺으면 질문당 수백 ms 지연, 이벤트 루프가 바뀌면 새로 생성
     global _client, _client_loop
     loop = asyncio.get_running_loop()
     if _client is None or _client_loop is not loop:
-        _client, _client_loop = httpx.AsyncClient(timeout=180.0), loop
+        _client, _client_loop = httpx.AsyncClient(timeout=_TIMEOUT), loop
     return _client
 
 
@@ -35,53 +28,31 @@ def _openai_endpoint() -> tuple[str, str]:
     return VLLM_API_URL.rstrip("/"), VLLM_API_KEY
 
 
-async def llm_generate(
-    prompt: str,
-    temperature: float = 0.1,
-    max_tokens: int = 512,
-    seed: int | None = 0,
-) -> str:
-    if LLM_PROVIDER in _OPENAI_COMPATIBLE:
-        return await _vllm_generate(prompt, temperature, max_tokens, seed)
-    return await _ollama_generate(prompt, temperature, max_tokens, seed)
+async def llm_generate(prompt: str, temperature: float = 0.1, max_tokens: int = 512, seed: int | None = 0) -> str:
+    try:
+        if LLM_PROVIDER in _OPENAI_COMPATIBLE:
+            return await _openai_generate(prompt, temperature, max_tokens, seed)
+        return await _ollama_generate(prompt, temperature, max_tokens, seed)
+    except httpx.ReadTimeout as e:
+        raise RuntimeError(f"LLM 응답 시간 초과 ({_TIMEOUT:.0f}초)") from e
+    except httpx.ConnectError as e:
+        raise RuntimeError(f"LLM 서버 연결 실패 ({LLM_PROVIDER})") from e
+    except httpx.HTTPStatusError as e:
+        raise RuntimeError(f"LLM HTTP 오류 {e.response.status_code}: {e.response.text[:200]}") from e
 
 
-async def _ollama_generate(
-    prompt: str, temperature: float, max_tokens: int, seed: int | None = 0
-) -> str:
-    options = {
-        "temperature": temperature,
-        "num_predict": max_tokens,
-        "num_ctx": 8192,
-    }
+async def _ollama_generate(prompt: str, temperature: float, max_tokens: int, seed: int | None) -> str:
+    options = {"temperature": temperature, "num_predict": max_tokens, "num_ctx": 8192}
     if seed is not None:
         options["seed"] = seed
-    payload = {
-        "model": OLLAMA_MODEL,
-        "prompt": prompt,
-        "stream": False,
-        # 응답 지연 방지용 Qwen thinking 모드 비활성화
-        "think": False,
-        "options": options,
-    }
-    try:
-        resp = await _shared_client().post(f"{OLLAMA_URL}/api/generate", json=payload)
-        resp.raise_for_status()
-        data = resp.json()
-        if "response" not in data:
-            raise ValueError(f"Ollama 응답에 'response' 키 없음: {data}")
-        return data["response"].strip()
-    except httpx.ReadTimeout:
-        raise RuntimeError("Ollama 응답 타임아웃 (180초 초과) — 모델 로딩 중이거나 과부하 상태")
-    except httpx.ConnectError:
-        raise RuntimeError(f"Ollama 연결 실패 — {OLLAMA_URL} 서버 확인 필요")
-    except httpx.HTTPStatusError as e:
-        raise RuntimeError(f"Ollama HTTP 오류: {e.response.status_code} — {e.response.text[:200]}")
+    # 응답 지연 방지: Qwen thinking 모드 끔
+    payload = {"model": LLM_MODEL, "prompt": prompt, "stream": False, "think": False, "options": options}
+    resp = await _shared_client().post(f"{OLLAMA_URL}/api/generate", json=payload)
+    resp.raise_for_status()
+    return resp.json()["response"].strip()
 
 
-async def _vllm_generate(
-    prompt: str, temperature: float, max_tokens: int, seed: int | None = 0
-) -> str:
+async def _openai_generate(prompt: str, temperature: float, max_tokens: int, seed: int | None) -> str:
     payload = {
         "model": LLM_MODEL,
         "messages": [{"role": "user", "content": prompt}],
@@ -89,25 +60,16 @@ async def _vllm_generate(
         "max_tokens": max_tokens,
     }
     if LLM_PROVIDER in {"vllm", "deepinfra"}:
-        # 응답 지연 방지용 Qwen thinking 모드 비활성화 (vLLM 방식)
+        # 응답 지연 방지: Qwen thinking 모드 끔
         payload["chat_template_kwargs"] = {"enable_thinking": False}
         if seed is not None:
             payload["seed"] = seed
     url, key = _openai_endpoint()
-    headers = {"Authorization": f"Bearer {key}"}
-    try:
-        resp = await _shared_client().post(f"{url}/chat/completions", json=payload, headers=headers)
-        resp.raise_for_status()
-        data = resp.json()
-        return data["choices"][0]["message"]["content"].strip()
-    except httpx.ReadTimeout:
-        raise RuntimeError("vLLM 응답 타임아웃 (180초 초과) — 모델 로딩 중이거나 과부하 상태")
-    except httpx.ConnectError:
-        raise RuntimeError(f"vLLM 연결 실패 — {url} 서버 확인 필요")
-    except httpx.HTTPStatusError as e:
-        raise RuntimeError(f"vLLM HTTP 오류: {e.response.status_code} — {e.response.text[:200]}")
-    except (KeyError, IndexError) as e:
-        raise RuntimeError(f"vLLM 응답 파싱 실패: {e} — {data}")
+    resp = await _shared_client().post(
+        f"{url}/chat/completions", json=payload, headers={"Authorization": f"Bearer {key}"}
+    )
+    resp.raise_for_status()
+    return resp.json()["choices"][0]["message"]["content"].strip()
 
 
 async def check_llm() -> bool:
@@ -116,8 +78,8 @@ async def check_llm() -> bool:
             if LLM_PROVIDER in _OPENAI_COMPATIBLE:
                 url, key = _openai_endpoint()
                 resp = await client.get(f"{url}/models", headers={"Authorization": f"Bearer {key}"})
-                return resp.status_code == 200
-            resp = await client.get(f"{OLLAMA_URL}/api/tags")
-            return resp.status_code == 200
-    except Exception:
+            else:
+                resp = await client.get(f"{OLLAMA_URL}/api/tags")
+        return resp.status_code == 200
+    except httpx.HTTPError:
         return False

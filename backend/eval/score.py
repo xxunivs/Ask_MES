@@ -1,8 +1,9 @@
 """
-실행 방법:
-  python eval/score.py eval/results/run_FULL_20260602.csv
-  python eval/score.py eval/results/run_FULL_20260602.csv --by difficulty
+실행 방법 (backend/ 에서):
+  python eval/score.py                                   # 마지막 결과
+  python eval/score.py eval/results/run_FULL_<시각>.csv --by difficulty
 """
+
 from __future__ import annotations
 
 import argparse
@@ -113,83 +114,26 @@ def group_aggregate(scored: list[dict], key: str) -> dict[str, dict]:
     return {k: aggregate(v) for k, v in sorted(groups.items())}
 
 
-def resolve_results_path(target: Path) -> Path:
-    root = Path(__file__).resolve().parents[1]
-    results_dir = Path(__file__).resolve().parent / "results"
-
-    candidates: list[Path] = []
-    if not target.is_absolute():
-        candidates.append(root / target)
-        candidates.append(results_dir / target.name)
-    candidates.append(target)
-
-    for p in candidates:
-        if p.is_file():
-            return p
-        if p.is_dir():
-            full = sorted(p.glob("run_FULL_*.csv"), key=lambda x: x.stat().st_mtime, reverse=True)
-            if full:
-                return full[0]
-            any_csv = sorted(p.glob("run_*.csv"), key=lambda x: x.stat().st_mtime, reverse=True)
-            if any_csv:
-                return any_csv[0]
-
-    for p in candidates:
-        parent = p.parent if p.parent.exists() else results_dir
-        pattern = p.name
-        matched = sorted(parent.glob(pattern), key=lambda x: x.stat().st_mtime, reverse=True)
-        if matched:
-            return matched[0]
-
-    latest = results_dir / "latest.csv"
-    if latest.is_file():
-        return latest
-
-    hint = "\n  ".join(
-        str(x.relative_to(root)) if x.is_relative_to(root) else str(x)
-        for x in sorted(results_dir.glob("**/*.csv"))[:12]
-    )
-    raise FileNotFoundError(
-        f"결과 CSV를 찾을 수 없습니다: {target}\n"
-        f"eval/results 아래 예시:\n  {hint}\n"
-        f"예: python eval/score.py eval/results/experiment_*/run_FULL_*.csv --by difficulty"
-    )
-
-
 def main():
-    parser = argparse.ArgumentParser(description="Score benchmark CSV")
-    parser.add_argument(
-        "results_csv",
-        type=Path,
-        nargs="?",
-        default=Path("eval/results/latest.csv"),
-        help="CSV 파일, experiment 폴더, 또는 glob (기본: eval/results/latest.csv)",
-    )
-    parser.add_argument(
-        "--gold",
-        type=Path,
-        default=Path("data/benchmark/mes_nl2sql_gold_v3.jsonl"),
-    )
+    root = Path(__file__).resolve().parents[1]
+    parser = argparse.ArgumentParser(description="벤치마크 결과 채점")
+    parser.add_argument("results_csv", type=Path, nargs="?", default=root / "eval/results/latest.csv")
+    parser.add_argument("--gold", type=Path, default=root / "data/benchmark/mes_nl2sql_gold_v3.jsonl")
     parser.add_argument("--by", choices=["difficulty", "requires_join"], default=None)
     args = parser.parse_args()
 
-    root = Path(__file__).resolve().parents[1]
-    gold_path = args.gold if args.gold.is_absolute() else root / args.gold
-    csv_path = resolve_results_path(args.results_csv)
-
-    gold = load_gold(gold_path)
-    rows = list(csv.DictReader(csv_path.open(encoding="utf-8-sig")))
+    gold = load_gold(args.gold)
+    rows = list(csv.DictReader(args.results_csv.open(encoding="utf-8-sig")))
     scored = [score_row(r, gold) for r in rows]
-    summary = aggregate(scored)
 
-    print(f"\n=== Summary: {csv_path} ===")
-    for k, v in summary.items():
+    print(f"\n=== {args.results_csv} ===")
+    for k, v in aggregate(scored).items():
         print(f"  {k}: {v}")
 
     if args.by:
-        print(f"\n=== By {args.by} ===")
+        print(f"\n=== {args.by} 별 ===")
         for group, stats in group_aggregate(scored, args.by).items():
-            print(f"  [{group or '(empty)'}] EX_exec={stats['EX_exec_pct']}%  VS={stats['VS_pct']}%  n={stats['n']}")
+            print(f"  [{group or '(없음)'}] EX_exec={stats['EX_exec_pct']}%  VS={stats['VS_pct']}%  n={stats['n']}")
 
 
 if __name__ == "__main__":

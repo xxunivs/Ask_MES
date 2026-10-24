@@ -25,5 +25,5 @@ docs/
 backend/eval/results/
 
 # 실제 DB 값 조사 결과 (실제 업무 정보 포함)
-demo-db/value_profile.md
+synthetic_data/value_profile.md
 

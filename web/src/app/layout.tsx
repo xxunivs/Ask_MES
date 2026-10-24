@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 
-// Spoqa Han Sans Neo 글꼴 (SIL OFL 라이선스, src/fonts/LICENSE.txt)
+// Spoqa Han Sans Neo (SIL OFL, src/fonts/LICENSE.txt)
 const spoqa = localFont({
   variable: "--font-spoqa",
   src: [
@@ -13,8 +13,8 @@ const spoqa = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "NeuroFactory",
-  description: "자연어 질문으로 MES 데이터를 조회하는 NL2SQL 시스템",
+  title: "Ask MES!",
+  description: "자연어 질문을 SQL문으로 바꿔 MES 데이터를 조회하는 NL2SQL 시스템",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

@@ -1,39 +1,29 @@
-"""
-웹 API(/chat/nl-to-sql)와 벤치마크(eval/run_benchmark.py) 공용
+"""질문 -> SQL -> 결과 (웹 API, 벤치마크 공용)
 
-  1. 관련 테이블 찾기   개념 사전 + 벡터 검색        retrieval/
-  2. JOIN 경로 계산     FK 그래프 최단 경로          retrieval/
-  3. 실제 값 확인       테이블별 샘플 조회           sampling/
-  4. SQL 생성           프롬프트 조립 + LLM          generation/
-  5. 자동 교정          확정적인 문법 오류 수정      autofix/
-  6. 검증               스키마, 코드값, 안전성       validation/
-                        실패 시 오류 포함 1회 재생성
-  7. 실행               DB 실행                      execution/
-                        실패 시 DB 오류 포함 1회 재생성
+1. 관련 테이블 찾기   개념 사전 + 벡터 검색          retrieval/
+2. JOIN 경로 계산     FK 그래프 최단 경로            retrieval/
+3. 실제 값 확인       찾은 컬럼의 값 분포, 샘플 행   sampling/
+4. SQL 생성           프롬프트 + LLM                 generation/
+5. 자동 교정          확정적인 문법 오류 수정        autofix/
+6. 검증               스키마, 코드값, 안전성         validation/
+7. 실행               DB 실행                        execution/
+검증이나 실행에서 실패하면 오류를 넣어 1회씩 재생성
 """
+
 from __future__ import annotations
 
 import re
 from dataclasses import dataclass, field
-from typing import Optional
 
-from app.sampling.live_sample import build_live_db_context
-from app.generation.llm import llm_generate
-from app.generation.prompts import (
-    NL_TO_SQL_PROMPT,
-    build_db_correction_prompt,
-    build_schema_correction_prompt,
-    parse_llm_json,
-    static_prompt_hints,
-)
-from app.validation.query_safety import validate_query
-from app.retrieval.retriever import RetrievalConfig, retrieve_context
 from app.autofix.sql_autofix import autofix_sql
 from app.execution.sql_executor import execute_sql
+from app.generation.llm import llm_generate
+from app.generation.prompts import PreviousAttempt, build_prompt, parse_llm_json
+from app.retrieval.retriever import RetrievalConfig, retrieve_context
+from app.sampling.live_sample import build_live_db_context
+from app.validation.query_safety import validate_query
 from app.validation.sql_validator import validate_sql
 
-SCHEMA_RETRY_MAX = 1
-DB_RETRY_MAX = 1
 GENERATE_MAX_TOKENS = 512
 
 
@@ -44,7 +34,7 @@ class PipelineResult:
     schema_valid: bool = False
     schema_error: str = ""
     executed: bool = False
-    data: Optional[dict] = None
+    data: dict | None = None
     db_error: str = ""
     trace: list[dict[str, str]] = field(default_factory=list)
 
@@ -56,7 +46,7 @@ async def run_pipeline(
     question: str,
     *,
     preset: str = "FULL",
-    top_k: Optional[int] = None,
+    top_k: int | None = None,
     limit: int = 100,
     execute: bool = True,
 ) -> PipelineResult:
@@ -69,56 +59,50 @@ async def run_pipeline(
     try:
         db_ctx = await build_live_db_context(schema_ctx)
     except Exception as e:
-        db_ctx = "(DB 샘플 조회 실패)"
-        print(f"[DBContext] 오류: {e}")
-    result.log("3. 실제 값 확인", db_ctx or "(샘플 없음)")
+        db_ctx = ""
+        result.log("3. 실제 값 확인", f"조회 실패: {e}")
+    else:
+        result.log("3. 실제 값 확인", db_ctx or "(값 없음)")
 
-    prompt = NL_TO_SQL_PROMPT.format(schema=schema_ctx, db_context=db_ctx, question=question, **static_prompt_hints())
-    for attempt in range(SCHEMA_RETRY_MAX + 1):
-        tag = f" (시도 {attempt + 1})"
-        result.log("4. LLM 프롬프트" + tag, prompt)
-        sql = await _generate_sql(prompt, result, tag)
-        sql = _autofix(sql, result, tag)
-        vr = validate_sql(sql, question=question)
-        result.sql, result.schema_valid, result.schema_error = sql, vr.ok, vr.error_message()
-        if vr.ok:
-            safety = validate_query(sql)
-            if safety.ok:
-                result.log("6. 검증" + tag, "통과")
-                break
-            result.schema_valid, result.schema_error = False, f"[SafetyLayer] {safety.error_message()}"
-        result.log("6. 검증" + tag, result.schema_error)
-        if attempt < SCHEMA_RETRY_MAX:
-            prompt = build_schema_correction_prompt(
-                question, schema_ctx, sql, vr, db_context=db_ctx, error=result.schema_error
-            )
+    previous: PreviousAttempt | None = None
+    for tag in (" (시도 1)", " (시도 2)"):
+        sql = await _generate(build_prompt(question, schema_ctx, db_ctx, previous), result, tag)
+        error = _check(sql, question)
+        result.sql, result.schema_valid, result.schema_error = sql, not error, error
+        result.log("6. 검증" + tag, error or "통과")
+        if not error:
+            break
+        previous = PreviousAttempt(sql, error, "validation")
 
     if not execute or not result.schema_valid:
         return result
 
     await _execute(result, limit, "7. 실행")
-    for _ in range(DB_RETRY_MAX):
-        if result.executed:
-            break
-        prompt = build_db_correction_prompt(question, schema_ctx, result.sql, result.db_error, db_context=db_ctx)
-        retry_sql = _autofix(await _generate_sql(prompt, result, " (DB 오류 교정)"), result, " (DB 오류 교정)")
-        if not retry_sql or not validate_sql(retry_sql, question=question).ok or not validate_query(retry_sql).ok:
-            break
-        result.sql = retry_sql
-        await _execute(result, limit, "7. 실행 (DB 오류 교정)")
+    if not result.executed:
+        tag = " (DB 오류 교정)"
+        previous = PreviousAttempt(result.sql, result.db_error, "db")
+        retry_sql = await _generate(build_prompt(question, schema_ctx, db_ctx, previous), result, tag)
+        if retry_sql and not _check(retry_sql, question):
+            result.sql = retry_sql
+            await _execute(result, limit, "7. 실행" + tag)
     return result
 
 
-async def _generate_sql(prompt: str, result: PipelineResult, tag: str) -> str:
+async def _generate(prompt: str, result: PipelineResult, tag: str) -> str:
+    result.log("4. LLM 프롬프트" + tag, prompt)
     raw = await llm_generate(prompt, temperature=0.05, max_tokens=GENERATE_MAX_TOKENS)
     result.log("4. LLM 응답" + tag, raw)
-    return (parse_llm_json(raw).get("sql") or "").strip()
+    sql, fixes = autofix_sql((parse_llm_json(raw).get("sql") or "").strip())
+    result.log("5. 자동 교정" + tag, "\n".join(fixes) or "교정 없음")
+    return sql
 
 
-def _autofix(sql: str, result: PipelineResult, tag: str) -> str:
-    fixed, fixes = autofix_sql(sql)
-    result.log("5. 자동 교정" + tag, "\n".join(fixes) if fixes else "교정 없음")
-    return fixed
+def _check(sql: str, question: str) -> str:
+    vr = validate_sql(sql, question=question)
+    if not vr.ok:
+        return vr.error_message()
+    safety = validate_query(sql)
+    return "" if safety.ok else f"[SafetyLayer] {safety.error_message()}"
 
 
 async def _execute(result: PipelineResult, limit: int, step: str) -> None:

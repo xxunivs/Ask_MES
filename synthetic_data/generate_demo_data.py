@@ -1,7 +1,10 @@
 """
-실행 방법 (backend/ 에서):
-  ./venv/bin/python ../demo-db/generate_demo_data.py
+real_db_profile.json 모양대로 가짜 데이터 생성 -> 데모 SQL Server
+
+실행 방법 (backend/ 에서, docker compose 로 데모 DB 를 띄운 상태):
+  ./venv/bin/python ../synthetic_data/generate_demo_data.py
 """
+
 from __future__ import annotations
 
 import json
@@ -17,31 +20,58 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "backend"))
 sys.path.insert(0, str(Path(__file__).parent))
 
+import fake_vocab as vocab  # noqa: E402
+
 from app.execution.demo_db import connect  # noqa: E402
-import vocab  # noqa: E402
 
 SEED = 42
-SPEC = json.loads((Path(__file__).parent / "column_spec.json").read_text(encoding="utf-8"))
-SCHEMA = {t["name"]: t for t in json.loads((ROOT / "backend/data/mes_schema.json").read_text(encoding="utf-8"))["tables"]}
+SPEC = json.loads((Path(__file__).parent / "real_db_profile.json").read_text(encoding="utf-8"))
+SCHEMA = {
+    t["name"]: t for t in json.loads((ROOT / "backend/data/mes_schema.json").read_text(encoding="utf-8"))["tables"]
+}
 SITE_ID = "1000"
 DATE_START = datetime(2024, 10, 1)
 DATE_END = datetime(2026, 10, 20)
 BATCH = 500
 
-# 부모 표가 먼저 오는 순서 유지 필요
+# 부모 테이블 먼저
 ROW_COUNTS = {
-    "CIM_CODECLASS": 20, "CIM_CODE": 200,
-    "CIM_FACILITY": 20, "CIM_FACILITYMAP": 20,
-    "CIM_EQUIPMENTCLASS": 12, "CIM_EQUIPMENT": 200,
-    "CIM_PRODUCTCLASS": 10, "CIM_PRODUCTDEFINITION": 100,
-    "CIM_PROCESSDEFINITION": 10, "CIM_PROCESSSEGMENT": 14, "CIM_PROCESSNODE": 60, "CIM_PROCESSPATH": 60,
-    "CIM_PRODUCTPROCESSREL": 100, "CIM_PROCESSSEGMENTEQUIPMENTREL": 100,
-    "CIM_MATERIALCLASS": 10, "CIM_MATERIALDEFINITION": 100, "CIM_MATERIALLOT": 1000,
-    "CIM_DEFECTCLASS": 10, "CIM_DEFECT": 20,
-    "CIM_PRODUCTORDER": 1000, "CIM_LOT": 5000, "CIM_LOTHIST": 15000,
-    "CIM_BATCH": 200, "CIM_LOTBATCHREL": 1000, "CIM_LOTDEFECT": 1500, "CIM_LOTMATERIALLOTREL": 3000,
+    "CIM_CODECLASS": 20,
+    "CIM_CODE": 200,
+    "CIM_FACILITY": 20,
+    "CIM_FACILITYMAP": 20,
+    "CIM_EQUIPMENTCLASS": 12,
+    "CIM_EQUIPMENT": 200,
+    "CIM_PRODUCTCLASS": 10,
+    "CIM_PRODUCTDEFINITION": 100,
+    "CIM_PROCESSDEFINITION": 10,
+    "CIM_PROCESSSEGMENT": 14,
+    "CIM_PROCESSNODE": 60,
+    "CIM_PROCESSPATH": 60,
+    "CIM_PRODUCTPROCESSREL": 100,
+    "CIM_PROCESSSEGMENTEQUIPMENTREL": 100,
+    "CIM_MATERIALCLASS": 10,
+    "CIM_MATERIALDEFINITION": 100,
+    "CIM_MATERIALLOT": 1000,
+    "CIM_DEFECTCLASS": 10,
+    "CIM_DEFECT": 20,
+    "CIM_PRODUCTORDER": 1000,
+    "CIM_LOT": 5000,
+    "CIM_LOTHIST": 15000,
+    "CIM_BATCH": 200,
+    "CIM_LOTBATCHREL": 1000,
+    "CIM_LOTDEFECT": 1500,
+    "CIM_LOTMATERIALLOTREL": 3000,
 }
-LOT_TABLES = {"CIM_LOT", "CIM_LOTHIST", "CIM_LOTDEFECT", "CIM_LOTBATCHREL", "CIM_LOTMATERIALLOTREL", "CIM_MATERIALLOT", "CIM_BATCH"}
+LOT_TABLES = {
+    "CIM_LOT",
+    "CIM_LOTHIST",
+    "CIM_LOTDEFECT",
+    "CIM_LOTBATCHREL",
+    "CIM_LOTMATERIALLOTREL",
+    "CIM_MATERIALLOT",
+    "CIM_BATCH",
+}
 
 DEMO_FILL = {
     ("CIM_MATERIALDEFINITION", "SAFETY_QTY"): (0.6, "number"),
@@ -50,7 +80,20 @@ DEMO_FILL = {
     ("CIM_MATERIALLOT", "RECEIVEDTIME"): (0.9, "date"),
 }
 YN_FLAG = re.compile(r"^IS|FLAG$|YN$")
-REF_PREFIXES = ("PREV", "NEXT", "ROOTPARENT", "PARENT", "SOURCE", "RESERVED", "START", "ORIGINAL", "MERGE", "CHILD", "REPLACE", "SUB")
+REF_PREFIXES = (
+    "PREV",
+    "NEXT",
+    "ROOTPARENT",
+    "PARENT",
+    "SOURCE",
+    "RESERVED",
+    "START",
+    "ORIGINAL",
+    "MERGE",
+    "CHILD",
+    "REPLACE",
+    "SUB",
+)
 
 EXTRA_REFS = {
     ("CIM_PROCESSPATH", "NEXTPROCESSNODEID"): "CIM_PROCESSNODE",
@@ -74,10 +117,17 @@ def load_columns(cur) -> dict[str, list[dict]]:
         ORDER BY c.TABLE_NAME, c.ORDINAL_POSITION""")
     tables: dict[str, list[dict]] = {}
     for t, name, dtype, length, prec, scale, nullable, is_pk in cur.fetchall():
-        tables.setdefault(t, []).append({
-            "name": name, "type": dtype, "length": length, "precision": prec, "scale": scale,
-            "nullable": nullable == "YES", "pk": bool(is_pk),
-        })
+        tables.setdefault(t, []).append(
+            {
+                "name": name,
+                "type": dtype,
+                "length": length,
+                "precision": prec,
+                "scale": scale,
+                "nullable": nullable == "YES",
+                "pk": bool(is_pk),
+            }
+        )
     return tables
 
 
@@ -91,8 +141,8 @@ def owner_table(table: str, column: str) -> str | None:
         return None
     base = column
     for prefix in REF_PREFIXES:
-        if base.startswith(prefix) and "CIM_" + base[len(prefix):-2] in ROW_COUNTS:
-            base = base[len(prefix):]
+        if base.startswith(prefix) and "CIM_" + base[len(prefix) : -2] in ROW_COUNTS:
+            base = base[len(prefix) :]
             break
     candidate = "CIM_" + base[:-2]
     if candidate in ROW_COUNTS and (candidate != table or base != column):
@@ -141,7 +191,7 @@ def fit(value, col: dict):
     t = col["type"]
     if is_text(col):
         s = str(value)
-        # varchar 는 한글 한 글자당 2바이트 (Korean_Wansung)
+        # varchar: 한글 한 글자 2바이트 (Korean_Wansung)
         limit = col["length"] if col["length"] and col["length"] > 0 else None
         if limit and t in ("varchar", "char"):
             while len(s.encode("cp949", errors="replace")) > limit:
@@ -185,7 +235,7 @@ def generic_value(table: str, col: dict, spec: dict, n: int, base: datetime):
     if col["type"] in ("datetime2", "datetime") or kind == "date":
         return random_date(base, name)
     if kind == "code":
-        values, weights = zip(*spec["values"].items())
+        values, weights = list(spec["values"]), list(spec["values"].values())
         return rng.choices(values, weights)[0]
     if kind == "number":
         low, high = spec["low"], max(spec["high"], spec["low"])
@@ -219,6 +269,7 @@ def apply_domain_rules(table: str, row: dict, n: int) -> str | None:
         return rng.choice([3, 4, 5, 6, 8, 10, 12, 16, 20])
 
     label = None
+
     def parent_row(parent: str, key: str) -> dict:
         return rows_by_id.get(parent, {}).get(row.get(key), {})
 
@@ -263,7 +314,9 @@ def apply_domain_rules(table: str, row: dict, n: int) -> str | None:
     elif table == "CIM_PRODUCTDEFINITION":
         row["PRODUCTCLASSID"] = rng.choices(["FERT", "HALB"], [7, 3])[0]
         d = size()
-        label = rng.choice(vocab.PRODUCT_SHAPES).format(f=rng.choice([2, 3, 4]), d=f"{d}.0", r=d / 2, m=rng.choice([6, 8, 10, 12]))
+        label = rng.choice(vocab.PRODUCT_SHAPES).format(
+            f=rng.choice([2, 3, 4]), d=f"{d}.0", r=d / 2, m=rng.choice([6, 8, 10, 12])
+        )
         row["PRODUCTDEFINITIONNAME"] = label
     elif table == "CIM_MATERIALCLASS":
         label = pick(vocab.MATERIAL_CLASSES)
@@ -355,7 +408,7 @@ def insert(cur, conn, table: str, columns: list[dict], rows: list[dict]) -> None
     cols = [c["name"] for c in columns]
     sql = f"INSERT INTO [{table}] ({', '.join('[' + n + ']' for n in cols)}) VALUES ({', '.join(['%s'] * len(cols))})"
     for i in range(0, len(rows), BATCH):
-        cur.executemany(sql, [tuple(r[n] for n in cols) for r in rows[i:i + BATCH]])
+        cur.executemany(sql, [tuple(r[n] for n in cols) for r in rows[i : i + BATCH]])
         conn.commit()
 
 

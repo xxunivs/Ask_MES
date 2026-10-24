@@ -34,7 +34,7 @@ export function hasChart(data: QueryData): boolean {
   return data.rows.length > 0 && numericColumns(data).length > 0;
 }
 
-// 날짜, 항목, 값 형태의 긴 표를 항목별 열로 펼침 (대소문자만 다른 항목은 하나로)
+// 긴 표(날짜, 항목, 값) -> 항목별 열 (대소문자만 다른 항목은 합침)
 function pivot(data: QueryData, xCol: string, groupCol: string, valueCol: string) {
   const labels = new Map<string, string>();
   const keyOf = (row: Record<string, unknown>) => {
@@ -135,7 +135,7 @@ export default function AutoChart({ data }: { data: QueryData }) {
         ) : (
           <BarChart data={points} margin={{ left: 24, right: 8 }}>
             {axis}
-            {/* 막대 애니메이션 끔 (막대가 늦게 보이거나 안 보이는 현상 방지) */}
+            {/* 애니메이션 끔 (막대가 늦게 보이는 현상) */}
             {series.map((s, i) => (
               <Bar key={s} dataKey={s} fill={COLORS[i % COLORS.length]} radius={[3, 3, 0, 0]} isAnimationActive={false} />
             ))}

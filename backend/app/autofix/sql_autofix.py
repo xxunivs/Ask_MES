@@ -1,15 +1,29 @@
 from __future__ import annotations
 
 import difflib
-import json
-import os
 import re
-from functools import lru_cache
 
-# T-SQL 은 alias 가 WITH (NOLOCK) 앞에 와야 함, 프롬프트로 금지해도 모델이 반복 생성
+from app.schema import column_names
+from app.sql_text import QUALIFIED_COL_RE, extract_cim_tables, table_aliases
+from app.validation.query_safety import validate_query
+
+# T-SQL: alias 는 WITH (NOLOCK) 앞
 _RESERVED_AFTER_TABLE = (
-    "ON", "WHERE", "INNER", "LEFT", "RIGHT", "FULL", "CROSS", "OUTER",
-    "JOIN", "GROUP", "ORDER", "HAVING", "SELECT", "UNION", "AS",
+    "ON",
+    "WHERE",
+    "INNER",
+    "LEFT",
+    "RIGHT",
+    "FULL",
+    "CROSS",
+    "OUTER",
+    "JOIN",
+    "GROUP",
+    "ORDER",
+    "HAVING",
+    "SELECT",
+    "UNION",
+    "AS",
 )
 
 _ALIAS_AFTER_HINT_RE = re.compile(
@@ -27,16 +41,16 @@ _PARENS_TABLE_RE = re.compile(
     re.IGNORECASE,
 )
 
-
-# T-SQL 은 공백 포함 별칭에 대괄호나 따옴표 필요
+# T-SQL: 공백 포함 alias 는 대괄호 필요
 _SPACED_ALIAS_RE = re.compile(
     r"\bAS\s+(?!\[|N?')(?P<alias>[^\s,()\[\]']+(?:[ \t]+[^\s,()\[\]']+)+?)"
     r"(?=\s*(?:,|\bFROM\b|\bWHERE\b|\bGROUP\b|\bORDER\b|\bHAVING\b|\bJOIN\b|$))",
     re.IGNORECASE,
 )
 
-# 일부 테이블에서 DISTINCT 가 DB 오류 유발, COUNT(DISTINCT x) 는 대상 아님
+# 실제 MES API: DISTINCT 오류, COUNT(DISTINCT x) 제외
 _LEADING_DISTINCT_RE = re.compile(r"^(\s*SELECT)\s+DISTINCT\s+(?!TOP\b)", re.IGNORECASE)
+
 
 def _fix_alias_after_hint(sql: str) -> tuple[str, bool]:
     changed = False
@@ -57,40 +71,9 @@ def _fix_alias_after_hint(sql: str) -> tuple[str, bool]:
     return sql, changed
 
 
-_SCHEMA_PATH = os.path.join(os.path.dirname(__file__), "../../data/mes_schema.json")
-
-
-@lru_cache(maxsize=1)
-def _schema_columns() -> dict:
-    with open(_SCHEMA_PATH, encoding="utf-8") as f:
-        data = json.load(f)
-    tables = data.get("tables", data)
-    out: dict[str, set] = {}
-    for t in tables:
-        out[t["name"].upper()] = {c["name"].upper() for c in t.get("columns", [])}
-    return out
-
-
-_QUALIFIED_COL_RE = re.compile(r"\b([A-Za-z_][A-Za-z0-9_]*)\.([A-Za-z_][A-Za-z0-9_]*)\b")
-
-
-def _resolve_alias_map(sql: str) -> dict:
-    amap = {}
-    for m in re.finditer(
-        r"\b(?:FROM|JOIN)\s+(?P<table>CIM_[A-Za-z0-9_]+)(?:\s+(?:AS\s+)?(?P<alias>(?!WITH\b)[A-Za-z_][A-Za-z0-9_]*))?",
-        sql, re.IGNORECASE,
-    ):
-        table = m.group("table").upper()
-        amap[table] = table
-        alias = m.group("alias")
-        if alias:
-            amap[alias.upper()] = table
-    return amap
-
-
 def _fix_unknown_columns(sql: str) -> tuple[str, list]:
-    schema = _schema_columns()
-    amap = _resolve_alias_map(sql)
+    schema = column_names()
+    amap = {t: t for t in extract_cim_tables(sql)} | table_aliases(sql)
     fixed_notes = []
 
     def repl(m: re.Match) -> str:
@@ -106,15 +89,14 @@ def _fix_unknown_columns(sql: str) -> tuple[str, list]:
             (c for c in cols if c.endswith(target) or target.endswith(c)),
             key=len,
         )
-        near = contains[:1] or difflib.get_close_matches(
-            target, sorted(cols), n=1, cutoff=0.72
-        )
+        near = contains[:1] or difflib.get_close_matches(target, sorted(cols), n=1, cutoff=0.72)
         if not near:
             return m.group(0)
         fixed_notes.append(f"{qual}.{col} -> {qual}.{near[0]}")
         return f"{qual}.{near[0]}"
 
-    return _QUALIFIED_COL_RE.sub(repl, sql), fixed_notes
+    return QUALIFIED_COL_RE.sub(repl, sql), fixed_notes
+
 
 def autofix_sql(sql: str) -> tuple[str, list[str]]:
     if not sql:
@@ -142,6 +124,10 @@ def autofix_sql(sql: str) -> tuple[str, list[str]]:
     if _LEADING_DISTINCT_RE.search(sql):
         sql = _LEADING_DISTINCT_RE.sub(r"\1 TOP 1000 ", sql)
         applied.append("SELECT DISTINCT 를 SELECT TOP 1000 으로 대체")
+
+    if validate_query(sql).risks == ["full_scan"]:
+        sql = re.sub(r"^\s*SELECT\s+", "SELECT TOP 1000 ", sql, count=1, flags=re.IGNORECASE)
+        applied.append("행 수 제한 없는 조회에 TOP 1000 추가")
 
     sql, col_notes = _fix_unknown_columns(sql)
     if col_notes:

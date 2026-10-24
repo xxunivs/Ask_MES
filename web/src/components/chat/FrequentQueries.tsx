@@ -19,7 +19,7 @@ export default function FrequentQueries({
           key={q}
           onClick={() => onSelect(q)}
           disabled={disabled}
-          className="rounded-full border border-[#cfd3d9] bg-gradient-to-b from-white to-[#f1f2f4] px-4 py-2 text-sm font-semibold shadow-[0_1px_2px_rgba(0,0,0,0.10),inset_0_1px_0_#fff] hover:border-[#9aa1ab] hover:to-[#e6e8eb] active:translate-y-px active:shadow-inner disabled:opacity-40"
+          className="rounded-full border border-control-line bg-gradient-to-b from-white to-[#f1f2f4] px-4 py-2 text-sm font-semibold shadow-[0_1px_2px_rgba(0,0,0,0.10),inset_0_1px_0_#fff] hover:border-[#9aa1ab] hover:to-[#e6e8eb] active:translate-y-px active:shadow-inner disabled:opacity-40"
         >
           {q}
         </button>

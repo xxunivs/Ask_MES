@@ -1,8 +1,8 @@
-# 공개용 데모 DB (가상 데이터를 담는 SQL Server)
+# 가상 데이터 SQL Server (synthetic_data/ 로 생성)
 services:
   mes-db:
     image: mcr.microsoft.com/mssql/server:2022-latest
-    container_name: neurofactory-mes-db
+    container_name: ask-mes-db
     environment:
       ACCEPT_EULA: "Y"
       MSSQL_SA_PASSWORD: ${MSSQL_SA_PASSWORD}

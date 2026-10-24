@@ -3,7 +3,7 @@ WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci
 COPY . .
-# 브라우저에서 부르는 주소라 빌드할 때 코드에 박힘
+# 브라우저용 API 주소 (빌드할 때 코드에 포함)
 ARG NEXT_PUBLIC_API_URL=https://ask-mes-api-184800931191.us-central1.run.app
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 RUN npm run build

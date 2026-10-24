@@ -105,6 +105,8 @@ backend/
 │   ├── main.py                FastAPI 진입점
 │   ├── pipeline.py            단계를 순서대로 호출
 │   ├── config.py              설정값 (.env)
+│   ├── schema.py              스키마 파일 로더
+│   ├── sql_text.py            SQL 에서 테이블, alias 추출
 │   ├── routers/               웹 API (chat: 질문, data: 데이터 둘러보기)
 │   ├── retrieval/             필요한 정보 찾기: retriever, ontology_loader(개념 사전), fk_resolver(JOIN 경로)
 │   ├── sampling/              실제 값 확인: live_sample
@@ -113,11 +115,13 @@ backend/
 │   ├── validation/            검증: sql_validator, query_safety, code_values, concept_alignment
 │   └── execution/             실행: sql_executor, sqlite_db, demo_db
 ├── data/                      스키마, 온톨로지, 코드값, 벤치마크 질문 세트, 데모용 SQLite DB
-└── eval/                      벤치마크 실행, 채점, 논문 원본 결과
+├── eval/                      벤치마크 실행, 채점, 논문 원본 결과
+├── scripts/                   벡터 색인 생성, 코드값 수집
+└── tests/                     검증기, 안전 검사, 자동 교정, SQLite 번역 테스트 (pytest)
 
-demo-db/                       데모 DB (가상 데이터) 테이블 정의, 생성 스크립트
+synthetic_data/                실제 DB 값 모양 조사, 가상 데이터 생성, SQLite 내보내기
 web/                           웹 화면 (Next.js, React, TypeScript)
-img/                           README 그림
 hosting/                       ask-mes.web.app 연결 설정 (Firebase Hosting)
-docker-compose.yml             데모 DB (SQL Server)
+img/                           README 그림
+docker-compose.yml             가상 데이터 SQL Server
 ```

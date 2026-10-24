@@ -1,16 +1,16 @@
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from contextlib import asynccontextmanager
+
 from app.config import CORS_ORIGINS
-from app.routers import chat, data
 from app.retrieval.retriever import init_chroma
+from app.routers import chat, data
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    print("[Startup] ChromaDB 초기화 중...")
     init_chroma()
-    print("[Startup] 완료, Ask MES! API 준비됨")
     yield
 
 

@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import sqlite3
 import time
-from functools import lru_cache
 from datetime import datetime, timedelta
+from functools import lru_cache
 
 import sqlglot
 from sqlglot import exp
@@ -11,7 +11,7 @@ from sqlglot.dialects.sqlite import SQLite
 
 from app.config import SQLITE_PATH
 
-# T-SQL 날짜 함수는 SQLite 에 맞는 것이 없어 아래 파이썬 함수로 같은 의미를 구현
+# T-SQL 날짜 함수의 파이썬 구현 (SQLite 에 없음)
 _EPOCH = datetime(1900, 1, 1)
 
 
@@ -67,7 +67,7 @@ def _datediff(unit: str, start, end) -> int | None:
     if a is None or b is None:
         return None
     unit = unit.upper()
-    # T-SQL DATEDIFF 는 경과 시간이 아니라 경계를 넘은 횟수
+    # T-SQL DATEDIFF: 경과 시간이 아닌 경계 횟수
     if unit in ("YEAR", "YY", "YYYY"):
         return b.year - a.year
     if unit in ("QUARTER", "QQ", "Q"):
@@ -91,9 +91,16 @@ def _datepart(unit: str, value) -> int | None:
         return None
     unit = unit.upper()
     parts = {
-        "YEAR": d.year, "QUARTER": (d.month - 1) // 3 + 1, "MONTH": d.month, "DAY": d.day,
-        "WEEK": int(d.strftime("%U")) + 1, "WEEKDAY": d.isoweekday() % 7 + 1, "DAYOFYEAR": d.timetuple().tm_yday,
-        "HOUR": d.hour, "MINUTE": d.minute, "SECOND": d.second,
+        "YEAR": d.year,
+        "QUARTER": (d.month - 1) // 3 + 1,
+        "MONTH": d.month,
+        "DAY": d.day,
+        "WEEK": int(d.strftime("%U")) + 1,
+        "WEEKDAY": d.isoweekday() % 7 + 1,
+        "DAYOFYEAR": d.timetuple().tm_yday,
+        "HOUR": d.hour,
+        "MINUTE": d.minute,
+        "SECOND": d.second,
     }
     return parts.get(unit)
 
@@ -103,7 +110,7 @@ def _unit(e: exp.Expression) -> exp.Literal:
 
 
 def _cast(self, e: exp.Cast) -> str:
-    # SQLite 는 CHAR(n) 길이를 무시하므로 T-SQL 처럼 앞 n 글자만 남김
+    # CHAR(n) 길이 적용 (SQLite 는 무시): 앞 n 글자
     to = e.args.get("to")
     if to is not None and to.is_type(*exp.DataType.TEXT_TYPES) and to.expressions:
         return f"SUBSTR(CAST({self.sql(e, 'this')} AS TEXT), 1, {self.sql(to.expressions[0])})"
@@ -142,7 +149,7 @@ QUERY_TIMEOUT_SEC = 15
 
 @lru_cache(maxsize=1)
 def _demo_now() -> datetime:
-    # 가상 데이터는 기간이 고정이라 GETDATE() 를 데이터 마지막 시점으로 고정
+    # GETDATE(): 가상 데이터의 마지막 시점으로 고정
     conn = sqlite3.connect(f"file:{SQLITE_PATH}?mode=ro", uri=True)
     try:
         last = conn.execute("SELECT MAX(TRACKINTIME) FROM CIM_LOT").fetchone()[0]
@@ -161,8 +168,7 @@ def connect() -> sqlite3.Connection:
     conn.create_function("MONTH", 1, lambda v: _datepart("MONTH", v))
     conn.create_function("DAY", 1, lambda v: _datepart("DAY", v))
     conn.create_function("NUMBER_TO_STR", 2, lambda v, _: None if v is None else str(v))
-    # SQLite 는 자체 실행 시간 제한이 없어 무거운 SQL 이 서버를 붙잡음
+    # 실행 시간 제한 (SQLite 자체 제한 없음)
     deadline = time.monotonic() + QUERY_TIMEOUT_SEC
     conn.set_progress_handler(lambda: time.monotonic() > deadline, 100_000)
     return conn
-

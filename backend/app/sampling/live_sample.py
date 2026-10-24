@@ -1,18 +1,13 @@
 from __future__ import annotations
 
 import asyncio
-import json
-import os
 import re
 import time
 from typing import Any
 
 from app.execution.sql_executor import execute_sql
+from app.schema import tables_by_name
 
-_BASE_DIR = os.path.dirname(__file__)
-SCHEMA_PATH = os.path.join(_BASE_DIR, "../../data/mes_schema.json")
-
-_SCHEMA_CACHE: dict[str, dict[str, Any]] | None = None
 _LIVE_CONTEXT_CACHE: dict[tuple[str, ...], tuple[float, str]] = {}
 _LIVE_CONTEXT_TTL = 60.0
 
@@ -30,31 +25,8 @@ VALUE_HINTS = (
 )
 
 
-def _load_schema() -> dict[str, dict[str, Any]]:
-    global _SCHEMA_CACHE
-    if _SCHEMA_CACHE is not None:
-        return _SCHEMA_CACHE
-
-    with open(SCHEMA_PATH, encoding="utf-8") as f:
-        raw = json.load(f)
-
-    tables: dict[str, dict[str, Any]] = {}
-    for table in raw.get("tables", []):
-        name = table.get("name", "")
-        if not name:
-            continue
-        tables[name] = {
-            "description": table.get("description", ""),
-            "columns": table.get("columns", []),
-            "pk": table.get("pk", []),
-        }
-
-    _SCHEMA_CACHE = tables
-    return tables
-
-
 def extract_context_tables(schema_context: str, max_tables: int = 4) -> list[str]:
-    schema = _load_schema()
+    schema = tables_by_name()
     found: list[str] = []
 
     for match in re.finditer(r"관련 테이블:\s*([A-Z0-9_,\s]+)", schema_context):
@@ -79,7 +51,7 @@ def extract_context_tables(schema_context: str, max_tables: int = 4) -> list[str
     return found
 
 
-# 값 종류가 많아 분포가 의미 없는 컬럼
+# 값 분포 조회 제외 (값 종류가 많은 컬럼)
 _HIGH_CARDINALITY_SUFFIXES = ("ID", "NAME", "DESCRIPTION", "COMMENT", "TEXT")
 _TEXT_TYPES = ("char", "varchar", "nvarchar", "nchar")
 
@@ -92,7 +64,7 @@ def _column_type(table: str, column: str) -> str:
 
 
 def extract_value_columns(schema_context: str, max_cols: int = 4) -> list[tuple[str, str]]:
-    schema = _load_schema()
+    schema = tables_by_name()
     found: list[tuple[str, str]] = []
 
     def add(table: str, column: str) -> None:
@@ -114,11 +86,11 @@ def _quote_col(column: str) -> str:
 
 
 def _table_columns(table: str) -> list[dict[str, Any]]:
-    return _load_schema().get(table, {}).get("columns", [])
+    return tables_by_name().get(table, {}).get("columns", [])
 
 
 def _choose_sample_columns(table: str, max_cols: int = 8) -> list[str]:
-    info = _load_schema().get(table, {})
+    info = tables_by_name().get(table, {})
     columns = _table_columns(table)
     names = [c.get("name", "") for c in columns if c.get("name")]
     chosen: list[str] = []
@@ -229,7 +201,7 @@ async def build_live_db_context(schema_context: str, max_tables: int = 3) -> str
             *(probe for _, probe in probes),
             return_exceptions=True,
         )
-        for (kind, _), result in zip(probes, results):
+        for (kind, _), result in zip(probes, results, strict=True):
             if isinstance(result, Exception):
                 label = "샘플" if kind == "sample" else "날짜범위" if kind == "date" else f"{table}.{kind} 값"
                 lines.append(f"- {label} 조회 실패: {result}")

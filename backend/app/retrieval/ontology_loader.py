@@ -1,150 +1,79 @@
-import os
-from typing import Optional
+from __future__ import annotations
 
-try:
-    from rdflib import Graph, Namespace, URIRef, Literal
-    from rdflib.namespace import RDF, RDFS, OWL, SKOS, XSD
-    RDFLIB_OK = True
-except ImportError:
-    Graph = Namespace = URIRef = Literal = None
-    RDF = RDFS = OWL = SKOS = XSD = None
-    RDFLIB_OK = False
+from pathlib import Path
 
-MFG = Namespace("http://neurofactory.skku.ac.kr/mes#") if RDFLIB_OK else None
+from rdflib import Graph, Namespace
+from rdflib.namespace import OWL, RDF, RDFS, SKOS
 
-_BASE_DIR     = os.path.dirname(__file__)
-ONTOLOGY_PATH = os.path.join(_BASE_DIR, "../../data/mes_ontology.ttl")
+from app.config import DATA_DIR
+
+ONTOLOGY_PATH = DATA_DIR / "mes_ontology.ttl"
+MFG = Namespace("http://neurofactory.skku.ac.kr/mes#")
 
 
+def _add(index: dict[str, list[str]], key: str, value: str) -> None:
+    values = index.setdefault(key, [])
+    if value not in values:
+        values.append(value)
+
+
+def _find(index: dict[str, list[str]], query: str) -> list[str]:
+    q = query.lower()
+    found: list[str] = []
+    for alias, values in index.items():
+        if alias in q:
+            found += [v for v in values if v not in found]
+    return found
+
+
+# 현장 용어(라벨, 별칭) -> 테이블, 컬럼
 class OntologyEngine:
-
-    def __init__(self, ttl_path: str):
-        if not RDFLIB_OK:
-            raise ImportError("rdflib가 설치되지 않았습니다: pip install rdflib")
-        if not os.path.exists(ttl_path):
-            raise FileNotFoundError(f"온톨로지 파일 없음: {ttl_path}")
-
-        self._g = Graph()
-        self._g.parse(ttl_path, format="turtle")
-        print(f"[OntologyEngine] 파싱 완료: {len(self._g)} 트리플")
-
-        self._alias_table:  dict[str, list[str]] = {}
+    def __init__(self, ttl_path: Path):
+        graph = Graph()
+        graph.parse(ttl_path, format="turtle")
+        self._alias_table: dict[str, list[str]] = {}
         self._alias_column: dict[str, list[str]] = {}
-        self._join_index:   dict[tuple, str]     = {}
 
-        self._build_alias_index()
-        self._build_join_index()
+        for cls in graph.subjects(RDF.type, OWL.Class):
+            tables = [str(t) for t in graph.objects(cls, MFG.mapsToTable)]
+            for label in self._labels(graph, cls):
+                for table in tables:
+                    _add(self._alias_table, label, table)
 
-    def _build_alias_index(self):
-        for cls in self._g.subjects(RDF.type, OWL.Class):
-            labels = list(self._g.objects(cls, RDFS.label)) + \
-                     list(self._g.objects(cls, SKOS.altLabel))
-            tables = list(self._g.objects(cls, MFG.mapsToTable))
-            for label in labels:
-                key = str(label).lower()
-                for tbl in tables:
-                    self._alias_table.setdefault(key, [])
-                    if str(tbl) not in self._alias_table[key]:
-                        self._alias_table[key].append(str(tbl))
+        for prop in graph.subjects(RDF.type, OWL.DatatypeProperty):
+            columns = [str(c) for c in graph.objects(prop, MFG.mapsToColumn)]
+            for label in self._labels(graph, prop):
+                for column in columns:
+                    _add(self._alias_column, label, column)
+                    if "." in column:
+                        _add(self._alias_table, label, column.split(".")[0])
 
-        for prop in self._g.subjects(RDF.type, OWL.DatatypeProperty):
-            labels  = list(self._g.objects(prop, RDFS.label)) + \
-                      list(self._g.objects(prop, SKOS.altLabel))
-            columns = list(self._g.objects(prop, MFG.mapsToColumn))
-            for label in labels:
-                key = str(label).lower()
-                for col in columns:
-                    self._alias_column.setdefault(key, [])
-                    if str(col) not in self._alias_column[key]:
-                        self._alias_column[key].append(str(col))
-                    tbl = str(col).split(".")[0] if "." in str(col) else ""
-                    if tbl:
-                        self._alias_table.setdefault(key, [])
-                        if tbl not in self._alias_table[key]:
-                            self._alias_table[key].append(tbl)
+        print(f"[Ontology] 트리플 {len(graph)}개, 현장 용어 {len(self._alias_table)}개")
 
-        print(f"[OntologyEngine] 별칭 인덱스: {len(self._alias_table)} 항목")
-
-    def _build_join_index(self):
-        for prop in self._g.subjects(RDF.type, OWL.ObjectProperty):
-            domain_list = list(self._g.objects(prop, RDFS.domain))
-            range_list  = list(self._g.objects(prop, RDFS.range))
-            joins       = list(self._g.objects(prop, MFG.joinCondition))
-            via         = list(self._g.objects(prop, MFG.viaTable))
-
-            if not domain_list or not range_list or not joins:
-                continue
-
-            src_tables = [str(self._g.value(d, MFG.mapsToTable))
-                          for d in domain_list
-                          if self._g.value(d, MFG.mapsToTable)]
-            dst_tables = [str(self._g.value(r, MFG.mapsToTable))
-                          for r in range_list
-                          if self._g.value(r, MFG.mapsToTable)]
-
-            for src in src_tables:
-                for dst in dst_tables:
-                    key = tuple(sorted([src, dst]))
-                    join_cond = str(joins[0])
-                    if via:
-                        join_cond = f"[via {str(via[0])}] " + join_cond
-                    self._join_index[key] = join_cond
-
-        print(f"[OntologyEngine] JOIN 인덱스: {len(self._join_index)} 쌍")
+    @staticmethod
+    def _labels(graph: Graph, node) -> list[str]:
+        return [str(x).lower() for x in [*graph.objects(node, RDFS.label), *graph.objects(node, SKOS.altLabel)]]
 
     def find_tables(self, query: str) -> list[str]:
-        q = query.lower()
-        found: list[str] = []
-        for alias, tables in self._alias_table.items():
-            if alias in q:
-                for t in tables:
-                    if t not in found:
-                        found.append(t)
-        return found
+        return _find(self._alias_table, query)
 
     def find_columns(self, query: str) -> list[str]:
-        q = query.lower()
-        found: list[str] = []
-        for alias, columns in self._alias_column.items():
-            if alias in q:
-                for c in columns:
-                    if c not in found:
-                        found.append(c)
-        return found
-
+        return _find(self._alias_column, query)
 
     def get_concept_hint(self, query: str) -> str:
-        tables  = self.find_tables(query)
-        columns = self.find_columns(query)
         lines = []
-        if tables:
+        if tables := self.find_tables(query):
             lines.append(f"관련 테이블: {', '.join(tables)}")
-        if columns:
+        if columns := self.find_columns(query):
             lines.append(f"관련 컬럼: {', '.join(columns)}")
         return "\n".join(lines)
 
 
-    def stats(self) -> dict:
-        return {
-            "triples":     len(self._g),
-            "classes":     len(list(self._g.subjects(RDF.type, OWL.Class))),
-            "obj_props":   len(list(self._g.subjects(RDF.type, OWL.ObjectProperty))),
-            "data_props":  len(list(self._g.subjects(RDF.type, OWL.DatatypeProperty))),
-            "alias_index": len(self._alias_table),
-            "join_index":  len(self._join_index),
-        }
+_engine: OntologyEngine | None = None
 
 
-_engine_instance: Optional[OntologyEngine] = None
-
-
-def get_ontology(ttl_path: str = None) -> OntologyEngine:
-    global _engine_instance
-    if _engine_instance is None:
-        path = ttl_path or ONTOLOGY_PATH
-        _engine_instance = OntologyEngine(path)
-    return _engine_instance
-
-
-def get_concept_engine(ttl_path: str = None):
-    return get_ontology(ttl_path)
+def get_ontology() -> OntologyEngine:
+    global _engine
+    if _engine is None:
+        _engine = OntologyEngine(ONTOLOGY_PATH)
+    return _engine

@@ -69,7 +69,7 @@ export default function TableScreen({ table }: { table: string }) {
                     <td className="border border-grid-line px-2 text-center">
                       <input type="checkbox" checked={picked === i} readOnly />
                     </td>
-                    <td className="border border-grid-line px-2 text-right text-[#5c6168]">{firstRow + i}</td>
+                    <td className="border border-grid-line px-2 text-right text-mes-sub">{firstRow + i}</td>
                     {data.columns.map((c) => {
                       const v = row[c.name];
                       return (
@@ -96,7 +96,7 @@ export default function TableScreen({ table }: { table: string }) {
           onFirst={() => movePage(1 - page)}
           onPrev={() => movePage(-1)}
           onNext={() => movePage(1)}
-          note={`칸 ${data?.columns.length ?? 0}개`}
+          note={`컬럼 ${data?.columns.length ?? 0}개`}
         />
       </div>
     </div>

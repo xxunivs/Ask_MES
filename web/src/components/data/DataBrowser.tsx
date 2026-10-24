@@ -17,10 +17,10 @@ export default function DataBrowser() {
   const currentTable = currentGroup?.tables.find((t) => t.name === selected);
 
   return (
-    <div className="flex h-full flex-col text-[12px] text-[#1f2124]">
+    <div className="flex h-full flex-col text-[12px] text-mes-ink">
       <div className="flex items-center gap-3 border-b border-panel-line bg-ribbon px-3 py-1.5">
         <TableMenu groups={groups} selected={selected} onSelect={setSelected}>
-          <span className="text-[#5c6168]">{currentGroup?.group}</span>
+          <span className="text-mes-sub">{currentGroup?.group}</span>
           {currentGroup && <span className="mx-1.5 text-[#9aa1ab]">›</span>}
           <span className="font-bold">{currentTable?.label ?? selected}</span>
         </TableMenu>
@@ -73,7 +73,7 @@ function TableMenu({
         }`}
       >
         {children}
-        <span className="ml-2 border-l border-[#cdd2d8] pl-2 text-[10px] text-[#5c6168]">▼</span>
+        <span className="ml-2 border-l border-[#cdd2d8] pl-2 text-[10px] text-mes-sub">▼</span>
       </button>
 
       {open && (

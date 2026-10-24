@@ -11,7 +11,7 @@ from app.pipeline import run_pipeline
 
 router = APIRouter()
 
-# 가상 데이터(SQLite)는 고정이라 같은 질문의 성공 결과를 재사용, 실제 DB 에서는 끔
+# 같은 질문 결과 재사용 (데이터가 고정된 가상 데이터 SQLite 한정)
 _CACHE_ENABLED = DB_BACKEND == "sqlite"
 _CACHE_MAX = 256
 _cache: OrderedDict[tuple[str, int], dict] = OrderedDict()
@@ -32,7 +32,7 @@ async def nl_to_sql(req: NlToSqlRequest):
     try:
         result = await run_pipeline(req.question, limit=req.limit)
     except Exception as e:
-        raise HTTPException(status_code=503, detail=f"질문 처리 오류: {e}")
+        raise HTTPException(status_code=503, detail=f"질문 처리 오류: {e}") from e
 
     error = result.db_error or ("" if result.schema_valid else f"SQL 검증 실패: {result.schema_error}")
     response = {

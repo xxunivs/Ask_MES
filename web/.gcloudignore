@@ -2,6 +2,5 @@
 node_modules/
 .next/
 .env*
-AGENTS.md
 *.tsbuildinfo
 next-env.d.ts

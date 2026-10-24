@@ -1,8 +1,11 @@
 """
+데모 SQL Server -> 배포용 SQLite 파일
+
 실행 방법 (backend/ 에서, 데모 DB 를 띄운 상태):
-  ./venv/bin/python ../demo-db/export_sqlite.py
+  ./venv/bin/python ../synthetic_data/export_sqlite.py
 결과: backend/data/mes_demo.sqlite (배포용 데모 DB)
 """
+
 from __future__ import annotations
 
 import os
@@ -19,8 +22,16 @@ from app.config import SQLITE_PATH  # noqa: E402
 from app.execution.demo_db import connect  # noqa: E402
 
 _NUMERIC = {
-    "int": "INTEGER", "bigint": "INTEGER", "smallint": "INTEGER", "tinyint": "INTEGER", "bit": "INTEGER",
-    "decimal": "REAL", "numeric": "REAL", "float": "REAL", "real": "REAL", "money": "REAL",
+    "int": "INTEGER",
+    "bigint": "INTEGER",
+    "smallint": "INTEGER",
+    "tinyint": "INTEGER",
+    "bit": "INTEGER",
+    "decimal": "REAL",
+    "numeric": "REAL",
+    "float": "REAL",
+    "real": "REAL",
+    "money": "REAL",
 }
 
 
@@ -50,7 +61,7 @@ def main():
             (table,),
         )
         cols = cur.fetchall()
-        # SQL Server 데모 DB 가 대소문자 무시 정렬 규칙이라 문자열 칸은 NOCASE
+        # 문자열 컬럼 NOCASE (SQL Server 데모 DB 와 같은 대소문자 무시)
         col_defs = ", ".join(
             f'"{name}" {_NUMERIC[dtype]}' if dtype in _NUMERIC else f'"{name}" TEXT COLLATE NOCASE'
             for name, dtype in cols

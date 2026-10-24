@@ -3,6 +3,7 @@
   EMBED_BACKEND=deepinfra EMBED_MODEL=BAAI/bge-m3 CHROMA_PATH=./vector_index_deploy ./venv/bin/python scripts/build_index.py
 결과: 배포 이미지에 넣을 벡터 색인
 """
+
 import sys
 from pathlib import Path
 

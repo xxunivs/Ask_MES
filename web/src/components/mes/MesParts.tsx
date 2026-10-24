@@ -46,17 +46,17 @@ export function GridFooter({
   onNext: () => void;
   note?: string;
 }) {
-  const arrow = "px-1 text-[#5c6168] disabled:opacity-30";
+  const arrow = "px-1 text-mes-sub disabled:opacity-30";
   return (
     <div className="flex items-center gap-1 border-x border-b border-panel-line bg-ribbon px-2 py-0.5">
       <button onClick={onFirst} disabled={!canPrev} className={arrow}>⏮</button>
       <button onClick={onPrev} disabled={!canPrev} className={arrow}>◀</button>
       <span className="bg-white px-2">합계 : {count}</span>
       <button onClick={onNext} disabled={!canNext} className={arrow}>▶</button>
-      <span className="ml-3 text-[#5c6168]">
+      <span className="ml-3 text-mes-sub">
         {count ? `${from} - ${from + count - 1}` : "-"} / 페이지 {page}
       </span>
-      {note && <span className="ml-auto text-[#5c6168]">{note}</span>}
+      {note && <span className="ml-auto text-mes-sub">{note}</span>}
     </div>
   );
 }

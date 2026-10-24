@@ -19,7 +19,7 @@ export default function ChatMessage({ message }: { message: Message }) {
       <div
         className={`${"result" in message ? "w-full" : "max-w-[85%]"} min-w-0 space-y-3 rounded-lg px-5 py-4 text-base ${
           isUser
-            ? "bg-gradient-to-b from-[#2e2b55] to-primary text-white shadow-[0_2px_6px_rgba(27,25,56,0.25)]"
+            ? "bg-gradient-to-b from-primary-light to-primary text-white shadow-[0_2px_6px_rgba(27,25,56,0.25)]"
             : "border border-hairline bg-canvas shadow-[0_2px_8px_rgba(0,0,0,0.08)]"
         }`}
       >
@@ -31,7 +31,7 @@ export default function ChatMessage({ message }: { message: Message }) {
   );
 }
 
-// 실제 진행 단계가 아니라 평균 응답 시간에 맞춘 안내 문구
+// 대기 문구 (실제 진행이 아닌 평균 응답 시간 기준)
 const LOADING_STEPS: [string, number][] = [
   ["관련 테이블 조회 중...", 0],
   ["SQL문 생성 중...", 1500],
@@ -50,7 +50,7 @@ function LoadingText() {
 function QueryResult({ result }: { result: NlToSqlResponse }) {
   const [view, setView] = useState<"table" | "chart">("table");
   if (!result.data) {
-    return <p className="text-sm text-red-600">DB 실행 오류: {result.db_error}</p>;
+    return <p className="text-sm text-red-600">조회하지 못했습니다. {result.db_error}</p>;
   }
   const chartable = hasChart(result.data);
 
