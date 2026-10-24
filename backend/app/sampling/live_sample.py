@@ -66,9 +66,7 @@ def extract_context_tables(schema_context: str, max_tables: int = 4) -> list[str
 
     patterns = [
         r"\[테이블\]\s+(CIM_\w+)",
-        r"\[컬럼\]\s+(CIM_\w+)\.",
         r"(?:FROM|JOIN)\s+(CIM_\w+)\s+WITH",
-        r"\b(CIM_\w+)\b",
     ]
     for pattern in patterns:
         for match in re.finditer(pattern, schema_context):
@@ -78,6 +76,36 @@ def extract_context_tables(schema_context: str, max_tables: int = 4) -> list[str
                 if len(found) >= max_tables:
                     return found
 
+    return found
+
+
+# 값 종류가 많아 분포가 의미 없는 컬럼
+_HIGH_CARDINALITY_SUFFIXES = ("ID", "NAME", "DESCRIPTION", "COMMENT", "TEXT")
+_TEXT_TYPES = ("char", "varchar", "nvarchar", "nchar")
+
+
+def _column_type(table: str, column: str) -> str:
+    for col in _table_columns(table):
+        if col.get("name") == column:
+            return str(col.get("type", "")).lower()
+    return ""
+
+
+def extract_value_columns(schema_context: str, max_cols: int = 4) -> list[tuple[str, str]]:
+    schema = _load_schema()
+    found: list[tuple[str, str]] = []
+
+    def add(table: str, column: str) -> None:
+        if table in schema and (table, column) not in found and len(found) < max_cols:
+            if _column_type(table, column).startswith(_TEXT_TYPES):
+                found.append((table, column))
+
+    for match in re.finditer(r"관련 컬럼:\s*([A-Z0-9_.,\s]+)", schema_context):
+        for table, column in re.findall(r"(CIM_\w+)\.(\w+)", match.group(1)):
+            add(table, column)
+    for table, column in re.findall(r"\[컬럼\]\s+(CIM_\w+)\.(\w+)", schema_context):
+        if not column.upper().endswith(_HIGH_CARDINALITY_SUFFIXES):
+            add(table, column)
     return found
 
 
@@ -132,29 +160,6 @@ def _date_columns(table: str, max_cols: int = 2) -> list[str]:
     return cols
 
 
-def _value_column(table: str) -> str | None:
-    preferred = (
-        "PROCESSSEGMENTID",
-        "PROCESSNODEID",
-        "EQUIPMENTID",
-        "DEFECTID",
-        "DEFECTTYPE",
-        "STATE",
-        "PRODUCTID",
-        "TRACKOUTUSER",
-        "TRACKOUTUSERNAME",
-    )
-    names = [c.get("name", "") for c in _table_columns(table)]
-    for name in preferred:
-        if name in names:
-            return name
-    for name in names:
-        upper = name.upper()
-        if any(token in upper for token in VALUE_HINTS):
-            return name
-    return None
-
-
 def _format_rows(result: dict[str, Any], max_rows: int = 3) -> str:
     rows = result.get("rows", []) or []
     columns = result.get("columns", []) or []
@@ -171,11 +176,22 @@ def _format_rows(result: dict[str, Any], max_rows: int = 3) -> str:
     return " / ".join(lines)
 
 
+def _format_values(result: dict[str, Any], column: str) -> str:
+    rows = result.get("rows", []) or []
+    if not rows:
+        return "(값 없음)"
+    return ", ".join(f"'{row.get(column)}'({row.get('건수')}건)" for row in rows)
+
+
 async def build_live_db_context(schema_context: str, max_tables: int = 3) -> str:
+    value_cols = extract_value_columns(schema_context)
     tables = extract_context_tables(schema_context, max_tables=max_tables)
+    for table, _ in value_cols:
+        if table not in tables:
+            tables.append(table)
     if not tables:
         return ""
-    cache_key = tuple(tables)
+    cache_key = tuple(tables) + tuple(f"{t}.{c}" for t, c in value_cols)
     cached = _LIVE_CONTEXT_CACHE.get(cache_key)
     if cached and time.monotonic() - cached[0] < _LIVE_CONTEXT_TTL:
         return cached[1]
@@ -199,8 +215,7 @@ async def build_live_db_context(schema_context: str, max_tables: int = 3) -> str
             sql = f"SELECT {', '.join(exprs)} FROM {table} WITH (NOLOCK)"
             probes.append(("date", execute_sql(sql, limit=1)))
 
-        value_col = _value_column(table)
-        if value_col:
+        for _, value_col in (vc for vc in value_cols if vc[0] == table):
             col = _quote_col(value_col)
             sql = (
                 f"SELECT TOP 5 {col} AS [{value_col}], COUNT(*) AS [건수] "
@@ -208,7 +223,7 @@ async def build_live_db_context(schema_context: str, max_tables: int = 3) -> str
                 f"WHERE {col} IS NOT NULL AND CONVERT(nvarchar(200), {col}) <> '' "
                 f"GROUP BY {col} ORDER BY [건수] DESC"
             )
-            probes.append(("value", execute_sql(sql, limit=5)))
+            probes.append((value_col, execute_sql(sql, limit=5)))
 
         results = await asyncio.gather(
             *(probe for _, probe in probes),
@@ -216,14 +231,14 @@ async def build_live_db_context(schema_context: str, max_tables: int = 3) -> str
         )
         for (kind, _), result in zip(probes, results):
             if isinstance(result, Exception):
-                label = "샘플" if kind == "sample" else "날짜범위" if kind == "date" else f"주요값({value_col})"
+                label = "샘플" if kind == "sample" else "날짜범위" if kind == "date" else f"{table}.{kind} 값"
                 lines.append(f"- {label} 조회 실패: {result}")
             elif kind == "sample":
                 lines.append(f"- 샘플: {_format_rows(result, max_rows=3)}")
             elif kind == "date":
                 lines.append(f"- 날짜범위: {_format_rows(result, max_rows=1)}")
             else:
-                lines.append(f"- 주요값({value_col}): {_format_rows(result, max_rows=5)}")
+                lines.append(f"- {table}.{kind} 에 들어 있는 값: {_format_values(result, kind)}")
         return "\n".join(lines)
 
     sections = await asyncio.gather(*(probe_table(table) for table in tables))

@@ -86,8 +86,10 @@ def build_schema_correction_prompt(
     schema_ctx: str,
     invalid_sql: str,
     validation: ValidationResult,
+    db_context: str = "",
+    error: str = "",
 ) -> str:
-    err = validation.error_message()
+    err = error or validation.error_message()
     valid_sample = ", ".join(sorted(get_schema_registry().table_names)[:12])
     cv = code_values_prompt_hint() or "(없음)"
     return f"""이전에 생성한 SQL에 스키마 오류가 있습니다. mes_schema.json에 정의된 이름만 사용해 다시 작성하세요.
@@ -100,6 +102,12 @@ def build_schema_correction_prompt(
 
 ## MES 스키마 정보
 {schema_ctx}
+
+## 실제 DB
+{db_context or "(없음)"}
+
+## 날짜 규칙
+{date_rules_for_prompt()}
 
 ## 허용 테이블 (일부)
 {valid_sample} ... (총 {len(get_schema_registry().table_names)}개 CIM_* 테이블)
@@ -130,6 +138,7 @@ def build_db_correction_prompt(
     schema_ctx: str,
     failed_sql: str,
     db_error: str,
+    db_context: str = "",
 ) -> str:
     cv = code_values_prompt_hint() or "(없음)"
     return f"""이전 SQL은 스키마 검증은 통과했으나 MES DB 실행에 실패했습니다. 오류를 참고해 단순하고 실행 가능한 SELECT로 다시 작성하세요.
@@ -142,6 +151,12 @@ def build_db_correction_prompt(
 
 ## MES 스키마 정보
 {schema_ctx}
+
+## 실제 DB
+{db_context or "(없음)"}
+
+## 날짜 규칙
+{date_rules_for_prompt()}
 
 ## 수정 지침
 - 불필요한 JOIN 제거. 단일 테이블로 가능하면 JOIN 하지 마세요.

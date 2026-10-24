@@ -260,10 +260,13 @@ def retrieve_context(
         chroma_docs   = results["documents"][0]
         chroma_metas  = results["metadatas"][0]
 
+        # 컬럼 하나만 걸린 테이블은 JOIN 경로 계산 제외
+        hits: dict[str, int] = {}
         for m in chroma_metas:
             t = m.get("table", "")
-            if t and t not in chroma_tables:
-                chroma_tables.append(t)
+            if t:
+                hits[t] = hits.get(t, 0) + (2 if m.get("type") == "table" else 1)
+        chroma_tables = [t for t, c in hits.items() if c >= 2]
 
     all_tables: list[str] = list(concept_tables)
     for t in chroma_tables:
@@ -275,7 +278,6 @@ def retrieve_context(
         join_sql = _fk_resolver.get_join_sql(all_tables[:5], max_hops=4)
         if join_sql:
             join_hint = f"\n\n## JOIN 경로 힌트 (Dijkstra 최단경로)\n{join_sql}"
-            _augment_intermediate_tables(join_sql, all_tables)
 
     sections: list[str] = []
     if chroma_docs:
@@ -294,11 +296,3 @@ def retrieve_context(
         sections.append(join_hint)
 
     return "\n".join(sections)
-
-
-def _augment_intermediate_tables(join_sql: str, all_tables: list[str]):
-    import re
-    for match in re.finditer(r"JOIN\s+(CIM_\w+)\s+WITH", join_sql):
-        t = match.group(1)
-        if t not in all_tables:
-            all_tables.append(t)

@@ -89,7 +89,9 @@ async def run_pipeline(
             result.schema_valid, result.schema_error = False, f"[SafetyLayer] {safety.error_message()}"
         result.log("6. 검증" + tag, result.schema_error)
         if attempt < SCHEMA_RETRY_MAX:
-            prompt = build_schema_correction_prompt(question, schema_ctx, sql, vr)
+            prompt = build_schema_correction_prompt(
+                question, schema_ctx, sql, vr, db_context=db_ctx, error=result.schema_error
+            )
 
     if not execute or not result.schema_valid:
         return result
@@ -98,7 +100,7 @@ async def run_pipeline(
     for _ in range(DB_RETRY_MAX):
         if result.executed:
             break
-        prompt = build_db_correction_prompt(question, schema_ctx, result.sql, result.db_error)
+        prompt = build_db_correction_prompt(question, schema_ctx, result.sql, result.db_error, db_context=db_ctx)
         retry_sql = _autofix(await _generate_sql(prompt, result, " (DB 오류 교정)"), result, " (DB 오류 교정)")
         if not retry_sql or not validate_sql(retry_sql, question=question).ok or not validate_query(retry_sql).ok:
             break

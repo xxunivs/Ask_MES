@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import sqlite3
+import time
 from datetime import datetime, timedelta
 
 import sqlglot
@@ -117,6 +118,9 @@ def translate(sql: str) -> str:
     return sqlglot.transpile(sql, read="tsql", write=_TSQLToSQLite)[0]
 
 
+QUERY_TIMEOUT_SEC = 15
+
+
 def connect() -> sqlite3.Connection:
     conn = sqlite3.connect(f"file:{SQLITE_PATH}?mode=ro", uri=True, check_same_thread=False)
     conn.create_function("TSQL_NOW", 0, lambda: _fmt(datetime.now()))
@@ -127,5 +131,8 @@ def connect() -> sqlite3.Connection:
     conn.create_function("MONTH", 1, lambda v: _datepart("MONTH", v))
     conn.create_function("DAY", 1, lambda v: _datepart("DAY", v))
     conn.create_function("NUMBER_TO_STR", 2, lambda v, _: None if v is None else str(v))
+    # SQLite 는 자체 실행 시간 제한이 없어 무거운 SQL 이 서버를 붙잡음
+    deadline = time.monotonic() + QUERY_TIMEOUT_SEC
+    conn.set_progress_handler(lambda: time.monotonic() > deadline, 100_000)
     return conn
 
