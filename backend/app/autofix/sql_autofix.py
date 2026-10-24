@@ -109,6 +109,13 @@ def autofix_sql(sql: str) -> tuple[str, list[str]]:
         applied.append("alias 를 WITH (NOLOCK) 앞으로 이동")
     sql = fixed
 
+    # alias 를 붙인 테이블은 alias 로만 참조 가능
+    for alias, table in table_aliases(sql).items():
+        pattern = re.compile(rf"\b{table}\s*\.(?=\s*[A-Z_])", re.IGNORECASE)
+        if pattern.search(sql):
+            sql = pattern.sub(f"{alias}.", sql)
+            applied.append(f"{table}. 을 alias {alias}. 로 변경")
+
     if _QUOTED_ALIAS_RE.search(sql):
         sql = _QUOTED_ALIAS_RE.sub(lambda m: f"AS {m.group(1)}", sql)
         applied.append("컬럼 alias 의 작은따옴표 제거")

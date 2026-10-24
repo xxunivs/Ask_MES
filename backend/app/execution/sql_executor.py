@@ -43,7 +43,7 @@ def _execute_demo(sql: str, limit: int) -> dict:
         try:
             cur.execute(sql)
         except Exception as e:
-            raise RuntimeError(f"DB 오류: {e}") from e
+            raise RuntimeError(str(e)) from e
         columns = [d[0] for d in cur.description or []]
         rows = [{c: _to_json(v) for c, v in zip(columns, r, strict=True)} for r in cur.fetchmany(limit)]
     return {"success": True, "count": len(rows), "columns": columns, "rows": rows}
@@ -56,7 +56,7 @@ def _execute_sqlite(sql: str, limit: int) -> dict:
         columns = [d[0] for d in cur.description or []]
         rows = [{c: _to_json(v) for c, v in zip(columns, r, strict=True)} for r in cur.fetchmany(limit)]
     except Exception as e:
-        raise RuntimeError(f"DB 오류: {e}") from e
+        raise RuntimeError(str(e)) from e
     finally:
         conn.close()
     return {"success": True, "count": len(rows), "columns": columns, "rows": rows}
