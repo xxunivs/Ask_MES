@@ -23,7 +23,6 @@
 4. [구성도](#-구성도)
 5. [성능](#-성능)
 6. [폴더 구조](#-폴더-구조)
-7. [로컬 실행](#-로컬-실행)
 
 <br>
 
@@ -117,35 +116,4 @@ demo-db/                       데모 DB (가상 데이터) 테이블 정의, �
 web/                           웹 화면 (Next.js, React, TypeScript)
 img/                           README 그림
 docker-compose.yml             데모 DB (SQL Server)
-```
-
-<br>
-
-## ▶ 로컬 실행
-
-Python 3.12, Node.js, Docker, Ollama(`qwen3.5:9b`, `bge-m3`) 필요.
-
-```bash
-# 1. 데모 DB
-cp .env.example .env                                  # MSSQL_SA_PASSWORD 채우기
-docker compose up -d
-# demo-db/01_create_tables.sql, 02_create_reader.sql 실행 후
-cd backend && ./venv/bin/python ../demo-db/generate_demo_data.py
-
-# 2. 백엔드
-cd backend
-cp .env.example .env                                  # DEMO_DB_*, OLLAMA_URL 채우기
-python3.12 -m venv venv && ./venv/bin/pip install -r requirements.txt
-./venv/bin/uvicorn app.main:app --port 8001
-
-# 3. 웹
-cd web && npm install && npm run dev                  # http://localhost:3000
-```
-
-벤치마크
-
-```bash
-cd backend
-./venv/bin/python eval/run_benchmark.py --preset FULL --execute
-./venv/bin/python eval/score.py eval/results/latest.csv --by difficulty
 ```
