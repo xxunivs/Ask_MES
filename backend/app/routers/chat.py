@@ -20,7 +20,7 @@ async def nl_to_sql(req: NlToSqlRequest):
     try:
         result = await run_pipeline(req.question, limit=req.limit)
     except Exception as e:
-        raise HTTPException(status_code=503, detail=f"LLM 연결 오류: {e}")
+        raise HTTPException(status_code=503, detail=f"질문 처리 오류: {e}")
 
     error = result.db_error or ("" if result.schema_valid else f"SQL 검증 실패: {result.schema_error}")
     return {

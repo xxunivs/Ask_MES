@@ -10,13 +10,13 @@ from app.retrieval.retriever import init_chroma
 async def lifespan(app: FastAPI):
     print("[Startup] ChromaDB 초기화 중...")
     init_chroma()
-    print("[Startup] 완료 — MES LLM API 준비됨")
+    print("[Startup] 완료, Ask MES! API 준비됨")
     yield
 
 
 app = FastAPI(
-    title="MES LLM API",
-    description="NeuroFactory NL→SQL (LangChain + ChromaDB + Ollama)",
+    title="Ask MES! API",
+    description="자연어 질문을 SQL로 바꿔 MES 데이터를 조회하는 API",
     version="1.0.0",
     lifespan=lifespan,
 )
@@ -34,4 +34,4 @@ app.include_router(data.router, prefix="/data", tags=["Data"])
 
 @app.get("/health")
 def health():
-    return {"status": "ok", "service": "MES LLM API"}
+    return {"status": "ok", "service": "Ask MES! API"}

@@ -3,7 +3,11 @@ from __future__ import annotations
 
 import os
 
-MES_DATE_MODE = os.getenv("MES_DATE_MODE", "dev_last_year").strip().lower()
+from app.config import DB_BACKEND
+
+# 가상 데이터(SQLite)는 1년 전 구간 구분이 없어 운영 기준 사용
+_DEFAULT_MODE = "production" if DB_BACKEND == "sqlite" else "dev_last_year"
+MES_DATE_MODE = os.getenv("MES_DATE_MODE", _DEFAULT_MODE).strip().lower()
 
 _DEV_LAST_YEAR_RULES = """4. [개발 DB / 벤치마크 모드] 기본 기준일은 **1년 전**이다.
    연결 DB는 개발용이라 최근 시점 데이터는 실제 운영 흐름이 아니며, 약 1년 전 데이터가 운영과 동일한 실데이터이다.
@@ -21,6 +25,7 @@ _PRODUCTION_RULES = """4. [운영 DB 모드] 사용자가 날짜를 지정하지
    - "오늘" / 날짜 미지정 → GETDATE() 기준
    - "어제" → DATEADD(day, -1, CAST(GETDATE() AS date))
    - "최근 N일" / 일별 추이 → >= DATEADD(day, -N, GETDATE()) AND < DATEADD(day, 1, CAST(GETDATE() AS date)) (또는 <= GETDATE())
+     (추이 질의에서 N이 없으면 N=30 적용)
 5. 특정 연도/월이 명시된 경우 → 리터럴 날짜 사용
 6. 날짜 범위는 BETWEEN보다 >= AND < 형식 권장"""
 

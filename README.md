@@ -15,7 +15,7 @@
 ## 🎯 개요
 
 SQL을 모르는 제조 현업이 **자연어로 질문하면 SQL로 바꿔 MES DB를 조회**하는 시스템을 개발했습니다.
-절삭공구 공장 MES (19테이블, 457컬럼, 2.7억 행), 외부 API를 쓸 수 없는 온프레미스 환경이라 오픈 모델 Qwen3.5-9B를 사용했습니다.
+절삭공구 공장 MES (26테이블, 465컬럼, 2.7억 행), 외부 API를 쓸 수 없는 온프레미스 환경이라 오픈 모델 Qwen3.5-9B를 사용했습니다.
 
 #### 질문하면 SQL을 만들어 실행하고 표로 보여 줌
 
@@ -45,7 +45,7 @@ SQL을 모르는 제조 현업이 **자연어로 질문하면 SQL로 바꿔 MES 
 <tr>
 <td width="48%"><img src="img/ts1_retrieval.png" alt="개념 사전과 벡터 검색"></td>
 <td>
-<b>문제</b><br>현장에서는 '홀드', '보류'라고 말하지만 DB에는 <code>CIM_LOT.ISHOLD</code>로 되어 있어 테이블을 못 찾았고, 457개 컬럼을 전부 넣기엔 컨텍스트가 부족했습니다.<br><br>
+<b>문제</b><br>현장에서는 '홀드', '보류'라고 말하지만 DB에는 <code>CIM_LOT.ISHOLD</code>로 되어 있어 테이블을 못 찾았고, 465개 컬럼을 전부 넣기엔 컨텍스트가 부족했습니다.<br><br>
 <b>해결</b><br>현장 용어 155개를 DB 컬럼에 연결한 개념 사전과 ChromaDB 벡터 검색을 합쳐, 질문에 필요한 스키마만 골라 LLM에 넘겼습니다.<br><br>
 <b>결과</b><br>정답 테이블 적중률 개념 사전만 88%, 벡터 검색만 96%, 둘 다 쓰면 <b>100%</b><br><br>
 <b>코드</b><br><code>backend/app/retrieval/retriever.py</code><br><code>backend/app/retrieval/ontology_loader.py</code><br><code>backend/data/mes_ontology.ttl</code>

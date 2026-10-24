@@ -150,6 +150,25 @@ def _check_sql_syntax(sql: str) -> Optional[str]:
     return None
 
 
+_ALIAS_STOPWORDS = {
+    "WITH", "ON", "WHERE", "JOIN", "INNER", "LEFT", "RIGHT", "FULL", "CROSS", "OUTER",
+    "GROUP", "ORDER", "HAVING", "UNION",
+}
+TABLE_ALIAS_RE = re.compile(
+    r"\b(?:FROM|JOIN)\s+(CIM_[A-Z][A-Z0-9_]*)\s+(?:AS\s+)?([A-Z][A-Z0-9_]*)\b",
+    re.IGNORECASE,
+)
+ALIAS_COL_RE = re.compile(r"\b([A-Z][A-Z0-9_]*)\s*\.\s*([A-Z][A-Z0-9_]*)\b", re.IGNORECASE)
+
+
+def _table_aliases(sql: str) -> dict[str, str]:
+    return {
+        alias.upper(): table.upper()
+        for table, alias in TABLE_ALIAS_RE.findall(sql)
+        if alias.upper() not in _ALIAS_STOPWORDS
+    }
+
+
 def _check_invalid_fk_columns(
     sql: str, reg: MesSchemaRegistry
 ) -> list[tuple[str, str]]:
@@ -157,7 +176,30 @@ def _check_invalid_fk_columns(
     for table, col in extract_qualified_columns(sql):
         if reg.has_table(table) and not reg.has_column(table, col):
             bad.append((table, col))
+
+    aliases = _table_aliases(sql)
+    for alias, col in ALIAS_COL_RE.findall(sql):
+        alias, col = alias.upper(), col.upper()
+        table = aliases.get(alias)
+        if table and reg.has_table(table) and not reg.has_column(table, col) and (table, col) not in bad:
+            bad.append((table, col))
     return bad
+
+
+def _undefined_aliases(sql: str) -> list[str]:
+    # 서브쿼리, CTE 별칭은 구분이 어려워 단순 SELECT 에서만 검사
+    if re.search(r"\(\s*SELECT\b", sql, re.IGNORECASE) or re.match(r"\s*WITH\b", sql, re.IGNORECASE):
+        return []
+    aliases = _table_aliases(sql)
+    if not aliases:
+        return []
+    known = set(aliases) | {t.upper() for t in extract_cim_tables(sql)}
+    found = []
+    for alias, col in ALIAS_COL_RE.findall(sql):
+        alias = alias.upper()
+        if alias not in known and not col.upper().startswith("CIM_") and alias not in found:
+            found.append(alias)
+    return found
 
 
 def validate_sql(
@@ -185,6 +227,10 @@ def validate_sql(
 
     for col in _find_forbidden_columns(sql):
         hints.append(f"존재하지 않는 컬럼 {col}: {FORBIDDEN_COLUMNS[col]}")
+
+    undefined = _undefined_aliases(sql)
+    if undefined:
+        hints.append(f"정의되지 않은 테이블 alias: {', '.join(undefined)}. FROM/JOIN 에서 지정한 alias 만 사용하세요.")
 
     star_err = _check_select_star(sql)
     if star_err:
@@ -229,6 +275,7 @@ def validate_sql(
         not invalid_tables
         and not invalid_columns
         and not forbidden
+        and not undefined
         and not star_err
         and not distinct_err
         and not quote_alias_err

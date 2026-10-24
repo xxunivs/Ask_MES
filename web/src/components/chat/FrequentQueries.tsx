@@ -1,8 +1,8 @@
 const QUESTIONS = [
   "홀드 상태인 LOT 목록 보여줘",
-  "LOT ID와 제품명을 함께 보여줘",
-  "불량 유형 목록 보여줘",
-  "설비별 TrackIn 건수 추이를 일별로 보여줘",
+  "불량 유형별 불량 수량 보여줘",
+  "월별 LOT 투입 수량 추이 보여줘",
+  "제품 유형별 월별 LOT 수 추이 보여줘",
 ];
 
 export default function FrequentQueries({

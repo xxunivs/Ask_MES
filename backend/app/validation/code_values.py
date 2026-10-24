@@ -223,7 +223,7 @@ def code_values_prompt_hint(max_rules: int = 8) -> str:
     reg = get_code_registry()
     if not reg.rules:
         return ""
-    lines = ["MES 컬럼 코드값 (DB DISTINCT 기준, WHERE 절에 그대로 사용):"]
+    lines = ["MES 컬럼 코드값 (허용 값, WHERE 절에 그대로 사용):"]
     for i, rule in enumerate(sorted(reg.rules.values(), key=lambda r: r.key)):
         if i >= max_rules:
             lines.append(f"- … 외 {len(reg.rules) - max_rules}개 컬럼 (mes_code_values.json)")

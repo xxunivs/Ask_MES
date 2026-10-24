@@ -28,6 +28,8 @@ NL_TO_SQL_PROMPT = """MES 질문을 간결한 MS SQL Server SELECT로 변환하�
 
 ## 집계/추이 규칙
 9. 일별 추이 집계 시 날짜 컬럼은 CONVERT(date, 날짜컬럼) 사용
+   월별 추이는 CONVERT(char(7), 날짜컬럼, 120) 으로 월 단위로 묶고, 기간 미명시면 최근 12개월
+   "A별 추이"처럼 항목이 함께 나오면 날짜와 A 컬럼을 SELECT, GROUP BY 에 모두 넣기
 10. 설비 가동 횟수 추이 → CIM_LOT 테이블의 TRACKINTIME + EQUIPMENTID로 COUNT(*) 집계
     (CIM_EQUIPMENT.RUNCOUNT는 현재 누적값이므로 추이 분석에 사용 금지)
 11. 불량률 계산 → SUM(LOSSQTY) / NULLIF(SUM(ORIGINALQTY), 0) * 100
@@ -40,7 +42,7 @@ NL_TO_SQL_PROMPT = """MES 질문을 간결한 MS SQL Server SELECT로 변환하�
 13. 아래에 없는 CIM_* 테이블·컬럼 이름을 만들지 마세요.
 {schema_whitelist}
 
-## 코드값 (DB DISTINCT 기준, WHERE 절 리터럴)
+## 코드값 (허용 값, WHERE 절 리터럴)
 14. Y/N 플래그는 TRUE/FALSE/1/0 대신 아래 허용 값만 사용.
 {code_values}
 

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import sqlite3
 import time
+from functools import lru_cache
 from datetime import datetime, timedelta
 
 import sqlglot
@@ -101,6 +102,22 @@ def _unit(e: exp.Expression) -> exp.Literal:
     return exp.Literal.string(e.text("unit") or "DAY")
 
 
+def _cast(self, e: exp.Cast) -> str:
+    # SQLite 는 CHAR(n) 길이를 무시하므로 T-SQL 처럼 앞 n 글자만 남김
+    to = e.args.get("to")
+    if to is not None and to.is_type(*exp.DataType.TEXT_TYPES) and to.expressions:
+        return f"SUBSTR(CAST({self.sql(e, 'this')} AS TEXT), 1, {self.sql(to.expressions[0])})"
+    return self.cast_sql(e)
+
+
+def _convert(self, e: exp.Convert) -> str:
+    to = e.this
+    sql = self.convert_sql(e)
+    if isinstance(to, exp.DataType) and to.is_type(*exp.DataType.TEXT_TYPES) and to.expressions:
+        return f"SUBSTR(CAST({sql} AS TEXT), 1, {self.sql(to.expressions[0])})"
+    return sql
+
+
 class _TSQLToSQLite(SQLite):
     class Generator(SQLite.Generator):
         TRANSFORMS = {
@@ -111,6 +128,8 @@ class _TSQLToSQLite(SQLite):
             exp.TimeStrToTime: lambda self, e: self.sql(e.this),
             exp.CurrentTimestamp: lambda self, e: "TSQL_NOW()",
             exp.CurrentDate: lambda self, e: "DATE(TSQL_NOW())",
+            exp.Cast: _cast,
+            exp.Convert: _convert,
         }
 
 
@@ -121,9 +140,20 @@ def translate(sql: str) -> str:
 QUERY_TIMEOUT_SEC = 15
 
 
+@lru_cache(maxsize=1)
+def _demo_now() -> datetime:
+    # 가상 데이터는 기간이 고정이라 GETDATE() 를 데이터 마지막 시점으로 고정
+    conn = sqlite3.connect(f"file:{SQLITE_PATH}?mode=ro", uri=True)
+    try:
+        last = conn.execute("SELECT MAX(TRACKINTIME) FROM CIM_LOT").fetchone()[0]
+    finally:
+        conn.close()
+    return datetime.fromisoformat(last) if last else datetime.now()
+
+
 def connect() -> sqlite3.Connection:
     conn = sqlite3.connect(f"file:{SQLITE_PATH}?mode=ro", uri=True, check_same_thread=False)
-    conn.create_function("TSQL_NOW", 0, lambda: _fmt(datetime.now()))
+    conn.create_function("TSQL_NOW", 0, lambda: _fmt(_demo_now()))
     conn.create_function("TSQL_DATEADD", 3, _dateadd)
     conn.create_function("TSQL_DATEDIFF", 3, _datediff)
     conn.create_function("TSQL_DATEPART", 2, _datepart)
