@@ -88,56 +88,6 @@ def extract_context_tables(schema_context: str, max_tables: int = 4) -> list[str
     return found
 
 
-def validate_sql_against_schema(sql: str) -> list[str]:
-    """
-    Lightweight guard against hallucinated tables/columns before hitting MES DB.
-
-    It intentionally focuses on the most common LLM failure pattern:
-    table aliases with non-existent column names, e.g. L.LOTQTY.
-    """
-    schema = _load_schema()
-    errors: list[str] = []
-    aliases: dict[str, str] = {}
-
-    table_patterns = [
-        re.compile(
-            r"\b(?:FROM|JOIN)\s+(CIM_\w+)\s+WITH\s*\(NOLOCK\)\s*(?:AS\s+)?([A-Za-z_]\w*)?",
-            re.IGNORECASE,
-        ),
-        re.compile(
-            r"\b(?:FROM|JOIN)\s+(CIM_\w+)(?:\s+(?:AS\s+)?([A-Za-z_]\w*))?",
-            re.IGNORECASE,
-        ),
-    ]
-
-    for table_pattern in table_patterns:
-        for match in table_pattern.finditer(sql):
-            table = match.group(1).upper()
-            alias = match.group(2) or table
-
-            if table not in schema:
-                error = f"스키마에 없는 테이블: {table}"
-                if error not in errors:
-                    errors.append(error)
-                continue
-
-            aliases[table] = table
-            if alias and alias.upper() not in {"WITH", "ON", "WHERE", "JOIN", "GROUP", "ORDER"}:
-                aliases[alias.upper()] = table
-
-    for alias, column in re.findall(r"\b([A-Za-z_]\w*)\.([A-Za-z_]\w*)\b", sql):
-        table = aliases.get(alias.upper())
-        if not table:
-            continue
-        valid_columns = {c.get("name", "").upper() for c in schema[table].get("columns", [])}
-        if column.upper() not in valid_columns:
-            error = f"{table}에 없는 컬럼: {alias}.{column}"
-            if error not in errors:
-                errors.append(error)
-
-    return errors
-
-
 def _quote_col(column: str) -> str:
     return f"[{column}]"
 
@@ -293,7 +243,3 @@ async def build_live_db_context(schema_context: str, max_tables: int = 3) -> str
     context = "\n\n".join(sections)
     _LIVE_CONTEXT_CACHE[cache_key] = (time.monotonic(), context)
     return context
-
-
-# eval/ 벤치마크는 이 모듈이 core/db_context.py 이던 시절의 이름을 부른다.
-build_db_context = build_live_db_context

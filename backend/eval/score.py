@@ -172,7 +172,7 @@ def main():
     parser.add_argument(
         "--gold",
         type=Path,
-        default=Path("data/benchmark/mes_nl2sql_gold_v2.jsonl"),
+        default=Path("data/benchmark/mes_nl2sql_gold_v3.jsonl"),
     )
     parser.add_argument("--by", choices=["difficulty", "requires_join"], default=None)
     args = parser.parse_args()

@@ -14,11 +14,6 @@ vector_index/
 # 이름 변경(a83546e) 전의 인덱스 경로. 옛 기본값으로 도는 코드가 있으면 다시 생긴다.
 chroma_db/
 
-# Frontend local files
-UI/.env
-UI/.vite/
-UI/node_modules/
-UI/dist/
 
 # 기타
 .DS_Store

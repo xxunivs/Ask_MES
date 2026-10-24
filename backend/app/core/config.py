@@ -18,7 +18,7 @@ VLLM_API_KEY = os.getenv("VLLM_API_KEY", "EMPTY")
 # SQL 실행 대상: "demo" 는 로컬 데모 DB(가상 데이터), "mes_api" 는 원격 MES API(실제 DB)
 DB_BACKEND = os.getenv("DB_BACKEND", "demo").strip().lower()
 
-# MES DB API (기존 mes-api) 설정
+# 원격 MES API (실제 DB, DB_BACKEND=mes_api 일 때)
 MES_API_URL = os.getenv("MES_API_URL", "http://localhost:8000")
 MES_API_KEY = os.getenv("MES_API_KEY", "my-secret-api-key")
 

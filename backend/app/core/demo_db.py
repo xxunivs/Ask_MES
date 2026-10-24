@@ -17,7 +17,7 @@ from app.core.config import (
 
 
 def connect() -> pymssql.Connection:
-    """관리자 계정 접속 (데이터 생성, 진행 현황용)"""
+    """관리자 계정 접속 (가상 데이터 생성용)"""
     return pymssql.connect(
         server=DEMO_DB_HOST,
         port=DEMO_DB_PORT,
@@ -38,15 +38,3 @@ def connect_reader() -> pymssql.Connection:
         database=DEMO_DB_NAME,
         login_timeout=5,
     )
-
-
-def table_row_counts() -> dict[str, int]:
-    """표별 행 수 (sys.partitions 기준, 전체 스캔 없음)"""
-    with connect() as conn:
-        cur = conn.cursor()
-        cur.execute(
-            "SELECT t.name, SUM(p.rows) FROM sys.tables t "
-            "JOIN sys.partitions p ON p.object_id = t.object_id AND p.index_id IN (0, 1) "
-            "GROUP BY t.name"
-        )
-        return {name: int(rows) for name, rows in cur.fetchall()}

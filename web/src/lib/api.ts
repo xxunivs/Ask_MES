@@ -19,7 +19,6 @@ export type TraceStep = {
 export type NlToSqlResponse = {
   success: boolean;
   sql: string;
-  description: string;
   data: QueryData | null;
   db_error: string | null;
   trace: TraceStep[];

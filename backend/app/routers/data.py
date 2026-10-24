@@ -2,7 +2,6 @@
 /data 라우터 (데이터 둘러보기)
   GET /data/tables               : 종류별 표 목록과 칸 설명
   GET /data/tables/{name}?page=1 : 표 내용 50줄씩
-  GET /data/demo-progress        : 데모 DB 표별 행 수 (가상 데이터 생성 진행 확인)
 """
 from __future__ import annotations
 
@@ -13,7 +12,6 @@ from functools import lru_cache
 
 from fastapi import APIRouter, HTTPException
 
-from app.core.demo_db import table_row_counts
 from app.core.sql_executor import execute_sql
 
 router = APIRouter()
@@ -129,16 +127,3 @@ async def read_table(name: str, page: int = 1):
         "columns": [{"name": c, "label": _column_label(name, c)} for c in result.get("columns", [])],
         "rows": result.get("rows", []),
     }
-
-
-@router.get("/demo-progress")
-def demo_progress():
-    """데모 DB 표별 행 수"""
-    try:
-        counts = table_row_counts()
-    except Exception as e:
-        raise HTTPException(status_code=502, detail=f"데모 DB 접속 실패: {e}")
-    return [
-        {"group": group, "tables": [{**_table_summary(n), "rows": counts.get(n, 0)} for n in names]}
-        for group, names in GROUPS
-    ]

@@ -12,11 +12,8 @@ from dataclasses import dataclass, field
 from functools import lru_cache
 from typing import Optional
 
-from app.core.code_values import code_values_prompt_hint, validate_code_literals
-from app.core.concept_alignment import (
-    alignment_prompt_rules,
-    validate_concept_table_alignment,
-)
+from app.core.code_values import validate_code_literals
+from app.core.concept_alignment import validate_concept_table_alignment
 
 _BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DEFAULT_SCHEMA_PATH = os.path.join(_BASE_DIR, "../../data/mes_schema.json")
@@ -261,89 +258,6 @@ def validate_sql(
     )
 
 
-def build_schema_correction_prompt(
-    question: str,
-    schema_ctx: str,
-    invalid_sql: str,
-    validation: ValidationResult,
-) -> str:
-    """스키마 오류 시 LLM 재생성용 프롬프트."""
-    err = validation.error_message()
-    valid_sample = ", ".join(sorted(get_schema_registry().table_names)[:12])
-    cv = code_values_prompt_hint() or "(없음)"
-    return f"""이전에 생성한 SQL에 스키마 오류가 있습니다. mes_schema.json에 정의된 이름만 사용해 다시 작성하세요.
-
-## 오류 내용
-{err}
-
-## 잘못된 SQL
-{invalid_sql}
-
-## MES 스키마 정보
-{schema_ctx}
-
-## 허용 테이블 (일부)
-{valid_sample} ... (총 {len(get_schema_registry().table_names)}개 CIM_* 테이블)
-
-## 필수 규칙
-- CIM_MATERIAL 테이블은 존재하지 않음. 자재 LOT → CIM_MATERIALLOT, 자재 정의·안전재고 → CIM_MATERIALDEFINITION
-- 컬럼/테이블명은 스키마에 있는 이름만 사용
-- SELECT만, 모든 테이블에 WITH (NOLOCK)
-- SELECT * 금지. NODENAME/SEGMENTNAME/ORDERID/SAFETYSTOCKYN/MATERIALID 컬럼 금지
-- 단일 테이블 목록 질의는 JOIN 하지 말 것. CIM_BATCH.LOTID 컬럼 없음 (LOT 연결은 CIM_LOTBATCHREL)
-- 자재 LOT 이름 → MATERIALLOTNAME (LOTNAME은 CIM_LOT 전용)
-
-## 코드값 (WHERE 절 리터럴)
-{cv}
-
-## 질의-테이블 매핑
-{alignment_prompt_rules()}
-
-## 사용자 질문
-{question}
-
-반드시 JSON만 응답: {{"sql": "SELECT ...", "description": "..."}}
-JSON 응답:"""
-
-
-def build_db_correction_prompt(
-    question: str,
-    schema_ctx: str,
-    failed_sql: str,
-    db_error: str,
-) -> str:
-    """DB 실행 실패 시 LLM 재생성용 프롬프트."""
-    cv = code_values_prompt_hint() or "(없음)"
-    return f"""이전 SQL은 스키마 검증은 통과했으나 MES DB 실행에 실패했습니다. 오류를 참고해 단순하고 실행 가능한 SELECT로 다시 작성하세요.
-
-## DB 오류
-{db_error[:500]}
-
-## 실패한 SQL
-{failed_sql}
-
-## MES 스키마 정보
-{schema_ctx}
-
-## 수정 지침
-- 불필요한 JOIN 제거. 단일 테이블로 가능하면 JOIN 하지 마세요.
-- SELECT * 금지. WITH (NOLOCK) 모든 테이블에 적용.
-- JOIN은 스키마 FK 관계만 사용 (CIM_BATCH.LOTID 같은 컬럼 없음).
-- 복잡한 서브쿼리·DATEDIFF 계산 대신 스키마에 있는 컬럼을 직접 SELECT.
-
-## 코드값
-{cv}
-
-## 질의-테이블 매핑
-{alignment_prompt_rules()}
-
-## 사용자 질문
-{question}
-
-반드시 JSON만 응답: {{"sql": "SELECT ...", "description": "..."}}
-JSON 응답:"""
-
-
 def allowed_tables_hint(max_names: int = 30) -> str:
     """프롬프트에 넣을 짧은 화이트리스트 안내."""
     names = sorted(get_schema_registry().table_names)
@@ -355,8 +269,3 @@ def allowed_tables_hint(max_names: int = 30) -> str:
         "자재 LOT → CIM_MATERIALLOT, 자재 정의·안전재고 → CIM_MATERIALDEFINITION"
     )
     return f"사용 가능한 테이블 예: {listed}{suffix}.{forbidden}"
-
-
-def full_validation_hint() -> str:
-    parts = [allowed_tables_hint(), code_values_prompt_hint(), alignment_prompt_rules()]
-    return "\n".join(p for p in parts if p)

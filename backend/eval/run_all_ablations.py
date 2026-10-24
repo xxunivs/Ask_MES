@@ -58,7 +58,7 @@ def main():
         default=",".join(PRESETS_DEFAULT),
         help="Comma-separated: B0,B1,B2,B3,FULL",
     )
-    parser.add_argument("--gold", type=Path, default=Path("data/benchmark/mes_nl2sql_gold_v2.jsonl"))
+    parser.add_argument("--gold", type=Path, default=Path("data/benchmark/mes_nl2sql_gold_v3.jsonl"))
     parser.add_argument("--execute", action="store_true", help="Execute SQL via MES API")
     parser.add_argument("--dry-run", action="store_true", help="Skip LLM (not useful for ablation)")
     parser.add_argument("--limit", type=int, default=100)

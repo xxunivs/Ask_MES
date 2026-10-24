@@ -3,7 +3,7 @@ eval/report.py — ablation 결과 비교표 생성 (논문용)
 
 Usage:
   python eval/report.py eval/results/experiment_20260602_120000
-  python eval/report.py eval/results/run_FULL_*.csv --gold data/benchmark/mes_nl2sql_gold_v2.jsonl
+  python eval/report.py eval/results/run_FULL_*.csv --gold data/benchmark/mes_nl2sql_gold_v3.jsonl
 """
 from __future__ import annotations
 
@@ -70,7 +70,7 @@ def build_markdown(summaries: list[dict], out_dir: Path) -> str:
 def main():
     parser = argparse.ArgumentParser(description="Build ablation comparison report")
     parser.add_argument("target", type=Path, help="CSV file, glob dir, or experiment folder")
-    parser.add_argument("--gold", type=Path, default=Path("data/benchmark/mes_nl2sql_gold_v2.jsonl"))
+    parser.add_argument("--gold", type=Path, default=Path("data/benchmark/mes_nl2sql_gold_v3.jsonl"))
     parser.add_argument("--out", type=Path, default=None)
     args = parser.parse_args()
 
