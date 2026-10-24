@@ -48,24 +48,25 @@ class OllamaEmbeddingFunction(embedding_functions.EmbeddingFunction):
 class DeepInfraEmbeddingFunction(embedding_functions.EmbeddingFunction):
 
     def __init__(self, model: str):
+        import httpx
+
         self._model = model
+        # 질문마다 TLS 연결을 새로 맺지 않도록 연결 재사용
+        self._client = httpx.Client(timeout=120.0)
 
     def name(self) -> str:
         return f"deepinfra-{self._model}"
 
     def __call__(self, input):
-        import httpx
-
         vectors = []
-        with httpx.Client(timeout=120.0) as client:
-            for i in range(0, len(input), 64):
-                resp = client.post(
-                    f"{DEEPINFRA_URL}/embeddings",
-                    json={"model": self._model, "input": list(input[i:i + 64])},
-                    headers={"Authorization": f"Bearer {DEEPINFRA_API_KEY}"},
-                )
-                resp.raise_for_status()
-                vectors.extend(d["embedding"] for d in resp.json()["data"])
+        for i in range(0, len(input), 64):
+            resp = self._client.post(
+                f"{DEEPINFRA_URL}/embeddings",
+                json={"model": self._model, "input": list(input[i:i + 64])},
+                headers={"Authorization": f"Bearer {DEEPINFRA_API_KEY}"},
+            )
+            resp.raise_for_status()
+            vectors.extend(d["embedding"] for d in resp.json()["data"])
         return vectors
 
 

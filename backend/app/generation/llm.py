@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import asyncio
+
 import httpx
 from app.config import (
     DEEPINFRA_API_KEY,
@@ -13,6 +15,18 @@ from app.config import (
 )
 
 _OPENAI_COMPATIBLE = {"vllm", "openai", "deepinfra"}
+
+_client: httpx.AsyncClient | None = None
+_client_loop: asyncio.AbstractEventLoop | None = None
+
+
+def _shared_client() -> httpx.AsyncClient:
+    # 요청마다 연결을 새로 맺으면 질문당 수백 ms 지연, 이벤트 루프가 바뀌면 새로 생성
+    global _client, _client_loop
+    loop = asyncio.get_running_loop()
+    if _client is None or _client_loop is not loop:
+        _client, _client_loop = httpx.AsyncClient(timeout=180.0), loop
+    return _client
 
 
 def _openai_endpoint() -> tuple[str, str]:
@@ -51,13 +65,12 @@ async def _ollama_generate(
         "options": options,
     }
     try:
-        async with httpx.AsyncClient(timeout=180.0) as client:
-            resp = await client.post(f"{OLLAMA_URL}/api/generate", json=payload)
-            resp.raise_for_status()
-            data = resp.json()
-            if "response" not in data:
-                raise ValueError(f"Ollama 응답에 'response' 키 없음: {data}")
-            return data["response"].strip()
+        resp = await _shared_client().post(f"{OLLAMA_URL}/api/generate", json=payload)
+        resp.raise_for_status()
+        data = resp.json()
+        if "response" not in data:
+            raise ValueError(f"Ollama 응답에 'response' 키 없음: {data}")
+        return data["response"].strip()
     except httpx.ReadTimeout:
         raise RuntimeError("Ollama 응답 타임아웃 (180초 초과) — 모델 로딩 중이거나 과부하 상태")
     except httpx.ConnectError:
@@ -83,15 +96,10 @@ async def _vllm_generate(
     url, key = _openai_endpoint()
     headers = {"Authorization": f"Bearer {key}"}
     try:
-        async with httpx.AsyncClient(timeout=180.0) as client:
-            resp = await client.post(
-                f"{url}/chat/completions",
-                json=payload,
-                headers=headers,
-            )
-            resp.raise_for_status()
-            data = resp.json()
-            return data["choices"][0]["message"]["content"].strip()
+        resp = await _shared_client().post(f"{url}/chat/completions", json=payload, headers=headers)
+        resp.raise_for_status()
+        data = resp.json()
+        return data["choices"][0]["message"]["content"].strip()
     except httpx.ReadTimeout:
         raise RuntimeError("vLLM 응답 타임아웃 (180초 초과) — 모델 로딩 중이거나 과부하 상태")
     except httpx.ConnectError:
