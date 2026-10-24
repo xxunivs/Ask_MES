@@ -6,9 +6,9 @@
 
 **데모: https://ask-mes.web.app** (실제 공장 데이터 대신 가상 데이터로 동작합니다)
 
-| 기간 | 구분 | 맡은 역할 |
-|------|------|------|
-| 2026.03 ~ 2026.06 | 캡스톤디자인 팀 프로젝트, LS티라유텍 협업 | AI, BE, FE |
+| 기간 | 구분 |
+|------|------|
+| 2026.03 ~ 2026.06 | 캡스톤디자인 팀 프로젝트, LS티라유텍 협업 |
 
 <br>
 
@@ -39,20 +39,55 @@ SQL을 모르는 제조 현업이 **자연어로 질문하면 SQL로 바꿔 MES 
 
 ## 🔧 트러블 슈팅
 
-| 문제 | 해결 | 코드 |
-|------|------|------|
-| **1. 질문에 맞는 테이블 찾기**<br>현장 용어('홀드')와 DB 이름(`ISHOLD`)이 달라 테이블을 못 찾음 | 현장 용어 155개 개념 사전과 벡터 검색을 합쳐 정답 테이블 적중률 100% | `backend/app/retrieval/retriever.py`<br>`backend/app/retrieval/ontology_loader.py`<br>`backend/data/mes_ontology.ttl` |
-| **2. 테이블 사이 연결 경로 찾기**<br>직접 연결되지 않은 테이블은 LLM이 중간 테이블을 빠뜨림 | 외래키 그래프에서 Dijkstra로 JOIN 경로를 계산해 힌트로 제공, SQL 실행 성공률 80% → 89.5% | `backend/app/retrieval/fk_resolver.py` |
-| **3. 컬럼 안의 실제 값 맞추기**<br>'Y', 'N' 컬럼을 `ISHOLD = TRUE`로 비교해 실행 오류 | 생성 전에 실제 값을 조회해 프롬프트에 넣어 `ISHOLD = 'Y'`로 생성 | `backend/app/sampling/live_sample.py` |
+### 1. 질문에 맞는 테이블 찾기
+
+<table>
+<tr>
+<td width="48%"><img src="img/ts1_retrieval.png" alt="개념 사전과 벡터 검색"></td>
+<td>
+<b>문제</b><br>현장에서는 '홀드', '보류'라고 말하지만 DB에는 <code>CIM_LOT.ISHOLD</code>로 되어 있어 테이블을 못 찾았고, 457개 컬럼을 전부 넣기엔 컨텍스트가 부족했습니다.<br><br>
+<b>해결</b><br>현장 용어 155개를 DB 컬럼에 연결한 개념 사전과 ChromaDB 벡터 검색을 합쳐, 질문에 필요한 스키마만 골라 LLM에 넘겼습니다.<br><br>
+<b>결과</b><br>정답 테이블 적중률 개념 사전만 88%, 벡터 검색만 96%, 둘 다 쓰면 <b>100%</b><br><br>
+<b>코드</b><br><code>backend/app/retrieval/retriever.py</code><br><code>backend/app/retrieval/ontology_loader.py</code><br><code>backend/data/mes_ontology.ttl</code>
+</td>
+</tr>
+</table>
+
+### 2. 테이블 사이 연결 경로 찾기
+
+<table>
+<tr>
+<td width="48%"><img src="img/ts2_join.png" alt="외래키 그래프로 JOIN 경로 계산"></td>
+<td>
+<b>문제</b><br>'설비 종류별 불량 수량'처럼 필요한 테이블이 직접 연결되어 있지 않으면 LLM이 중간 테이블을 찾지 못해 SQL 생성에 실패했습니다.<br><br>
+<b>해결</b><br>외래키 관계를 그래프로 만들고 Dijkstra로 최단 경로를 계산해, 중간 테이블까지 포함한 JOIN 절을 힌트로 넣었습니다.<br><br>
+<b>결과</b><br>SQL 실행 성공률 80.0% → <b>89.5%</b><br><br>
+<b>코드</b><br><code>backend/app/retrieval/fk_resolver.py</code>
+</td>
+</tr>
+</table>
+
+### 3. 컬럼 안의 실제 값 맞추기
+
+<table>
+<tr>
+<td width="48%"><img src="img/ts3_values.png" alt="실제 값을 조회해 프롬프트에 넣음"></td>
+<td>
+<b>문제</b><br><code>ISHOLD</code>에는 'Y', 'N'이 문자로 들어 있는데, LLM이 컬럼명만 보고 <code>ISHOLD = TRUE</code>로 비교해 실행 오류가 났습니다.<br><br>
+<b>해결</b><br>SQL을 만들기 전에 대상 컬럼의 샘플과 값 분포를 DB에서 조회해 프롬프트에 함께 넣었습니다.<br><br>
+<b>결과</b><br><code>ISHOLD = TRUE</code> (실행 오류) → <code>ISHOLD = 'Y'</code> (<b>실행 성공</b>)<br><br>
+<b>코드</b><br><code>backend/app/sampling/live_sample.py</code>
+</td>
+</tr>
+</table>
 
 <br>
 
 ## 📊 결과
 
-GOLD 질문 200개 기준 SQL 실행 성공률 **37.0% → 89.5%** (검색 없이 테이블 목록만 넣었을 때 대비), 정답 테이블 적중률 **100%**
+실제 MES DB로 직접 만든 GOLD 질문 200개(쉬움 80, 보통 78, 어려움 42)로 측정했습니다.
 
-- 논문 투고: NeuroFactory: Ontology-Grounded Hybrid RAG for Natural Language Querying in Manufacturing Execution Systems (IEEE BigData 2026, BD-SMDT 워크숍, 공동저자)
-- 특허 출원: 사용자 정보를 이용한 자연어 질의 처리 장치 및 그 동작 방법 (10-2026-0182784, 2026.09.23)
+<img src="img/results.png" alt="결과">
 
 <br>
 
