@@ -1,0 +1,9 @@
+{
+  "hosting": {
+    "site": "ask-mes",
+    "public": "public",
+    "rewrites": [
+      { "source": "**", "run": { "serviceId": "ask-mes-web", "region": "us-central1" } }
+    ]
+  }
+}
