@@ -40,6 +40,7 @@ export default function AutoChart({ data }: { data: QueryData }) {
           <YAxis tick={{ fontSize: 10 }} />
           <Tooltip />
           <Legend wrapperStyle={{ fontSize: 11 }} />
+          {/* 막대 애니메이션 끔 (막대가 늦게 보이거나 안 보이는 현상 방지) */}
           <Bar dataKey={first} fill={COLORS[0]} isAnimationActive={false} />
           {second && <Bar dataKey={second} fill={COLORS[1]} isAnimationActive={false} />}
         </BarChart>

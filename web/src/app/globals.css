@@ -5,13 +5,10 @@
   --color-primary: #1b1938;
   --color-primary-deep: #0e0c1f;
   --color-violet-soft: #c9b4fa;
-  --color-teal-deep: #0e3030;
-  --color-teal-mid: #155555;
 
   --color-canvas: #ffffff;
   --color-canvas-soft: #fafaf8;
   --color-hairline: #e8e4dd;
-  --color-hairline-dark: #3f3a52;
 
   --color-ink: #292827;
   --color-ink-mute: #73706d;
@@ -37,18 +34,14 @@
   --color-grid-line: #d6dbe2;
   --color-grid-alt: #e8f2fb;
   --color-grid-pick: #a8d8ea;
-  --color-button: #5a6070;
-  --color-button-hover: #4b5160;
   --color-mark: #d0312d;
   --color-link: #1a5fb4;
 
   /* 그림자 */
-  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.08);
   --shadow-float: 0 8px 24px rgba(0, 0, 0, 0.12);
 
   /* 글꼴 */
   --font-sans: var(--font-spoqa), "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
-  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
 }
 
 body {
