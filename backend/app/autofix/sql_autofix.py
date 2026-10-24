@@ -1,4 +1,3 @@
-"""LLM 재생성보다 싸고 확실한 코드 교정"""
 from __future__ import annotations
 
 import difflib
@@ -50,7 +49,6 @@ def _fix_alias_after_hint(sql: str) -> tuple[str, bool]:
         changed = True
         return f"{m.group(1)} {m.group('table')} {alias} {m.group('hint')}"
 
-    # 한 번에 안 잡히는 연쇄 JOIN 대비 반복
     for _ in range(10):
         new = _ALIAS_AFTER_HINT_RE.sub(repl, sql)
         if new == sql:
@@ -58,9 +56,6 @@ def _fix_alias_after_hint(sql: str) -> tuple[str, bool]:
         sql = new
     return sql, changed
 
-
-
-# 모델이 지어낸 컬럼명(예: NODENAME)은 같은 테이블의 가장 가까운 이름으로 교정
 
 _SCHEMA_PATH = os.path.join(os.path.dirname(__file__), "../../data/mes_schema.json")
 
@@ -107,7 +102,6 @@ def _fix_unknown_columns(sql: str) -> tuple[str, list]:
         if col.upper() in cols:
             return m.group(0)
         target = col.upper()
-        # NODENAME -> PROCESSNODENAME 같은 접미사 포함 관계 우선
         contains = sorted(
             (c for c in cols if c.endswith(target) or target.endswith(c)),
             key=len,

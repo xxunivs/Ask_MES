@@ -9,7 +9,6 @@ export default function TableScreen({ table }: { table: string }) {
   const [data, setData] = useState<TablePage | null>(null);
   const [error, setError] = useState("");
   const [picked, setPicked] = useState<number | null>(null);
-  // 별도 상태 대신 받아 둔 데이터와 현재 페이지 비교로 불러오는 중 판단
   const loading = !error && data?.page !== page;
 
   useEffect(() => {

@@ -1,4 +1,3 @@
-"""demo, mes_api 공통 반환 형태 { success, columns, rows, count }"""
 from __future__ import annotations
 
 import asyncio
@@ -7,8 +6,8 @@ from decimal import Decimal
 
 import httpx
 
-from app.core.config import DB_BACKEND, MES_API_KEY, MES_API_URL
-from app.core.demo_db import connect_reader
+from app.config import DB_BACKEND, MES_API_KEY, MES_API_URL
+from app.execution.demo_db import connect_reader
 
 # python 기본 User-Agent 는 원격 서버가 봇으로 보고 403 반환
 _HEADERS = {

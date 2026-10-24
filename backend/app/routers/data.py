@@ -7,7 +7,7 @@ from functools import lru_cache
 
 from fastapi import APIRouter, HTTPException
 
-from app.core.sql_executor import execute_sql
+from app.execution.sql_executor import execute_sql
 
 router = APIRouter()
 

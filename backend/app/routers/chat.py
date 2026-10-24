@@ -3,9 +3,9 @@ from __future__ import annotations
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
-from app.core.config import LLM_MODEL, LLM_PROVIDER
-from app.core.llm import check_ollama
-from app.core.pipeline import run_pipeline
+from app.config import LLM_MODEL, LLM_PROVIDER
+from app.generation.llm import check_ollama
+from app.pipeline import run_pipeline
 
 router = APIRouter()
 
@@ -17,7 +17,6 @@ class NlToSqlRequest(BaseModel):
 
 @router.post("/nl-to-sql")
 async def nl_to_sql(req: NlToSqlRequest):
-    """success 는 DB 실행까지의 성공 여부"""
     try:
         result = await run_pipeline(req.question, limit=req.limit)
     except Exception as e:

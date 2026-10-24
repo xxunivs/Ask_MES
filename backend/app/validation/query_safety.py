@@ -1,4 +1,3 @@
-"""정규식은 주석 삽입(`SEL/**/ECT`), 이스케이프, 서브쿼리로 우회되므로 토큰 트리로 판단"""
 from __future__ import annotations
 
 from dataclasses import dataclass, field
@@ -15,7 +14,7 @@ _FORBIDDEN_KEYWORDS = {
     "EXEC", "EXECUTE", "CALL",
     "BACKUP", "RESTORE", "SHUTDOWN", "KILL",
     "BULK", "OPENROWSET", "OPENDATASOURCE", "OPENQUERY", "OPENXML",
-    "INTO",  # SELECT ... INTO 의 테이블 생성 방지
+    "INTO",
 }
 
 _SYSTEM_PREFIXES = (
@@ -49,7 +48,6 @@ class SafetyVerdict:
 
 
 def _strip_comments(statement: TokenList) -> list[Token]:
-    """`SEL/**/ECT` 류 난독화 무력화"""
     out: list[Token] = []
     for tok in statement.flatten():
         if tok.ttype in T.Comment or isinstance(tok, Comment):
@@ -80,7 +78,6 @@ def _touches_system_object(toks: list[Token]) -> Optional[str]:
             for prefix in _SYSTEM_PREFIXES:
                 if name == prefix.rstrip(".") or name.startswith(prefix):
                     return tok.value
-    # 점 표기(sys . objects)로 흩어진 경우 대비
     joined = "".join(v for v in _upper_values(toks) if v not in {" "})
     for prefix in _SYSTEM_PREFIXES:
         if prefix in joined:
@@ -92,7 +89,6 @@ def _is_full_scan(toks: list[Token]) -> bool:
     words = set(_upper_values(toks))
     if words & {"WHERE", "TOP", "LIMIT", "OFFSET", "FETCH"}:
         return False
-    # 집계 전용 질의는 결과가 작아 전체 스캔 허용
     if words & {"COUNT", "SUM", "AVG", "MIN", "MAX", "GROUP"}:
         return False
     return True

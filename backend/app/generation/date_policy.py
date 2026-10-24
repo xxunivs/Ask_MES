@@ -3,7 +3,6 @@ from __future__ import annotations
 
 import os
 
-# dev_last_year 또는 production
 MES_DATE_MODE = os.getenv("MES_DATE_MODE", "dev_last_year").strip().lower()
 
 _DEV_LAST_YEAR_RULES = """4. [개발 DB / 벤치마크 모드] 기본 기준일은 **1년 전**이다.

@@ -41,7 +41,6 @@ class FKPathResolver:
 
     def _add_edge(self, edge: FKEdge):
         self._graph.setdefault(edge.src_table, []).append(edge)
-        # JOIN은 양쪽 방향 모두 가능하므로 역방향 엣지도 추가
         reverse = FKEdge(
             src_table=edge.dst_table,
             dst_table=edge.src_table,
@@ -64,7 +63,6 @@ class FKPathResolver:
             self._graph.setdefault(tname, [])
 
             for fk in table.get("foreign_keys", []):
-                # SUBPROCESSDEFINITIONID 같은 자기 참조는 JOIN 경로에 무의미
                 if fk["ref_table"] == tname:
                     continue
                 edge = FKEdge(
@@ -113,7 +111,6 @@ class FKPathResolver:
         return []
 
     def get_join_sql(self, tables: list[str], max_hops: int = 4) -> str:
-        """max_hops 초과 경로는 프롬프트 오염 방지로 제외"""
         if len(tables) < 2:
             return ""
 
@@ -173,60 +170,3 @@ def get_resolver(schema_path: str = None) -> FKPathResolver:
             )
         _resolver_instance = FKPathResolver(schema_path)
     return _resolver_instance
-
-
-if __name__ == "__main__":
-    import sys
-
-    schema = os.path.join(os.path.dirname(__file__), "../../data/mes_schema.json")
-    if not os.path.exists(schema):
-        schema = "data/mes_schema.json"
-
-    resolver = FKPathResolver(schema)
-
-    test_pairs = [
-        ("CIM_LOT",            "CIM_EQUIPMENTCLASS"),   # 2홉
-        ("CIM_LOT",            "CIM_PRODUCTCLASS"),      # 2홉
-        ("CIM_MATERIALLOT",    "CIM_MATERIALCLASS"),     # 1홉
-        ("CIM_LOT",            "CIM_PROCESSNODE"),       # 1홉
-        ("CIM_PRODUCTORDER",   "CIM_PRODUCTCLASS"),      # 1홉
-        ("CIM_LOT",            "CIM_FACILITY"),          # 2홉, EQUIPMENT 경유
-        ("CIM_PROCESSNODE",    "CIM_PROCESSSEGMENT"),    # 1홉
-        ("CIM_LOT",            "CIM_MATERIALDEFINITION"),# 연결 없음
-    ]
-
-    print("\n" + "="*65)
-    print("  FKPathResolver 경로 테스트")
-    print("="*65)
-    for src, dst in test_pairs:
-        print(f"\n  {resolver.describe_path(src, dst)}")
-        path = resolver.shortest_join_path(src, dst)
-        if path:
-            for step in path:
-                print(f"    {step['join_clause']}")
-
-    if len(sys.argv) >= 3:
-        src, dst = sys.argv[1], sys.argv[2]
-        print(f"\n{'='*65}")
-        print(f"  사용자 입력: {src} → {dst}")
-        print("="*65)
-        print(resolver.describe_path(src, dst))
-        for step in resolver.shortest_join_path(src, dst):
-            print(f"  {step['join_clause']}")
-
-    print(f"\n{'='*65}")
-    print("  다중 테이블 JOIN SQL 생성 테스트")
-    print("="*65)
-    test_groups = [
-        ["CIM_LOT", "CIM_EQUIPMENT", "CIM_EQUIPMENTCLASS"],
-        ["CIM_LOT", "CIM_PRODUCTORDER", "CIM_PRODUCTDEFINITION"],
-        ["CIM_MATERIALLOT", "CIM_MATERIALDEFINITION", "CIM_MATERIALCLASS"],
-    ]
-    for tables in test_groups:
-        print(f"\n  입력 테이블: {tables}")
-        sql = resolver.get_join_sql(tables)
-        if sql:
-            for line in sql.split("\n"):
-                print(f"    {line}")
-        else:
-            print("    (JOIN 경로 없음)")

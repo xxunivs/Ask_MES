@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import httpx
-from app.core.config import (
+from app.config import (
     LLM_PROVIDER,
     LLM_MODEL,
     OLLAMA_URL,
@@ -17,7 +17,6 @@ async def llm_generate(
     max_tokens: int = 512,
     seed: int | None = 0,
 ) -> str:
-    """seed 는 재현성용 고정값, None 이면 비결정적"""
     if LLM_PROVIDER in {"vllm", "openai"}:
         return await _vllm_generate(prompt, temperature, max_tokens, seed)
     return await _ollama_generate(prompt, temperature, max_tokens, seed)
@@ -29,7 +28,6 @@ async def _ollama_generate(
     options = {
         "temperature": temperature,
         "num_predict": max_tokens,
-        # 스키마 컨텍스트(약 3천 토큰) 잘림 방지용 길이
         "num_ctx": 8192,
     }
     if seed is not None:
@@ -68,7 +66,7 @@ async def _vllm_generate(
         "max_tokens": max_tokens,
     }
     if LLM_PROVIDER == "vllm":
-        # SQL 출력에 불필요하고 지연과 토큰을 대부분 소모하는 Qwen thinking 모드 비활성화
+        # 응답 지연 방지용 Qwen thinking 모드 비활성화 (vLLM 방식)
         payload["chat_template_kwargs"] = {"enable_thinking": False}
         if seed is not None:
             payload["seed"] = seed

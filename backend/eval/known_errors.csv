@@ -1,0 +1,58 @@
+﻿id,question,pred_sql,db_error,exec_ok
+Q002,홀드 상태인 LOT 목록 보여줘,"SELECT LOTID, LOTNAME, COMMENTS, DESCRIPTION FROM CIM_LOT WHERE ISHOLD = 'TRUE' WITH (NOLOCK)","Server error '500 Internal Server Error' for url 'https://smile-republican-treo-britney.trycloudflare.com/api/mes/query'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/500",False
+Q005,작업지시 전체 목록과 상태를 보여줘,"SELECT CIM_PRODUCTORDER.ORDERID, CIM_PRODUCTORDER.DESCRIPTION AS 작업지시, CIM_LOT.STATE AS 상태 FROM CIM_PRODUCTORDER WITH (NOLOCK) JOIN CIM_LOT WITH (NOLOCK) ON CIM_PRODUCTORDER.PRODUCTORDERID = CIM_LOT.PRODUCTORDERID","Server error '500 Internal Server Error' for url 'https://smile-republican-treo-britney.trycloudflare.com/api/mes/query'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/500",False
+Q008,안전재고가 있는 자재 목록 보여줘,"SELECT CIM_MATERIAL.STOCKID, CIM_MATERIAL.MATERIALNAME FROM CIM_MATERIAL WITH (NOLOCK) WHERE CIM_MATERIAL.SAFETYSTOCK > 0","Server error '500 Internal Server Error' for url 'https://smile-republican-treo-britney.trycloudflare.com/api/mes/query'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/500",False
+Q010,불량 유형 목록 보여줘,SELECT DISTINCT CIM_MATERIALLOT.DESCRIPTION AS 불량유형 FROM CIM_EQUIPMENT WITH (NOLOCK) JOIN CIM_LOT WITH (NOLOCK) ON CIM_EQUIPMENT.EQUIPMENTID = CIM_LOT.EQUIPMENTID JOIN CIM_MATERIALLOT WITH (NOLOCK) ON CIM_LOT.MATERIALLOTID = CIM_MATERIALLOT.MATERIALLOTID,"Server error '500 Internal Server Error' for url 'https://smile-republican-treo-britney.trycloudflare.com/api/mes/query'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/500",False
+Q015,배치 전체 목록과 상태를 보여줘,"SELECT CIM_BATCH.BATCHID, CIM_LOT.STATE FROM CIM_EQUIPMENT WITH (NOLOCK) JOIN CIM_LOT WITH (NOLOCK) ON CIM_EQUIPMENT.EQUIPMENTID = CIM_LOT.EQUIPMENTID JOIN CIM_BATCH WITH (NOLOCK) ON CIM_LOT.BATCHID = CIM_BATCH.BATCHID","Server error '500 Internal Server Error' for url 'https://smile-republican-treo-britney.trycloudflare.com/api/mes/query'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/500",False
+Q016,유통기한이 지난 자재 LOT 목록 보여줘,"SELECT CIM_LOT.LOTID, CIM_LOT.LOTNAME, CIM_LOT.LOCATION, CIM_MATERIALLOT.EXPIREDATE FROM CIM_LOT WITH (NOLOCK) INNER JOIN CIM_MATERIALLOT WITH (NOLOCK) ON CIM_LOT.LOTID = CIM_MATERIALLOT.LOTID WHERE CIM_MATERIALLOT.EXPIREDATE < DATEADD(year, -1, GETDATE())","Server error '500 Internal Server Error' for url 'https://smile-republican-treo-britney.trycloudflare.com/api/mes/query'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/500",False
+Q018,공정 정의별 공정 노드 목록을 보여줘,"SELECT CIM_PROCESSDEFINITION.PROCESSDEFINITIONID, CIM_PROCESSNODE.NODENAME AS 공정nodeName FROM CIM_PROCESSDEFINITION JOIN CIM_PROCESSSEGMENT WITH (NOLOCK) ON CIM_PROCESSDEFINITION.PROCESSDEFINITIONID = CIM_PROCESSSEGMENT.PROCESSDEFINITIONID JOIN CIM_PROCESSNODE WITH (NOLOCK) ON CIM_PROCESSSEGMENT.PROCESSSEGMENTID = CIM_PROCESSNODE.PROCESSSEGMENTID","Server error '500 Internal Server Error' for url 'https://smile-republican-treo-britney.trycloudflare.com/api/mes/query'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/500",False
+Q020,설비별 TrackIn 건수 추이를 일별로 보여줘,"SELECT CONVERT(date, TRACKINTIME) AS 작업일자, EQUIPMENTID, COUNT(*) AS 건수 FROM CIM_LOT WITH (NOLOCK) JOIN CIM_EQUIPMENT WITH (NOLOCK) ON CIM_EQUIPMENT.EQUIPMENTID = CIM_LOT.EQUIPMENTID WHERE TRACKINTIME >= DATEADD(year, -1, GETDATE()) GROUP BY CONVERT(date, TRACKINTIME), EQUIPMENTID","Server error '500 Internal Server Error' for url 'https://smile-republican-treo-britney.trycloudflare.com/api/mes/query'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/500",False
+Q024,LOT ID와 제품명을 함께 보여줘,"SELECT LOTID, CIM_PRODUCTDEFINITION.NAME AS 제품명 FROM CIM_LOT WITH (NOLOCK) JOIN CIM_PRODUCTDEFINITION WITH (NOLOCK) ON CIM_LOT.PRODUCTDEFINITIONID = CIM_PRODUCTDEFINITION.PRODUCTDEFINITIONID","Server error '500 Internal Server Error' for url 'https://smile-republican-treo-britney.trycloudflare.com/api/mes/query'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/500",False
+Q026,제품별 기본 공정 라우팅 목록을 보여줘,"SELECT CIM_PRODUCTDEFINITION.DESCRIPTION AS 제품설명, CIM_PROCESSPATH.PATHDESCRIPTION AS 공정라우팅 FROM CIM_PROCESSDEFINITION JOIN CIM_PROCESSPATH WITH (NOLOCK) ON CIM_PROCESSDEFINITION.PROCESSDEFINITIONID = CIM_PROCESSPATH.PROCESSDEFINITIONID JOIN CIM_PROCESSSEGMENT WITH (NOLOCK) ON CIM_PROCESSPATH.PROCESSSEGMENTID = CIM_PROCESSSEGMENT.PROCESSSEGMENTID JOIN CIM_PRODUCTDEFINITION WITH (NOLOCK) ON CIM_PROCESSDEFINITION.PRODUCTDEFINITIONID = CIM_PRODUCTDEFINITION.PRODUCTDEFINITIONID","Server error '500 Internal Server Error' for url 'https://smile-republican-treo-britney.trycloudflare.com/api/mes/query'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/500",False
+Q027,LOT과 배치 연결 관계 목록을 보여줘,"SELECT CIM_LOT.LOTNAME AS_lot_name, CIM_BATCH.BATCHID AS_batch_id FROM CIM_LOT WITH (NOLOCK) INNER JOIN CIM_BATCH WITH (NOLOCK) ON CIM_LOT.BATCHID = CIM_BATCH.BATCHID","Server error '500 Internal Server Error' for url 'https://smile-republican-treo-britney.trycloudflare.com/api/mes/query'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/500",False
+Q028,배치별 연결된 LOT 수를 보여줘,"SELECT COUNT(DISTINCT CIM_LOT.LOTID) AS LOT수, CIM_BATCH.BATCHNAME AS 배치명 FROM CIM_LOT INNER JOIN CIM_BATCH ON CIM_LOT.BATCHID = CIM_BATCH.BATCHID WITH (NOLOCK) GROUP BY CIM_BATCH.BATCHNAME","Server error '500 Internal Server Error' for url 'https://smile-republican-treo-britney.trycloudflare.com/api/mes/query'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/500",False
+Q033,공정 구역 전체 목록을 보여줘,SELECT DISTINCT CIM_PROCESSSEGMENT.DESCRIPTION AS 공정구역 FROM CIM_EQUIPMENT WITH (NOLOCK) JOIN CIM_LOT WITH (NOLOCK) ON CIM_EQUIPMENT.EQUIPMENTID = CIM_LOT.EQUIPMENTID JOIN CIM_PROCESSSEGMENT WITH (NOLOCK) ON CIM_LOT.PROCESSSEGMENTID = CIM_PROCESSSEGMENT.PROCESSSEGMENTID,"Server error '500 Internal Server Error' for url 'https://smile-republican-treo-britney.trycloudflare.com/api/mes/query'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/500",False
+Q037,공정 노드와 공정 세그먼트 이름을 함께 보여줘,"SELECT DISTINCT CIM_PROCESSNODE.NODENAME AS 공정노드, CIM_PROCESSSEGMENT.SEGMENTNAME AS 공정세그먼트 FROM CIM_PROCESSSEGMENT WITH (NOLOCK) JOIN CIM_PROCESSNODE WITH (NOLOCK) ON CIM_PROCESSSEGMENT.PROCESSSEGMENTID = CIM_PROCESSNODE.PROCESSSEGMENTID","Server error '500 Internal Server Error' for url 'https://smile-republican-treo-britney.trycloudflare.com/api/mes/query'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/500",False
+Q038,공정 경로 전체 목록을 보여줘,"SELECT DISTINCT CIM_PROCESSPATH.PROCESSPATHID, CIM_PROCESSPATH.DESCRIPTION AS 공정경로명 FROM CIM_PROCESSSEGMENT WITH (NOLOCK) JOIN CIM_PROCESSNODE WITH (NOLOCK) ON CIM_PROCESSSEGMENT.PROCESSSEGMENTID = CIM_PROCESSNODE.PROCESSSEGMENTID JOIN CIM_PROCESSPATH WITH (NOLOCK) ON CIM_PROCESSNODE.PROCESSNODEID = CIM_PROCESSPATH.NEXTPROCESSNODEID","Server error '500 Internal Server Error' for url 'https://smile-republican-treo-britney.trycloudflare.com/api/mes/query'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/500",False
+Q039,자동 디스패치가 설정된 공정 경로를 보여줘,"SELECT 
+    CIM_PROCESSPATH.PROCESSPATHID, 
+    CIM_PROCESSPATH.DESCRIPTION AS 공정경로설명, 
+    CIM_PROCESSSEGMENT.SEGMENTNAME AS 공정구간이름, 
+    CIM_EQUIPMENT.EQUIPMENTID AS 설비ID, 
+    CIM_EQUIPMENT.DESCRIPTION AS 설비설명
+FROM 
+    CIM_PROCESSPATH WITH (NOLOCK)
+JOIN 
+    CIM_PROCESSNODE WITH (NOLOCK) ON CIM_PROCESSSEGMENT.PROCESSSEGMENTID = CIM_PROCESSNODE.PROCESSSEGMENTID
+JOIN 
+    CIM_PROCESSPATH WITH (NOLOCK) ON CIM_PROCESSNODE.PROCESSNODEID = CIM_PROCESSPATH.NEXTPROCESSNODEID
+JOIN 
+    CIM_LOT WITH (NOLOCK) ON CIM_PROCESSSEGMENT.PROCESSSEGMENTID = CIM_LOT.PROCESSSEGMENTID
+JOIN 
+    CIM_EQUIPMENT WITH (NOLOCK) ON CIM_LOT.EQUIPMENTID = CIM_EQUIPMENT.EQUIPMENTID
+WHERE 
+    CIM_PROCESSPATH.AUTO_DISPATCH = 1","Server error '500 Internal Server Error' for url 'https://smile-republican-treo-britney.trycloudflare.com/api/mes/query'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/500",False
+Q042,설비 상태별 설비 개수를 보여줘,"SELECT CIM_EQUIPMENTSTATE.DESCRIPTION AS 설비상태, COUNT(CIM_EQUIPMENT.EQUIPMENTID) AS 설비개수 FROM CIM_EQUIPMENT WITH (NOLOCK) JOIN CIM_EQUIPMENTSTATE WITH (NOLOCK) ON CIM_EQUIPMENT.STATE = CIM_EQUIPMENTSTATE.STATE GROUP BY CIM_EQUIPMENTSTATE.DESCRIPTION","Server error '500 Internal Server Error' for url 'https://smile-republican-treo-britney.trycloudflare.com/api/mes/query'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/500",False
+Q044,자재 LOT과 자재명을 함께 보여줘,"SELECT CIM_LOT.LOTNAME AS_lot_name, CIM_MATERIALDEFINITION.DESCRIPTION AS_자재명 FROM CIM_LOT JOIN CIM_MATERIALLOT WITH (NOLOCK) ON CIM_LOT.LOTID = CIM_MATERIALLOT.LOTID JOIN CIM_MATERIALDEFINITION WITH (NOLOCK) ON CIM_MATERIALLOT.MATERIALDEFINITIONID = CIM_MATERIALDEFINITION.MATERIALDEFINITIONID","Server error '500 Internal Server Error' for url 'https://smile-republican-treo-britney.trycloudflare.com/api/mes/query'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/500",False
+Q048,제품별 공정 정의 이름을 보여줘,SELECT DISTINCT CIM_PROCESSDEFINITION.NAME AS 공정이름 FROM CIM_PROCESSDEFINITION WITH (NOLOCK) JOIN CIM_LOT WITH (NOLOCK) ON CIM_PROCESSDEFINITION.PROCESSDEFINITIONID = CIM_LOT.PRODUCTDEFINITIONID,"Server error '500 Internal Server Error' for url 'https://smile-republican-treo-britney.trycloudflare.com/api/mes/query'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/500",False
+Q050,홀드 상태 LOT 중 불량 수량 상위 10건을 보여줘,"SELECT TOP 10 CIM_LOT.LOTID, CIM_LOT.DESCRIPTION, CIM_LOT.LOSSQTY FROM CIM_LOT WITH (NOLOCK) WHERE CIM_LOT.ISHOLD = 1 ORDER BY CIM_LOT.LOSSQTY DESC","Server error '500 Internal Server Error' for url 'https://smile-republican-treo-britney.trycloudflare.com/api/mes/query'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/500",False

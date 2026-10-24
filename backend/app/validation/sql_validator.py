@@ -7,8 +7,8 @@ from dataclasses import dataclass, field
 from functools import lru_cache
 from typing import Optional
 
-from app.core.code_values import validate_code_literals
-from app.core.concept_alignment import validate_concept_table_alignment
+from app.validation.code_values import validate_code_literals
+from app.validation.concept_alignment import validate_concept_table_alignment
 
 _BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DEFAULT_SCHEMA_PATH = os.path.join(_BASE_DIR, "../../data/mes_schema.json")
@@ -41,7 +41,6 @@ NOLOCK_BEFORE_ALIAS_RE = re.compile(
 
 NOLOCK_RE = re.compile(r"\bWITH\s*\(\s*NOLOCK\s*\)", re.IGNORECASE)
 
-# 스키마에 없는 환각 컬럼, 단독 출현 시만 차단 (PROCESSNODENAME 등 정식명 제외)
 FORBIDDEN_COLUMNS: dict[str, str] = {
     "NODENAME": "PROCESSNODENAME 을 사용하세요.",
     "SEGMENTNAME": "PROCESSSEGMENTNAME 을 사용하세요.",
@@ -54,7 +53,6 @@ FORBIDDEN_COL_RE = re.compile(
     re.IGNORECASE,
 )
 
-# LLM 이 자주 지어내는 테이블별 안내 문구
 INVALID_TABLE_HINTS: dict[str, str] = {
     "CIM_MATERIAL": (
         "CIM_MATERIAL 테이블은 MES 스키마에 없습니다. "

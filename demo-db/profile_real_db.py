@@ -17,7 +17,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "backend"))
 
-from app.core.sql_executor import execute_sql  # noqa: E402
+from app.execution.sql_executor import execute_sql  # noqa: E402
 
 SAMPLE_ROWS = 2000
 CODE_MAX_DISTINCT = 20
@@ -60,7 +60,6 @@ def describe(column: str, values: list) -> str:
 
 
 def spec_of(column: str, values: list) -> dict:
-    """실제 값은 공개 가능한 코드값만 포함"""
     filled = [v for v in values if v not in (None, "")]
     spec: dict = {"empty_ratio": round(1 - len(filled) / max(len(values), 1), 3)}
     if not filled:

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import pymssql
 
-from app.core.config import (
+from app.config import (
     DEMO_DB_HOST,
     DEMO_DB_NAME,
     DEMO_DB_PASSWORD,

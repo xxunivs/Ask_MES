@@ -12,7 +12,6 @@ _BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 CODE_VALUES_PATH = os.path.join(_BASE_DIR, "../../data/mes_code_values.json")
 CODE_PROFILE_PATH = os.path.join(_BASE_DIR, "../../data/mes_code_profile.json")
 
-# Y/N 코드 컬럼에서 LLM이 흔히 추측하는 잘못된 값
 DEFAULT_FORBIDDEN_YN = ["TRUE", "FALSE", "true", "false", "1", "0", "YES", "NO"]
 
 LITERAL_EQ_RE = re.compile(
@@ -31,7 +30,7 @@ LITERAL_EQ_NUM_RE = re.compile(
 
 @dataclass
 class CodeColumnRule:
-    key: str  # 예: CIM_LOT.ISHOLD
+    key: str
     table: str
     column: str
     label: str

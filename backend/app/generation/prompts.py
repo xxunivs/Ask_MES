@@ -4,10 +4,10 @@ import json
 import re
 from typing import Any
 
-from app.core.code_values import code_values_prompt_hint
-from app.core.concept_alignment import alignment_prompt_rules
-from app.core.date_policy import date_rules_for_prompt
-from app.core.sql_validator import ValidationResult, allowed_tables_hint, get_schema_registry
+from app.validation.code_values import code_values_prompt_hint
+from app.validation.concept_alignment import alignment_prompt_rules
+from app.generation.date_policy import date_rules_for_prompt
+from app.validation.sql_validator import ValidationResult, allowed_tables_hint, get_schema_registry
 
 
 NL_TO_SQL_PROMPT = """MES 질문을 간결한 MS SQL Server SELECT로 변환하세요.
@@ -165,7 +165,6 @@ JSON 응답:"""
 def parse_llm_json(raw: str) -> dict[str, Any]:
     raw = re.sub(r"```[a-zA-Z]*", "", raw).strip().rstrip("`").strip()
 
-    # 모델이 뒤에 예시를 이어 쓰는 경우 대비, 첫 유효 객체만 사용
     decoder = json.JSONDecoder()
     for match in re.finditer(r"\{", raw):
         try:

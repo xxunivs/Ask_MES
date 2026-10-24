@@ -1,14 +1,14 @@
 """
 웹 API(/chat/nl-to-sql)와 벤치마크(eval/run_benchmark.py) 공용
 
-  1. 관련 테이블 찾기   개념 사전 + 벡터 검색        retriever.retrieve_context
-  2. JOIN 경로 계산     FK 그래프 최단 경로          retriever.retrieve_context
-  3. 실제 값 확인       테이블별 샘플 조회           live_sample.build_live_db_context
-  4. SQL 생성           프롬프트 조립 + LLM          prompts, llm
-  5. 자동 교정          확정적인 문법 오류 수정      sql_autofix.autofix_sql
-  6. 검증               스키마, 코드값, 안전성       sql_validator, query_safety
+  1. 관련 테이블 찾기   개념 사전 + 벡터 검색        retrieval/
+  2. JOIN 경로 계산     FK 그래프 최단 경로          retrieval/
+  3. 실제 값 확인       테이블별 샘플 조회           sampling/
+  4. SQL 생성           프롬프트 조립 + LLM          generation/
+  5. 자동 교정          확정적인 문법 오류 수정      autofix/
+  6. 검증               스키마, 코드값, 안전성       validation/
                         실패 시 오류 포함 1회 재생성
-  7. 실행               DB 실행                      sql_executor.execute_sql
+  7. 실행               DB 실행                      execution/
                         실패 시 DB 오류 포함 1회 재생성
 """
 from __future__ import annotations
@@ -17,20 +17,20 @@ import re
 from dataclasses import dataclass, field
 from typing import Optional
 
-from app.core.live_sample import build_live_db_context
-from app.core.llm import llm_generate
-from app.core.prompts import (
+from app.sampling.live_sample import build_live_db_context
+from app.generation.llm import llm_generate
+from app.generation.prompts import (
     NL_TO_SQL_PROMPT,
     build_db_correction_prompt,
     build_schema_correction_prompt,
     parse_llm_json,
     static_prompt_hints,
 )
-from app.core.query_safety import validate_query
-from app.core.retriever import RetrievalConfig, retrieve_context
-from app.core.sql_autofix import autofix_sql
-from app.core.sql_executor import execute_sql
-from app.core.sql_validator import validate_sql
+from app.validation.query_safety import validate_query
+from app.retrieval.retriever import RetrievalConfig, retrieve_context
+from app.autofix.sql_autofix import autofix_sql
+from app.execution.sql_executor import execute_sql
+from app.validation.sql_validator import validate_sql
 
 SCHEMA_RETRY_MAX = 1
 DB_RETRY_MAX = 1

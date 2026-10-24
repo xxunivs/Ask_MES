@@ -13,9 +13,9 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from app.core.sql_validator import validate_sql  # noqa: E402
+from app.validation.sql_validator import validate_sql  # noqa: E402
 
-CSV = ROOT / "eval/results/experiment_20260602_152025/run_FULL_20260602_171125.csv"
+CSV = ROOT / "eval/known_errors.csv"
 SCHEMA = ROOT / "data/mes_schema.json"
 
 MANUAL_SAMPLES = [

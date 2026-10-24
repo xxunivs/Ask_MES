@@ -18,9 +18,9 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from app.core.pipeline import run_pipeline  # noqa: E402
-from app.core.retriever import init_chroma  # noqa: E402
-from app.core.sql_executor import execute_sql  # noqa: E402
+from app.pipeline import run_pipeline  # noqa: E402
+from app.retrieval.retriever import init_chroma  # noqa: E402
+from app.execution.sql_executor import execute_sql  # noqa: E402
 
 DEFAULT_GOLD = ROOT / "data" / "benchmark" / "mes_nl2sql_gold_v3.jsonl"
 RESULTS_DIR = Path(__file__).resolve().parent / "results"

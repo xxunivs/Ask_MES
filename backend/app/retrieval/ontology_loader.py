@@ -1,5 +1,4 @@
 import os
-from functools import lru_cache
 from typing import Optional
 
 try:
@@ -31,7 +30,7 @@ class OntologyEngine:
 
         self._alias_table:  dict[str, list[str]] = {}
         self._alias_column: dict[str, list[str]] = {}
-        self._join_index:   dict[tuple, str]     = {}  # 정렬된 테이블 쌍 기준 JOIN 조건
+        self._join_index:   dict[tuple, str]     = {}
 
         self._build_alias_index()
         self._build_join_index()
@@ -58,7 +57,6 @@ class OntologyEngine:
                     self._alias_column.setdefault(key, [])
                     if str(col) not in self._alias_column[key]:
                         self._alias_column[key].append(str(col))
-                    # 컬럼 별칭으로도 소속 테이블 검색 가능하도록 등록
                     tbl = str(col).split(".")[0] if "." in str(col) else ""
                     if tbl:
                         self._alias_table.setdefault(key, [])
@@ -88,7 +86,6 @@ class OntologyEngine:
                 for dst in dst_tables:
                     key = tuple(sorted([src, dst]))
                     join_cond = str(joins[0])
-                    # viaTable 관계는 2홉 JOIN이라 경유 테이블 표시
                     if via:
                         join_cond = f"[via {str(via[0])}] " + join_cond
                     self._join_index[key] = join_cond
@@ -174,68 +171,3 @@ def get_ontology(ttl_path: str = None) -> OntologyEngine:
 
 def get_concept_engine(ttl_path: str = None):
     return get_ontology(ttl_path)
-
-
-if __name__ == "__main__":
-    import sys
-
-    ttl = os.path.join(os.path.dirname(__file__), "../../data/mes_ontology.ttl")
-    if not os.path.exists(ttl):
-        ttl = "data/mes_ontology.ttl"
-
-    print("\n" + "="*60)
-    print("  OntologyEngine 로드 테스트")
-    print("="*60)
-
-    engine = OntologyEngine(ttl)
-    print("\n  통계:", engine.stats())
-
-    test_queries = [
-        "홀드 상태인 LOT 목록",
-        "설비 분류별 설비 수",
-        "불량률이 높은 LOT",
-        "납기일이 지난 작업지시",
-        "자재 만료일 확인",
-        "PM 대상 설비 보여줘",
-        "track in 시간 기준으로 오늘 투입된 LOT",
-        "외주 작업지시 목록",
-    ]
-
-    print("\n  ─── 개념 검색 테스트 ───")
-    for q in test_queries:
-        tables  = engine.find_tables(q)
-        columns = engine.find_columns(q)
-        print(f"\n  Q: {q}")
-        print(f"     테이블: {tables}")
-        print(f"     컬럼:   {columns[:5]}")
-
-    print("\n  ─── JOIN 힌트 테스트 ───")
-    join_tests = [
-        ["CIM_LOT", "CIM_EQUIPMENT"],
-        ["CIM_LOT", "CIM_EQUIPMENTCLASS"],
-        ["CIM_MATERIALLOT", "CIM_MATERIALCLASS"],
-        ["CIM_LOT", "CIM_BATCH"],   # viaTable 경유
-        ["CIM_LOT", "CIM_MATERIALLOT"],  # viaTable 경유
-    ]
-    for tables in join_tests:
-        hint = engine.get_join_hint(tables)
-        print(f"\n  {tables}")
-        if hint:
-            for line in hint.split("\n"):
-                print(f"    {line}")
-        else:
-            print("    (직접 JOIN 없음 → FKResolver 위임)")
-
-    print("\n  ─── SPARQL 테스트 ───")
-    result = engine.sparql("""
-        PREFIX mfg: <http://neurofactory.skku.ac.kr/mes#>
-        PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
-        SELECT ?class ?table ?alias WHERE {
-            ?class mfg:mapsToTable ?table .
-            OPTIONAL { ?class skos:altLabel ?alias . FILTER(lang(?alias)="ko") }
-        }
-        ORDER BY ?table
-        LIMIT 15
-    """)
-    for row in result:
-        print(f"    {str(row.table):30s}  alias={row.alias}")

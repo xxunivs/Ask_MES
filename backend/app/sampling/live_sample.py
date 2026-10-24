@@ -7,7 +7,7 @@ import re
 import time
 from typing import Any
 
-from app.core.sql_executor import execute_sql
+from app.execution.sql_executor import execute_sql
 
 _BASE_DIR = os.path.dirname(__file__)
 SCHEMA_PATH = os.path.join(_BASE_DIR, "../../data/mes_schema.json")
@@ -172,7 +172,6 @@ def _format_rows(result: dict[str, Any], max_rows: int = 3) -> str:
 
 
 async def build_live_db_context(schema_context: str, max_tables: int = 3) -> str:
-    """실패는 예외 대신 힌트로 포함해 SQL 생성 지속"""
     tables = extract_context_tables(schema_context, max_tables=max_tables)
     if not tables:
         return ""

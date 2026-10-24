@@ -8,13 +8,12 @@ from dataclasses import dataclass
 import chromadb
 from chromadb.utils import embedding_functions
 
-from app.core.config import CHROMA_PATH, RAG_TOP_K, EMBED_MODEL, EMBED_BACKEND, OLLAMA_URL
-from app.core.fk_resolver import FKPathResolver, get_resolver
-from app.core.ontology_loader import get_concept_engine
+from app.config import CHROMA_PATH, RAG_TOP_K, EMBED_MODEL, EMBED_BACKEND, OLLAMA_URL
+from app.retrieval.fk_resolver import FKPathResolver, get_resolver
+from app.retrieval.ontology_loader import get_concept_engine
 
 
 class OllamaEmbeddingFunction(embedding_functions.EmbeddingFunction):
-    """영어 전용 기본 임베딩의 한국어 검색 품질 저하 대응"""
 
     def __init__(self, model: str, base_url: str):
         self._model = model
@@ -94,7 +93,6 @@ def _save_hash(h: str):
 
 
 def init_chroma():
-    """앱 시작 시 1회 호출"""
     global _collection, _fk_resolver, _concept_engine
 
     client = chromadb.PersistentClient(path=CHROMA_PATH)

@@ -10,8 +10,6 @@ _CIM_TABLE_RE = re.compile(r"\b(CIM_[A-Z][A-Z0-9_]*)\b", re.IGNORECASE)
 def _extract_cim_tables(sql: str) -> set[str]:
     return {m.upper() for m in _CIM_TABLE_RE.findall(sql)}
 
-# 항목 구성: 질의 트리거 문자열, 하나 이상 필요한 허용 테이블, 대신 쓰면 오류인 테이블
-# 정답 SQL 오차단 방지를 위해 온톨로지 매핑 대신 명시 규칙만 차단 근거로 사용
 _TABLE_ALIGNMENT_RULES: list[tuple[list[str], list[str], list[str]]] = [
     (["자재 lot", "자재로트", "material lot"], ["CIM_MATERIALLOT", "CIM_LOTMATERIALLOTREL"], ["CIM_LOT"]),
     (["공정 구역", "작업장", "facility"], ["CIM_FACILITY"], []),

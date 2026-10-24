@@ -14,12 +14,12 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from app.core.code_values import (  # noqa: E402
+from app.validation.code_values import (  # noqa: E402
     DEFAULT_FORBIDDEN_YN,
     load_profile_columns,
     save_code_values,
 )
-from app.core.sql_executor import execute_sql  # noqa: E402
+from app.execution.sql_executor import execute_sql  # noqa: E402
 
 
 async def fetch_distinct(table: str, column: str, limit: int = 50) -> list[str]:

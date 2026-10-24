@@ -22,7 +22,6 @@ ID_FORMATS = {
     "CIM_LOT": "{n:08d}-10",
     "CIM_BATCH": "BAT-{n:05d}",
 }
-# 실제 ID 처럼 보이도록 큰 수에서 시작하는 번호
 ID_OFFSETS = {"CIM_PRODUCTDEFINITION": 22000000, "CIM_PRODUCTORDER": 33000000, "CIM_LOT": 82600000, "CIM_MATERIALLOT": 45000000}
 
 PROCESS_SEGMENTS = ["절단", "센터리스 연삭", "열처리", "외경 연삭", "날 연삭", "홈 가공", "호닝", "세척", "PVD 코팅",

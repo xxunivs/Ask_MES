@@ -1,6 +1,4 @@
 """
-표 간 ID 가 맞물리는 데이터, 실제 기록 미사용, 같은 SEED 면 같은 결과
-
 실행 방법 (backend/ 에서):
   ./venv/bin/python ../demo-db/generate_demo_data.py
 """
@@ -19,7 +17,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "backend"))
 sys.path.insert(0, str(Path(__file__).parent))
 
-from app.core.demo_db import connect  # noqa: E402
+from app.execution.demo_db import connect  # noqa: E402
 import vocab  # noqa: E402
 
 SEED = 42
@@ -45,7 +43,6 @@ ROW_COUNTS = {
 }
 LOT_TABLES = {"CIM_LOT", "CIM_LOTHIST", "CIM_LOTDEFECT", "CIM_LOTBATCHREL", "CIM_LOTMATERIALLOTREL", "CIM_MATERIALLOT", "CIM_BATCH"}
 
-# 실제 표본에선 비었지만 데모 질문에 필요한 칸 (채우는 비율, 값 종류)
 DEMO_FILL = {
     ("CIM_MATERIALDEFINITION", "SAFETY_QTY"): (0.6, "number"),
     ("CIM_EQUIPMENT", "ALARMID"): (0.15, "alarm"),
@@ -55,7 +52,6 @@ DEMO_FILL = {
 YN_FLAG = re.compile(r"^IS|FLAG$|YN$")
 REF_PREFIXES = ("PREV", "NEXT", "ROOTPARENT", "PARENT", "SOURCE", "RESERVED", "START", "ORIGINAL", "MERGE", "CHILD", "REPLACE", "SUB")
 
-# 스키마 파일에 없는 참조 관계
 EXTRA_REFS = {
     ("CIM_PROCESSPATH", "NEXTPROCESSNODEID"): "CIM_PROCESSNODE",
     ("CIM_PROCESSNODE", "SUBPROCESSDEFINITIONID"): "CIM_PROCESSDEFINITION",
@@ -320,7 +316,6 @@ def build_rows(table: str, columns: list[dict]) -> list[dict]:
             elif name == own:
                 value = make_id(table, name, n) if is_text(col) else n
             elif parent == table:
-                # 같은 표 참조 칸(부모 LOT 등)은 비움, 필요한 값만 규칙에서 보충
                 value = None
             elif parent and generated_ids.get(parent):
                 value = rng.choice(generated_ids[parent])
