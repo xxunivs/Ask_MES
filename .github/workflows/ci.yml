@@ -37,4 +37,5 @@ jobs:
           cache-dependency-path: web/package-lock.json
       - run: npm ci
       - run: npm run lint
+      - run: npx next typegen
       - run: npx tsc --noEmit
