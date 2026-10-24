@@ -32,7 +32,7 @@ async function post<T>(path: string, body: unknown): Promise<T> {
   return resp.json() as Promise<T>;
 }
 
-export function askQuestion(question: string, limit = 100) {
+export function askQuestion(question: string, limit = 500) {
   return post<NlToSqlResponse>("/chat/nl-to-sql", { question, limit });
 }
 

@@ -112,27 +112,6 @@ class OntologyEngine:
                         found.append(c)
         return found
 
-    def get_join_hint(self, tables: list[str]) -> str:
-        hints: list[str] = []
-        for i, t1 in enumerate(tables):
-            for t2 in tables[i+1:]:
-                key = tuple(sorted([t1, t2]))
-                if key in self._join_index:
-                    cond = self._join_index[key]
-                    if cond.startswith("[via "):
-                        via_tbl = cond.split("]")[0].replace("[via ", "").strip()
-                        raw     = cond.split("] ")[1]
-                        parts = [p.strip() for p in raw.split("AND")]
-                        for part in parts:
-                            hint = f"JOIN {part.split('=')[1].strip().split('.')[0]} WITH (NOLOCK) ON {part.strip()}"
-                            if hint not in hints:
-                                hints.append(hint)
-                    else:
-                        dst = cond.split("=")[1].strip().split(".")[0]
-                        hint = f"JOIN {dst} WITH (NOLOCK) ON {cond}"
-                        if hint not in hints:
-                            hints.append(hint)
-        return "\n".join(hints)
 
     def get_concept_hint(self, query: str) -> str:
         tables  = self.find_tables(query)
@@ -144,8 +123,6 @@ class OntologyEngine:
             lines.append(f"관련 컬럼: {', '.join(columns)}")
         return "\n".join(lines)
 
-    def sparql(self, query: str):
-        return self._g.query(query)
 
     def stats(self) -> dict:
         return {

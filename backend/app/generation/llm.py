@@ -102,7 +102,7 @@ async def _vllm_generate(
         raise RuntimeError(f"vLLM 응답 파싱 실패: {e} — {data}")
 
 
-async def check_ollama() -> bool:
+async def check_llm() -> bool:
     try:
         async with httpx.AsyncClient(timeout=5.0) as client:
             if LLM_PROVIDER in _OPENAI_COMPATIBLE:

@@ -186,6 +186,42 @@ def _check_invalid_fk_columns(
     return bad
 
 
+_SQL_WORDS = {
+    "SELECT", "TOP", "FROM", "WHERE", "GROUP", "BY", "ORDER", "ASC", "DESC", "AND", "OR", "NOT",
+    "NULL", "IS", "IN", "LIKE", "BETWEEN", "AS", "WITH", "NOLOCK", "CASE", "WHEN", "THEN", "ELSE",
+    "END", "HAVING", "DISTINCT", "ON", "EXISTS", "ALL", "ANY", "TRUE", "FALSE", "PERCENT", "TIES",
+    "OVER", "PARTITION", "ROWS", "UNBOUNDED", "PRECEDING", "FOLLOWING", "CURRENT", "ROW",
+    "DATE", "DATETIME", "DATETIME2", "SMALLDATETIME", "TIME", "CHAR", "VARCHAR", "NCHAR", "NVARCHAR",
+    "TEXT", "INT", "BIGINT", "SMALLINT", "TINYINT", "FLOAT", "REAL", "DECIMAL", "NUMERIC", "BIT", "MONEY", "MAX",
+    "YEAR", "YY", "YYYY", "QUARTER", "QQ", "MONTH", "MM", "M", "WEEK", "WK", "WW", "DAY", "DD", "D",
+    "DAYOFYEAR", "DY", "Y", "WEEKDAY", "DW", "HOUR", "HH", "MINUTE", "MI", "N", "SECOND", "SS", "S",
+}
+
+
+def _unknown_bare_columns(sql: str, reg: MesSchemaRegistry) -> list[tuple[str, str]]:
+    # 테이블 하나만 쓰는 단순 SELECT 에서 테이블명 없이 쓴 컬럼 검사
+    if re.search(r"\bJOIN\b|\(\s*SELECT\b|\bUNION\b", sql, re.IGNORECASE) or re.match(r"\s*WITH\b", sql, re.IGNORECASE):
+        return []
+    tables = [t for t in extract_cim_tables(sql) if reg.has_table(t)]
+    if len(tables) != 1:
+        return []
+    table = tables[0]
+    body = re.sub(r"'[^']*'", "''", sql)
+    body = re.sub(r"\[([^\]]*)\]", r"\1", body)
+    known = set(_SQL_WORDS) | {table} | set(_table_aliases(body))
+    known |= {a.upper() for a in re.findall(r"\bAS\s+([^\s,()]+)", body, re.IGNORECASE)}
+    bad: list[tuple[str, str]] = []
+    for m in re.finditer(r"(?<![\w.])([A-Za-z_][A-Za-z0-9_]*)(?![\w.])", body):
+        word = m.group(1).upper()
+        if word in known or not word.isascii():
+            continue
+        if re.match(r"\s*\(", body[m.end():]):
+            continue
+        if not reg.has_column(table, word) and (table, word) not in bad:
+            bad.append((table, word))
+    return bad
+
+
 def _undefined_aliases(sql: str) -> list[str]:
     # 서브쿼리, CTE 별칭은 구분이 어려워 단순 SELECT 에서만 검사
     if re.search(r"\(\s*SELECT\b", sql, re.IGNORECASE) or re.match(r"\s*WITH\b", sql, re.IGNORECASE):
@@ -219,6 +255,7 @@ def validate_sql(
     invalid_columns: list[tuple[str, str]] = []
     if check_columns:
         invalid_columns = _check_invalid_fk_columns(sql, reg)
+        invalid_columns += [c for c in _unknown_bare_columns(sql, reg) if c not in invalid_columns]
 
     hints: list[str] = []
     for t in invalid_tables:

@@ -1,10 +1,10 @@
 from __future__ import annotations
 
 from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from app.config import LLM_MODEL, LLM_PROVIDER
-from app.generation.llm import check_ollama
+from app.generation.llm import check_llm
 from app.pipeline import run_pipeline
 
 router = APIRouter()
@@ -12,7 +12,7 @@ router = APIRouter()
 
 class NlToSqlRequest(BaseModel):
     question: str
-    limit: int = 100
+    limit: int = Field(100, ge=1, le=1000)
 
 
 @router.post("/nl-to-sql")
@@ -34,7 +34,7 @@ async def nl_to_sql(req: NlToSqlRequest):
 
 @router.get("/health")
 async def chat_health():
-    llm_ok = await check_ollama()
+    llm_ok = await check_llm()
     return {
         "provider": LLM_PROVIDER,
         "llm": "ok" if llm_ok else "연결 실패",

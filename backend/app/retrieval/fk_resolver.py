@@ -141,18 +141,6 @@ class FKPathResolver:
 
         return "\n".join(join_clauses)
 
-    def describe_path(self, src: str, dst: str) -> str:
-        path = self.shortest_join_path(src, dst)
-        if not path:
-            return f"[FKResolver] {src} → {dst} : 경로 없음"
-        steps = " → ".join(
-            f"{s['from']} --[{s['on'].split('=')[0].strip().split('.')[-1]}]--> {s['to']}"
-            for s in path
-        )
-        return f"[FKResolver] {src} → {dst} ({len(path)}홉): {steps}"
-
-    def neighbors(self, table: str) -> list[str]:
-        return [e.dst_table for e in self._graph.get(table, [])]
 
     def all_tables(self) -> set[str]:
         return set(self._all_tables)

@@ -21,7 +21,7 @@ SQLITE_PATH = os.getenv(
 )
 
 MES_API_URL = os.getenv("MES_API_URL", "http://localhost:8000")
-MES_API_KEY = os.getenv("MES_API_KEY", "my-secret-api-key")
+MES_API_KEY = os.getenv("MES_API_KEY", "")
 
 CHROMA_PATH = os.getenv("CHROMA_PATH", "./vector_index")
 

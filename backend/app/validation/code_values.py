@@ -87,9 +87,6 @@ class CodeValuesRegistry:
                 forbid_numeric=bool(forbid_num),
             )
 
-    def reload(self):
-        self.rules.clear()
-        self._load(self.path)
 
     def get_rule(self, table: str, column: str) -> Optional[CodeColumnRule]:
         return self.rules.get(f"{table.upper()}.{column.upper()}")
@@ -234,29 +231,6 @@ def code_values_prompt_hint(max_rules: int = 8) -> str:
             + (f" | LLM 금지 예: {forb}" if forb else "")
         )
     return "\n".join(lines)
-
-
-def rag_documents_for_code_values() -> list[tuple[str, str, dict]]:
-    reg = get_code_registry()
-    out = []
-    for rule in reg.rules.values():
-        if not rule.values:
-            continue
-        forb = ", ".join(sorted(rule.forbidden_literals))
-        doc = (
-            f"[코드값] {rule.key} ({rule.label})\n"
-            f"허용 값: {rule.format_allowed()}\n"
-            f"SQL 예: WHERE {rule.column} = '{next(iter(sorted(rule.values)))}'\n"
-            f"금지 (LLM 환각): {forb or '없음'}"
-        )
-        out.append(
-            (
-                doc,
-                f"code_{rule.table}_{rule.column}",
-                {"type": "code_value", "table": rule.table, "column": rule.column},
-            )
-        )
-    return out
 
 
 def save_code_values(

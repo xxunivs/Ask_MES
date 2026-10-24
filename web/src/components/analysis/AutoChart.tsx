@@ -34,27 +34,35 @@ export function hasChart(data: QueryData): boolean {
   return data.rows.length > 0 && numericColumns(data).length > 0;
 }
 
-// 날짜, 항목, 값 형태의 긴 표를 항목별 열로 펼침
+// 날짜, 항목, 값 형태의 긴 표를 항목별 열로 펼침 (대소문자만 다른 항목은 하나로)
 function pivot(data: QueryData, xCol: string, groupCol: string, valueCol: string) {
+  const labels = new Map<string, string>();
+  const keyOf = (row: Record<string, unknown>) => {
+    const raw = String(row[groupCol] ?? "").trim();
+    const key = raw.toUpperCase();
+    if (!labels.has(key)) labels.set(key, raw || "(없음)");
+    return key;
+  };
   const totals = new Map<string, number>();
   for (const row of data.rows) {
-    const g = String(row[groupCol] ?? "");
-    totals.set(g, (totals.get(g) ?? 0) + (Number(row[valueCol]) || 0));
+    const key = keyOf(row);
+    totals.set(key, (totals.get(key) ?? 0) + (Number(row[valueCol]) || 0));
   }
-  const series = [...totals.entries()].sort((a, b) => b[1] - a[1]).slice(0, MAX_SERIES).map(([g]) => g);
+  const keys = [...totals.entries()].sort((a, b) => b[1] - a[1]).slice(0, MAX_SERIES).map(([k]) => k);
+  const series = keys.map((k) => labels.get(k)!);
   const byX = new Map<string, Row>();
   for (const row of data.rows) {
-    const g = String(row[groupCol] ?? "");
-    if (!series.includes(g)) continue;
-    const key = g || "(없음)";
+    const key = keyOf(row);
+    if (!keys.includes(key)) continue;
+    const label = labels.get(key)!;
     const x = String(row[xCol] ?? "");
     const point = byX.get(x) ?? { name: x };
-    point[key] = (Number(point[key]) || 0) + (Number(row[valueCol]) || 0);
+    point[label] = (Number(point[label]) || 0) + (Number(row[valueCol]) || 0);
     byX.set(x, point);
   }
   const points = [...byX.values()].sort((a, b) => String(a.name).localeCompare(String(b.name)));
-  for (const point of points) for (const g of series) point[g || "(없음)"] ??= 0;
-  return { points, series: series.map((g) => g || "(없음)") };
+  for (const point of points) for (const label of series) point[label] ??= 0;
+  return { points, series };
 }
 
 function buildChart(data: QueryData) {
@@ -62,14 +70,15 @@ function buildChart(data: QueryData) {
   const labelCols = data.columns.filter((c) => !numericCols.includes(c));
   const dateCol = labelCols.find((c) => isDateColumn(data, c));
 
-  if (labelCols.length >= 2 && numericCols.length >= 1) {
-    const xCol = dateCol ?? labelCols[0];
+  const xCol = dateCol ?? labelCols[0];
+  const xRepeats = new Set(data.rows.map((row) => String(row[xCol] ?? ""))).size < data.rows.length;
+  if (labelCols.length >= 2 && numericCols.length >= 1 && xRepeats) {
     const groupCol = labelCols.find((c) => c !== xCol)!;
     const { points, series } = pivot(data, xCol, groupCol, numericCols[0]);
     return { kind: dateCol ? "line" : "bar", points, series } as const;
   }
 
-  const labelCol = labelCols[0] ?? data.columns[0];
+  const labelCol = xCol ?? data.columns[0];
   const series = numericCols.filter((c) => c !== labelCol).slice(0, 2);
   let points: Row[] = data.rows.map((row) => {
     const point: Row = { name: String(row[labelCol] ?? "") };
@@ -124,7 +133,7 @@ export default function AutoChart({ data }: { data: QueryData }) {
             ))}
           </LineChart>
         ) : (
-          <BarChart data={points}>
+          <BarChart data={points} margin={{ left: 24, right: 8 }}>
             {axis}
             {/* 막대 애니메이션 끔 (막대가 늦게 보이거나 안 보이는 현상 방지) */}
             {series.map((s, i) => (

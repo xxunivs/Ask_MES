@@ -42,7 +42,3 @@ def date_rules_for_prompt() -> str:
     return _DEV_LAST_YEAR_RULES
 
 
-def date_policy_summary() -> str:
-    if get_date_mode() == "production":
-        return "운영 DB: 날짜 기준 = GETDATE() (실무 일반)"
-    return "개발 DB: 날짜 기준 = 1년 전 (운영 동일 실데이터 구간, 최근 dev 데이터 제외)"
