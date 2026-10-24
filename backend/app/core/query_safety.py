@@ -1,7 +1,4 @@
-"""
-sqlparse 구문 트리 기반 Query Safety Layer (DDL/DML, 전체 스캔, 시스템 테이블, 다중 문장 차단)
-정규식은 주석 삽입(`SEL/**/ECT`), 이스케이프, 서브쿼리로 우회되므로 토큰 트리로 판단
-"""
+"""정규식은 주석 삽입(`SEL/**/ECT`), 이스케이프, 서브쿼리로 우회되므로 토큰 트리로 판단"""
 from __future__ import annotations
 
 from dataclasses import dataclass, field
@@ -11,7 +8,6 @@ import sqlparse
 from sqlparse import tokens as T
 from sqlparse.sql import Comment, Token, TokenList
 
-# 출현 즉시 차단 키워드
 _FORBIDDEN_KEYWORDS = {
     "INSERT", "UPDATE", "DELETE", "MERGE", "UPSERT",
     "DROP", "CREATE", "ALTER", "TRUNCATE", "RENAME",
@@ -22,7 +18,6 @@ _FORBIDDEN_KEYWORDS = {
     "INTO",  # SELECT ... INTO 의 테이블 생성 방지
 }
 
-# 메타데이터 및 시스템 객체 접두어
 _SYSTEM_PREFIXES = (
     "SYS.", "SYSTEM.", "INFORMATION_SCHEMA.",
     "MASTER.", "MSDB.", "TEMPDB.", "MODEL.",
@@ -54,7 +49,7 @@ class SafetyVerdict:
 
 
 def _strip_comments(statement: TokenList) -> list[Token]:
-    """주석과 공백 제거 평탄화 토큰 목록, `SEL/**/ECT` 류 난독화 무력화"""
+    """`SEL/**/ECT` 류 난독화 무력화"""
     out: list[Token] = []
     for tok in statement.flatten():
         if tok.ttype in T.Comment or isinstance(tok, Comment):
@@ -104,7 +99,6 @@ def _is_full_scan(toks: list[Token]) -> bool:
 
 
 def validate_query(sql: str, *, allow_full_scan: bool = False) -> SafetyVerdict:
-    """SQL 한 건의 파스트리 검증, allow_full_scan 은 전체 스캔 차단 해제용"""
     text = (sql or "").strip().rstrip(";").strip()
     if not text:
         return SafetyVerdict(False, ["unparsable"], "빈 문자열")
@@ -113,7 +107,6 @@ def validate_query(sql: str, *, allow_full_scan: bool = False) -> SafetyVerdict:
     if not parsed:
         return SafetyVerdict(False, ["unparsable"], "sqlparse 가 문장을 얻지 못함")
 
-    # 내용 있는 문장이 둘 이상이면 다중 문장으로 차단
     real = [s for s in parsed if s.token_first(skip_cm=True) is not None]
     if len(real) > 1:
         return SafetyVerdict(

@@ -17,7 +17,6 @@ export const metadata: Metadata = {
   description: "자연어 질문으로 MES 데이터를 조회하는 NL2SQL 시스템",
 };
 
-// 전체 페이지 공통 틀
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html

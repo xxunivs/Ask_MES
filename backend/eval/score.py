@@ -1,6 +1,4 @@
 """
-벤치마크 결과 집계 (VS, EX, Table F1)
-
 실행 방법:
   python eval/score.py eval/results/run_FULL_20260602.csv
   python eval/score.py eval/results/run_FULL_20260602.csv --by difficulty
@@ -116,7 +114,6 @@ def group_aggregate(scored: list[dict], key: str) -> dict[str, dict]:
 
 
 def resolve_results_path(target: Path) -> Path:
-    """CSV 경로 해석 (파일, experiment 폴더, glob 패턴, latest.csv)"""
     root = Path(__file__).resolve().parents[1]
     results_dir = Path(__file__).resolve().parent / "results"
 
@@ -137,7 +134,6 @@ def resolve_results_path(target: Path) -> Path:
             if any_csv:
                 return any_csv[0]
 
-    # glob 패턴 (run_FULL_*.csv 등)
     for p in candidates:
         parent = p.parent if p.parent.exists() else results_dir
         pattern = p.name

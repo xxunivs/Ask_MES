@@ -1,5 +1,4 @@
 """
-실제 MES DB 표본의 칸별 값 모양 조사 (가상 데이터 생성 참고용)
 실제 기록, ID, 사람 이름 칸의 값은 미보관, 코드성 칸만 값 목록 보관
 
 실행 방법 (backend/ 에서):
@@ -21,18 +20,15 @@ sys.path.insert(0, str(ROOT / "backend"))
 from app.core.sql_executor import execute_sql  # noqa: E402
 
 SAMPLE_ROWS = 2000
-# 코드성 칸 판정용 값 종류 상한
 CODE_MAX_DISTINCT = 20
 # 사람 이름, 자유 서술 가능 칸 (값 비공개)
 PRIVATE_COLUMN = re.compile(r"USER|NAME|DESC|COMMENT|TEXT|NOTE|REMARK|EMAIL|PHONE", re.IGNORECASE)
 OUTPUT = Path(__file__).resolve().parent / "value_profile.md"
 SPEC_OUTPUT = Path(__file__).resolve().parent / "column_spec.json"
-# 공개 가능한 코드값 (영문, 숫자, 밑줄, 하이픈만의 짧은 값)
 SAFE_CODE = re.compile(r"^[A-Za-z0-9_\-]{1,20}$")
 
 
 def shape_of(value: str) -> str:
-    """값 모양 (숫자 9, 영문 A, 한글 가, 나머지 문자 유지)"""
     value = re.sub(r"[가-힣]", "가", value)
     return re.sub(r"[A-Za-z]", "A", re.sub(r"\d", "9", value))
 
@@ -64,7 +60,7 @@ def describe(column: str, values: list) -> str:
 
 
 def spec_of(column: str, values: list) -> dict:
-    """가상 데이터 생성 규칙, 실제 값은 공개 가능한 코드값만 포함"""
+    """실제 값은 공개 가능한 코드값만 포함"""
     filled = [v for v in values if v not in (None, "")]
     spec: dict = {"empty_ratio": round(1 - len(filled) / max(len(values), 1), 3)}
     if not filled:

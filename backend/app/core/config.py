@@ -1,6 +1,3 @@
-"""
-환경 변수 기반 설정값
-"""
 import os
 from dotenv import load_dotenv
 
@@ -12,11 +9,10 @@ LLM_MODEL = os.getenv("LLM_MODEL", os.getenv("OLLAMA_MODEL", "qwen35-9b"))
 OLLAMA_URL = os.getenv("OLLAMA_URL", "http://localhost:11434")
 OLLAMA_MODEL = LLM_MODEL
 
-# vLLM 또는 OpenAI 호환 API
 VLLM_API_URL = os.getenv("VLLM_API_URL", "http://127.0.0.1:8008/v1")
 VLLM_API_KEY = os.getenv("VLLM_API_KEY", "EMPTY")
 
-# SQL 실행 대상, "demo" 는 로컬 데모 DB(가상 데이터), "mes_api" 는 원격 MES API(실제 DB)
+# "demo" 는 로컬 데모 DB(가상 데이터), "mes_api" 는 원격 MES API(실제 DB)
 DB_BACKEND = os.getenv("DB_BACKEND", "demo").strip().lower()
 
 # DB_BACKEND=mes_api 일 때의 원격 MES API
@@ -32,7 +28,7 @@ EMBED_MODEL = os.getenv("EMBED_MODEL", "bge-m3")
 # "ollama" 는 OLLAMA_URL 의 /api/embeddings 사용, "default" 는 Chroma 기본 임베딩(대조군용)
 EMBED_BACKEND = os.getenv("EMBED_BACKEND", "ollama")
 
-# 공개용 데모 DB (docker compose 의 mes-db, 가상 데이터)
+# docker compose 의 mes-db, 가상 데이터
 DEMO_DB_HOST = os.getenv("DEMO_DB_HOST", "localhost")
 DEMO_DB_PORT = int(os.getenv("DEMO_DB_PORT", "1433"))
 DEMO_DB_USER = os.getenv("DEMO_DB_USER", "sa")

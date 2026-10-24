@@ -1,8 +1,3 @@
-"""
-스키마 벡터 검색, 온톨로지 개념 매핑, FK JOIN 힌트를 묶은 하이브리드 RAG 컨텍스트 생성
-파이프라인 1단계 관련 테이블 찾기와 2단계 JOIN 경로 계산 담당
-"""
-
 import hashlib
 import json
 import os
@@ -19,7 +14,7 @@ from app.core.ontology_loader import get_concept_engine
 
 
 class OllamaEmbeddingFunction(embedding_functions.EmbeddingFunction):
-    """Ollama 기반 Chroma 임베딩 함수, 영어 전용 기본 임베딩의 한국어 검색 품질 저하 대응"""
+    """영어 전용 기본 임베딩의 한국어 검색 품질 저하 대응"""
 
     def __init__(self, model: str, base_url: str):
         self._model = model
@@ -62,7 +57,6 @@ _concept_engine = None
 
 @dataclass(frozen=True)
 class RetrievalConfig:
-    """벤치마크 ablation용 RAG 구성"""
     use_rag: bool = True
     use_ontology: bool = True
     use_fk: bool = True
@@ -100,7 +94,7 @@ def _save_hash(h: str):
 
 
 def init_chroma():
-    """ChromaDB, FKPathResolver, 개념 엔진 초기화, 앱 시작 시 1회 호출"""
+    """앱 시작 시 1회 호출"""
     global _collection, _fk_resolver, _concept_engine
 
     client = chromadb.PersistentClient(path=CHROMA_PATH)
@@ -142,7 +136,6 @@ def init_chroma():
 
 
 def _seed_schema():
-    """mes_schema.json의 테이블, 컬럼 단위 문서 ChromaDB 적재"""
     with open(SCHEMA_PATH, encoding="utf-8") as f:
         schema = json.load(f)
 
@@ -196,7 +189,6 @@ def _seed_schema():
 
 
 def minimal_schema_context(max_tables: int = 40) -> str:
-    """B0 베이스라인용 테이블 및 PK 목록"""
     with open(SCHEMA_PATH, encoding="utf-8") as f:
         schema = json.load(f)
     lines = ["[MES 스키마 요약 — 테이블 목록만]"]
@@ -212,7 +204,6 @@ def retrieve_context(
     n: int = None,
     config: Optional[RetrievalConfig] = None,
 ) -> str:
-    """자연어 질의에 대한 프롬프트 주입용 하이브리드 RAG 컨텍스트"""
     cfg = config or RetrievalConfig()
 
     if not cfg.use_rag and not cfg.use_ontology and not cfg.use_fk:
@@ -241,7 +232,6 @@ def retrieve_context(
             if t and t not in chroma_tables:
                 chroma_tables.append(t)
 
-    # 온톨로지 개념 테이블 우선 배치
     all_tables: list[str] = list(concept_tables)
     for t in chroma_tables:
         if t not in all_tables:
@@ -274,7 +264,6 @@ def retrieve_context(
 
 
 def _augment_intermediate_tables(join_sql: str, all_tables: list[str]):
-    """JOIN SQL의 경유 테이블로 all_tables 보강"""
     import re
     for match in re.finditer(r"JOIN\s+(CIM_\w+)\s+WITH", join_sql):
         t = match.group(1)

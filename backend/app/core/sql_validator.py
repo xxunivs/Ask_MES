@@ -1,7 +1,3 @@
-"""
-생성 SQL 의 테이블, 컬럼과 mes_schema.json 화이트리스트 대조
-DB 실행 전 환각 테이블(예: CIM_MATERIAL) 차단 및 수정 힌트 제공
-"""
 from __future__ import annotations
 
 import json
@@ -159,7 +155,6 @@ def _check_sql_syntax(sql: str) -> Optional[str]:
 def _check_invalid_fk_columns(
     sql: str, reg: MesSchemaRegistry
 ) -> list[tuple[str, str]]:
-    """존재하지 않는 FK 컬럼 탐지 (예: CIM_BATCH.LOTID)"""
     bad: list[tuple[str, str]] = []
     for table, col in extract_qualified_columns(sql):
         if reg.has_table(table) and not reg.has_column(table, col):
@@ -174,7 +169,6 @@ def validate_sql(
     registry: Optional[MesSchemaRegistry] = None,
     check_columns: bool = True,
 ) -> ValidationResult:
-    """SQL 내 CIM_* 테이블 및 테이블.컬럼 참조의 스키마 대조"""
     if not sql or not sql.strip():
         return ValidationResult(ok=False, hints=["SQL이 비어 있습니다."])
 
@@ -256,7 +250,6 @@ def validate_sql(
 
 
 def allowed_tables_hint(max_names: int = 30) -> str:
-    """프롬프트용 짧은 화이트리스트 안내"""
     names = sorted(get_schema_registry().table_names)
     listed = ", ".join(names[:max_names])
     extra = len(names) - max_names

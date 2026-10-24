@@ -1,8 +1,3 @@
-"""
-/chat 라우터
-  POST /chat/nl-to-sql : 자연어 질문 -> SQL 생성 -> DB 실행 (app/core/pipeline.py)
-  GET  /chat/health    : LLM 연결 상태 확인
-"""
 from __future__ import annotations
 
 from fastapi import APIRouter, HTTPException
@@ -22,7 +17,7 @@ class NlToSqlRequest(BaseModel):
 
 @router.post("/nl-to-sql")
 async def nl_to_sql(req: NlToSqlRequest):
-    """질문의 SQL 생성 및 실행, success 는 DB 실행까지의 성공 여부"""
+    """success 는 DB 실행까지의 성공 여부"""
     try:
         result = await run_pipeline(req.question, limit=req.limit)
     except Exception as e:

@@ -1,7 +1,4 @@
-"""
-생성 SQL 실행, DB_BACKEND 에 따라 로컬 데모 DB(demo) 또는 원격 MES API(mes_api)
-두 경로 공통 반환 형태 { success, columns, rows, count }
-"""
+"""demo, mes_api 공통 반환 형태 { success, columns, rows, count }"""
 from __future__ import annotations
 
 import asyncio
@@ -24,7 +21,7 @@ _HEADERS = {
 
 
 async def execute_sql(sql: str, limit: int = 100) -> dict:
-    """SQL 실행, DB 오류는 빈 결과(0행)로 오인되지 않도록 예외 발생"""
+    """DB 오류는 빈 결과(0행)로 오인되지 않도록 예외 발생"""
     if DB_BACKEND == "mes_api":
         return await _execute_remote(sql, limit)
     return await asyncio.to_thread(_execute_demo, sql, limit)

@@ -7,7 +7,6 @@ import DataBrowser from "@/components/data/DataBrowser";
 const MIN_CHAT = 320;
 const MIN_DATA = 360;
 
-// 왼쪽 데이터 둘러보기와 오른쪽 질문 화면, 가운데 경계선으로 넓이 조절
 export default function Workspace() {
   const [chatWidth, setChatWidth] = useState(440);
   const [dragging, setDragging] = useState(false);
@@ -32,7 +31,6 @@ export default function Workspace() {
           <DataBrowser />
         </section>
 
-        {/* 넓이 조절용 경계선 손잡이 */}
         <div
           role="separator"
           aria-orientation="vertical"

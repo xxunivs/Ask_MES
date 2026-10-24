@@ -1,6 +1,4 @@
 """
-sql_validator 간이 동작 확인
-
 실행 방법: python eval/check_validator.py
 """
 import sys

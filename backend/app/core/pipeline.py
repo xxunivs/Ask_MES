@@ -1,5 +1,4 @@
 """
-자연어 질문 -> SQL -> 실행 결과 파이프라인
 웹 API(/chat/nl-to-sql)와 벤치마크(eval/run_benchmark.py) 공용
 
   1. 관련 테이블 찾기   개념 사전 + 벡터 검색        retriever.retrieve_context
@@ -33,7 +32,6 @@ from app.core.sql_autofix import autofix_sql
 from app.core.sql_executor import execute_sql
 from app.core.sql_validator import validate_sql
 
-# 검증 실패, DB 실행 실패 시 각각의 재생성 횟수
 SCHEMA_RETRY_MAX = 1
 DB_RETRY_MAX = 1
 GENERATE_MAX_TOKENS = 512
@@ -48,7 +46,6 @@ class PipelineResult:
     executed: bool = False
     data: Optional[dict] = None
     db_error: str = ""
-    # 단계별 중간 결과, [{step, detail}] 형식
     trace: list[dict[str, str]] = field(default_factory=list)
 
     def log(self, step: str, detail: str) -> None:
@@ -63,15 +60,12 @@ async def run_pipeline(
     limit: int = 100,
     execute: bool = True,
 ) -> PipelineResult:
-    """질문 하나의 SQL 변환 및 실행, preset 은 ablation 용 검색 구성(B0~FULL)"""
     result = PipelineResult(question=question)
 
-    # 1~2. 관련 테이블 찾기, JOIN 경로 계산
     schema_ctx = retrieve_context(question, n=top_k, config=RetrievalConfig.from_preset(preset))
     for step, detail in _split_schema_context(schema_ctx):
         result.log(step, detail)
 
-    # 3. 실제 값 확인
     try:
         db_ctx = await build_live_db_context(schema_ctx)
     except Exception as e:
@@ -79,7 +73,6 @@ async def run_pipeline(
         print(f"[DBContext] 오류: {e}")
     result.log("3. 실제 값 확인", db_ctx or "(샘플 없음)")
 
-    # 4~6. SQL 생성, 자동 교정, 검증 (실패 시 오류 포함 재생성)
     prompt = NL_TO_SQL_PROMPT.format(schema=schema_ctx, db_context=db_ctx, question=question, **static_prompt_hints())
     for attempt in range(SCHEMA_RETRY_MAX + 1):
         tag = f" (시도 {attempt + 1})"
@@ -101,7 +94,6 @@ async def run_pipeline(
     if not execute or not result.schema_valid:
         return result
 
-    # 7. 실행 (실패 시 DB 오류 포함 재생성)
     await _execute(result, limit, "7. 실행")
     for _ in range(DB_RETRY_MAX):
         if result.executed:
@@ -140,7 +132,6 @@ async def _execute(result: PipelineResult, limit: int, step: str) -> None:
 
 
 def _split_schema_context(schema_ctx: str) -> list[tuple[str, str]]:
-    """retrieve_context 결과의 단계별 기록용 분리"""
     labels = {"## 개념 매핑": "1. 관련 테이블 찾기 (개념 사전)", "## JOIN 경로 힌트": "2. JOIN 경로 계산"}
     parts = re.split(r"\n\s*(?=## )", schema_ctx)
     steps = [("1. 관련 테이블 찾기 (벡터 검색)", parts[0].strip())]

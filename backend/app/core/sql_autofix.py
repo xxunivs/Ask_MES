@@ -1,7 +1,4 @@
-"""
-생성 SQL 의 확정적 문법 오류 자동 교정
-LLM 재생성보다 싸고 확실한 코드 교정
-"""
+"""LLM 재생성보다 싸고 확실한 코드 교정"""
 from __future__ import annotations
 
 import difflib
@@ -11,7 +8,6 @@ import re
 from functools import lru_cache
 
 # T-SQL 은 alias 가 WITH (NOLOCK) 앞에 와야 함, 프롬프트로 금지해도 모델이 반복 생성
-# alias 자리에 올 수 없는 예약어
 _RESERVED_AFTER_TABLE = (
     "ON", "WHERE", "INNER", "LEFT", "RIGHT", "FULL", "CROSS", "OUTER",
     "JOIN", "GROUP", "ORDER", "HAVING", "SELECT", "UNION", "AS",
@@ -71,7 +67,6 @@ _SCHEMA_PATH = os.path.join(os.path.dirname(__file__), "../../data/mes_schema.js
 
 @lru_cache(maxsize=1)
 def _schema_columns() -> dict:
-    """{TABLE: {COLUMN, ...}} 형식의 스키마 컬럼 사전"""
     with open(_SCHEMA_PATH, encoding="utf-8") as f:
         data = json.load(f)
     tables = data.get("tables", data)
@@ -85,7 +80,6 @@ _QUALIFIED_COL_RE = re.compile(r"\b([A-Za-z_][A-Za-z0-9_]*)\.([A-Za-z_][A-Za-z0-
 
 
 def _resolve_alias_map(sql: str) -> dict:
-    """SQL 내 alias 와 실제 테이블 이름 매핑"""
     amap = {}
     for m in re.finditer(
         r"\b(?:FROM|JOIN)\s+(?P<table>CIM_[A-Za-z0-9_]+)(?:\s+(?:AS\s+)?(?P<alias>(?!WITH\b)[A-Za-z_][A-Za-z0-9_]*))?",
@@ -129,7 +123,6 @@ def _fix_unknown_columns(sql: str) -> tuple[str, list]:
     return _QUALIFIED_COL_RE.sub(repl, sql), fixed_notes
 
 def autofix_sql(sql: str) -> tuple[str, list[str]]:
-    """교정된 SQL 과 적용한 교정 목록 반환"""
     if not sql:
         return sql, []
 

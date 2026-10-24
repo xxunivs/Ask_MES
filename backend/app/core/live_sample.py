@@ -1,7 +1,3 @@
-"""
-retriever가 고른 테이블의 실제 MES DB 샘플, 날짜 범위, 주요값 조회 결과 요약
-파이프라인 3단계 실제 값 확인 담당
-"""
 from __future__ import annotations
 
 import asyncio
@@ -58,7 +54,6 @@ def _load_schema() -> dict[str, dict[str, Any]]:
 
 
 def extract_context_tables(schema_context: str, max_tables: int = 4) -> list[str]:
-    """retriever 컨텍스트에 언급된 테이블 목록, 등장 순서 유지"""
     schema = _load_schema()
     found: list[str] = []
 
@@ -177,7 +172,7 @@ def _format_rows(result: dict[str, Any], max_rows: int = 3) -> str:
 
 
 async def build_live_db_context(schema_context: str, max_tables: int = 3) -> str:
-    """소형 SELECT 조회 기반 실DB 컨텍스트, 실패는 예외 대신 힌트로 포함해 SQL 생성 지속"""
+    """실패는 예외 대신 힌트로 포함해 SQL 생성 지속"""
     tables = extract_context_tables(schema_context, max_tables=max_tables)
     if not tables:
         return ""

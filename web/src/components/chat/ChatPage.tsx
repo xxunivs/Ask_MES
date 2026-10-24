@@ -7,7 +7,6 @@ import ChatInput from "./ChatInput";
 import ChatMessage, { type Message } from "./ChatMessage";
 import FrequentQueries from "./FrequentQueries";
 
-// 채팅 화면
 export default function ChatPage() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(false);

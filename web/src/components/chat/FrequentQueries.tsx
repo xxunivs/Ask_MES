@@ -5,7 +5,6 @@ const QUESTIONS = [
   "설비별 TrackIn 건수 추이를 일별로 보여줘",
 ];
 
-// 추천 질문 버튼 목록
 export default function FrequentQueries({
   onSelect,
   disabled,

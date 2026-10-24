@@ -1,6 +1,4 @@
 """
-웹 API 와 같은 파이프라인(app/core/pipeline.py)의 질문 세트 일괄 실행 및 CSV 저장
-
 실행 방법 (backend/ 에서):
   python eval/run_benchmark.py --preset FULL --execute
   python eval/run_benchmark.py --preset B1 --execute --ids Q001,Q002

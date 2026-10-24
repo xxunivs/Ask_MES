@@ -5,14 +5,12 @@ import { useState } from "react";
 import AutoChart, { hasChart } from "@/components/analysis/AutoChart";
 import ResultTable from "./ResultTable";
 
-// 대화 한 건의 종류
 export type Message =
   | { id: number; role: "user"; text: string }
   | { id: number; role: "assistant"; text: string }
   | { id: number; role: "assistant"; loading: true }
   | { id: number; role: "assistant"; result: NlToSqlResponse };
 
-// 대화 말풍선 한 개
 export default function ChatMessage({ message }: { message: Message }) {
   const isUser = message.role === "user";
 
@@ -33,7 +31,6 @@ export default function ChatMessage({ message }: { message: Message }) {
   );
 }
 
-// 실행 결과, 표와 차트 전환 보기
 function QueryResult({ result }: { result: NlToSqlResponse }) {
   const [view, setView] = useState<"table" | "chart">("table");
   if (!result.data) {

@@ -1,8 +1,3 @@
-"""
-/data 라우터 (데이터 둘러보기)
-  GET /data/tables               : 종류별 표 목록과 칸 설명
-  GET /data/tables/{name}?page=1 : 표 내용 50줄씩
-"""
 from __future__ import annotations
 
 import json
@@ -20,7 +15,6 @@ _SCHEMA_PATH = os.path.join(os.path.dirname(__file__), "../../data/mes_schema.js
 _EXTRA_LABELS_PATH = os.path.join(os.path.dirname(__file__), "../../data/display_labels_extra.json")
 PAGE_SIZE = 50
 
-# 사용자 화면용 데이터 종류 묶음
 GROUPS: list[tuple[str, list[str]]] = [
     ("생산 LOT", ["CIM_LOT", "CIM_LOTHIST", "CIM_BATCH", "CIM_LOTBATCHREL", "CIM_LOTMATERIALLOTREL"]),
     ("설비", ["CIM_EQUIPMENT", "CIM_EQUIPMENTCLASS", "CIM_FACILITY", "CIM_FACILITYMAP", "CIM_PROCESSSEGMENTEQUIPMENTREL"]),
@@ -32,7 +26,6 @@ GROUPS: list[tuple[str, list[str]]] = [
 ]
 
 
-# 화면에 보이는 표 이름
 TABLE_LABELS = {
     "CIM_LOT": "생산 로트", "CIM_LOTHIST": "로트 이력", "CIM_BATCH": "배치",
     "CIM_LOTBATCHREL": "로트-배치 관계", "CIM_LOTMATERIALLOTREL": "로트-자재로트 관계",
@@ -53,7 +46,6 @@ def _clean(label: str) -> str:
 
 @lru_cache(maxsize=1)
 def _column_labels() -> tuple[dict[str, dict[str, str]], dict[str, str]]:
-    """칸 화면 이름 사전, 우선순위는 표별 설명, 같은 칸 이름의 다른 표 설명, 추가 이름표 순"""
     by_table: dict[str, dict[str, str]] = {}
     by_name: dict[str, str] = {}
     for name, t in _schema().items():
@@ -71,7 +63,6 @@ def _column_labels() -> tuple[dict[str, dict[str, str]], dict[str, str]]:
 
 @lru_cache(maxsize=1)
 def _label_overrides() -> dict[str, str]:
-    """스키마 설명이 영어인 칸의 한글 이름"""
     with open(_EXTRA_LABELS_PATH, encoding="utf-8") as f:
         return json.load(f).get("_override", {})
 
@@ -106,7 +97,7 @@ def list_tables():
 
 @router.get("/tables/{name}")
 async def read_table(name: str, page: int = 1):
-    """표 내용 한 페이지, SQL 에 직접 넣는 표 이름이라 스키마 목록만 허용"""
+    """SQL 에 직접 넣는 표 이름이라 스키마 목록만 허용"""
     if name not in _schema():
         raise HTTPException(status_code=404, detail=f"없는 표: {name}")
     page = max(page, 1)

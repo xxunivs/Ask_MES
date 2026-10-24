@@ -1,10 +1,7 @@
-"""
-가상 데이터용 절삭공구 제조 업종 어휘 (일반 용어, 실제 회사 값 아님)
-표별 ID 형식, 이름 목록, 칸별 값 목록
-"""
+"""일반 용어, 실제 회사 값 아님"""
 from __future__ import annotations
 
-# 표 자신의 ID 형식, {n} 은 1부터 시작하는 번호
+# {n} 은 1부터 시작하는 번호
 ID_FORMATS = {
     "CIM_CODECLASS": "CC{n:03d}",
     "CIM_CODE": "CD{n:04d}",
@@ -56,14 +53,12 @@ CODE_CLASSES = ["LOT 상태", "공정 상태", "설비 상태", "불량 유형",
 CUSTOMERS = ["Alpha Tools Co.", "Beta Machining Ltd.", "Gamma Precision", "Delta Industrial", "Epsilon Cutting Inc.",
              "Zeta Components", "Eta Motors", "Theta Aerospace", "Iota Molds", "Kappa Auto Parts"]
 
-# 칸 이름별 값 목록 (표 공통)
 LOT_ACTIVITIES = ["Create", "TrackIn", "TrackOut", "Hold", "Release", "Split", "Merge", "Ship"]
 MASTER_ACTIVITIES = ["Create", "Modify"]
 USERS = [f"user{i:02d}" for i in range(1, 21)]
 COMMENTS = ["정기 점검 후 재가동", "샘플 출하 건", "고객 요청 긴급", "재작업 후 재검사", "코팅 두께 확인 필요",
             "설비 교체 후 첫 LOT", "수량 조정", "검사 결과 양호"]
 
-# 불량 이름 포함 단어별 불량 분류
 DEFECT_CLASS_RULES = [
     ("코팅", "코팅 불량"), ("경도", "열처리 불량"), ("원자재", "자재 불량"), ("마킹", "마킹 불량"),
     ("포장", "포장 불량"), ("라벨", "포장 불량"), ("스크래치", "외관 불량"), ("흠집", "외관 불량"),

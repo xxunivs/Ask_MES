@@ -1,6 +1,5 @@
 import type { QueryData } from "@/lib/api";
 
-// 조회 결과 표
 export default function ResultTable({ data }: { data: QueryData }) {
   if (data.rows.length === 0) {
     return <p className="text-sm text-ink-mute">조회 결과가 없습니다.</p>;

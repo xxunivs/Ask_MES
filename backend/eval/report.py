@@ -1,6 +1,4 @@
 """
-ablation 결과 비교표 생성
-
 실행 방법:
   python eval/report.py eval/results/experiment_20260602_120000
   python eval/report.py eval/results/run_FULL_*.csv --gold data/benchmark/mes_nl2sql_gold_v3.jsonl

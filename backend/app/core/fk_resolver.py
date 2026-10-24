@@ -1,8 +1,3 @@
-"""
-MES 스키마 FK 관계 그래프와 Dijkstra 기반 테이블 간 최단 JOIN 경로 계산
-파이프라인 2단계 JOIN 경로 계산 담당
-"""
-
 import heapq
 import json
 import os
@@ -12,7 +7,6 @@ from typing import Optional
 
 @dataclass
 class FKEdge:
-    """FK 관계 엣지"""
     src_table:  str
     dst_table:  str
     src_col:    str
@@ -30,14 +24,12 @@ class FKEdge:
 
 @dataclass(order=True)
 class _HeapItem:
-    """heapq용 우선순위 래퍼, path는 비교 제외"""
     cost: int
     node: str
     path: list = field(compare=False, default_factory=list)
 
 
 class FKPathResolver:
-    """mes_schema.json FK 관계의 무방향 가중치 그래프와 최단 JOIN 경로 탐색"""
 
     def __init__(self, schema_path: str):
         self._graph: dict[str, list[FKEdge]] = {}
@@ -86,7 +78,6 @@ class FKPathResolver:
     def shortest_join_path(
         self, src: str, dst: str
     ) -> list[dict]:
-        """src에서 dst까지 최단 JOIN 경로 단계 목록, 경로 없으면 빈 리스트"""
         if src == dst:
             return []
         if src not in self._all_tables or dst not in self._all_tables:
@@ -122,7 +113,7 @@ class FKPathResolver:
         return []
 
     def get_join_sql(self, tables: list[str], max_hops: int = 4) -> str:
-        """우선순위순 테이블 목록의 체인 JOIN 절 힌트, max_hops 초과 경로는 프롬프트 오염 방지로 제외"""
+        """max_hops 초과 경로는 프롬프트 오염 방지로 제외"""
         if len(tables) < 2:
             return ""
 
@@ -138,7 +129,6 @@ class FKPathResolver:
 
             path = self.shortest_join_path(anchor, target)
             if not path:
-                # 앵커와 연결이 없으면 다른 입력 테이블에서 경로 탐색
                 for prev in tables:
                     if prev == target:
                         continue
@@ -155,7 +145,6 @@ class FKPathResolver:
         return "\n".join(join_clauses)
 
     def describe_path(self, src: str, dst: str) -> str:
-        """디버그용 경로 설명 문자열"""
         path = self.shortest_join_path(src, dst)
         if not path:
             return f"[FKResolver] {src} → {dst} : 경로 없음"
@@ -176,7 +165,6 @@ _resolver_instance: Optional[FKPathResolver] = None
 
 
 def get_resolver(schema_path: str = None) -> FKPathResolver:
-    """FKPathResolver 싱글턴"""
     global _resolver_instance
     if _resolver_instance is None:
         if schema_path is None:

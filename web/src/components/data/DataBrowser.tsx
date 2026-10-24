@@ -4,7 +4,6 @@ import { useEffect, useRef, useState } from "react";
 import { listTables, type TableGroup } from "@/lib/api";
 import TableScreen from "./TableScreen";
 
-// 데이터 둘러보기 화면, 위 메뉴(대분류 > 표)의 표 선택과 아래 조회 화면
 export default function DataBrowser() {
   const [groups, setGroups] = useState<TableGroup[]>([]);
   const [selected, setSelected] = useState("CIM_LOT");
@@ -35,7 +34,6 @@ export default function DataBrowser() {
   );
 }
 
-// 마우스를 올리면 옆에 표 목록이 펼쳐지는 대분류 메뉴
 function TableMenu({
   groups,
   selected,
@@ -51,7 +49,6 @@ function TableMenu({
   const [hovered, setHovered] = useState(0);
   const ref = useRef<HTMLDivElement>(null);
 
-  // 메뉴 바깥 클릭 시 닫기
   useEffect(() => {
     if (!open) return;
     function close(e: MouseEvent) {

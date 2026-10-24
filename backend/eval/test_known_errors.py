@@ -1,6 +1,4 @@
 """
-과거 FULL 벤치마크 실패 SQL 샘플로 sql_validator 및 코드값 검증 차단 여부 테스트
-
 실행 방법: python eval/test_known_errors.py
 """
 from __future__ import annotations
@@ -20,7 +18,6 @@ from app.core.sql_validator import validate_sql  # noqa: E402
 CSV = ROOT / "eval/results/experiment_20260602_152025/run_FULL_20260602_171125.csv"
 SCHEMA = ROOT / "data/mes_schema.json"
 
-# CSV 외 대표 오류 패턴의 수동 샘플
 MANUAL_SAMPLES = [
     {
         "id": "Q002-bad",
@@ -123,7 +120,6 @@ def load_schema_cols():
 
 
 def classify_remaining(sql: str, table_cols: dict) -> list[str]:
-    """검증 통과 후에도 남는 위험 패턴"""
     issues = []
     if re.search(r"\bISHOLD\s*=\s*'TRUE'", sql, re.I):
         issues.append("code: ISHOLD=TRUE")
@@ -145,7 +141,6 @@ def main():
     table_cols = load_schema_cols()
     results = []
 
-    # 과거 실행 실패 pred_sql 재검증
     if CSV.exists():
         for row in csv.DictReader(CSV.open(encoding="utf-8-sig")):
             if row.get("exec_ok", "").lower() != "false":

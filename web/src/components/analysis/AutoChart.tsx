@@ -3,22 +3,18 @@
 import { Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import type { QueryData } from "@/lib/api";
 
-// 막대 색 (남색, 연보라)
 const COLORS = ["#1b1938", "#c9b4fa"];
 
-// 앞 5행이 모두 숫자인 칸
 function numericColumns(data: QueryData): string[] {
   return data.columns.filter((col) =>
     data.rows.slice(0, 5).every((row) => row[col] !== "" && row[col] !== null && !isNaN(Number(row[col]))),
   );
 }
 
-// 차트로 그릴 숫자 칸 존재 여부
 export function hasChart(data: QueryData): boolean {
   return data.rows.length > 0 && numericColumns(data).length > 0;
 }
 
-// 숫자 칸 막대 차트 (최대 2개 칸, 30행)
 export default function AutoChart({ data }: { data: QueryData }) {
   const numericCols = numericColumns(data);
   if (data.rows.length === 0 || numericCols.length === 0) return null;

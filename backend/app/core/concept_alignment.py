@@ -1,7 +1,3 @@
-"""
-질의 개념과 SQL 테이블 정합성 검증, 허용 테이블이 SQL에 없으면 실행 전 차단
-파이프라인 6단계 검증 담당
-"""
 from __future__ import annotations
 
 from dataclasses import dataclass, field

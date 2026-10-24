@@ -1,7 +1,3 @@
-"""
-LLM REST API 클라이언트
-기본 Ollama, LLM_PROVIDER=vllm 이면 OpenAI 호환 vLLM API 호출
-"""
 from __future__ import annotations
 
 import httpx
@@ -21,7 +17,7 @@ async def llm_generate(
     max_tokens: int = 512,
     seed: int | None = 0,
 ) -> str:
-    """설정된 LLM provider 호출, seed 는 재현성용 고정값(None 이면 비결정적)"""
+    """seed 는 재현성용 고정값, None 이면 비결정적"""
     if LLM_PROVIDER in {"vllm", "openai"}:
         return await _vllm_generate(prompt, temperature, max_tokens, seed)
     return await _ollama_generate(prompt, temperature, max_tokens, seed)
@@ -98,7 +94,6 @@ async def _vllm_generate(
 
 
 async def check_ollama() -> bool:
-    """설정된 LLM provider 서버 연결 확인"""
     try:
         async with httpx.AsyncClient(timeout=5.0) as client:
             if LLM_PROVIDER in {"vllm", "openai"}:

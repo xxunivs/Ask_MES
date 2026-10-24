@@ -1,6 +1,4 @@
 """
-B0~FULL 5조건 ablation 연속 실행 및 리포트 생성
-
 실행 방법 (backend/ 에서, LLM 서버와 DB 필요):
   python eval/run_all_ablations.py --execute
   python eval/run_all_ablations.py --presets B1,FULL --execute

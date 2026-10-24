@@ -1,6 +1,3 @@
-"""
-공개용 데모 DB(가상 데이터) 접속
-"""
 from __future__ import annotations
 
 import pymssql
@@ -17,7 +14,6 @@ from app.core.config import (
 
 
 def connect() -> pymssql.Connection:
-    """관리자 계정 접속 (가상 데이터 생성용)"""
     return pymssql.connect(
         server=DEMO_DB_HOST,
         port=DEMO_DB_PORT,
@@ -29,7 +25,6 @@ def connect() -> pymssql.Connection:
 
 
 def connect_reader() -> pymssql.Connection:
-    """읽기 전용 계정 접속 (LLM 생성 SQL 실행용)"""
     return pymssql.connect(
         server=DEMO_DB_HOST,
         port=DEMO_DB_PORT,

@@ -1,7 +1,4 @@
-"""
-MES 날짜 기준 정책 (dev_last_year: 1년 전 기준, production: GETDATE() 기준)
-개발 DB 는 최근 데이터가 비운영이고 약 1년 전 구간만 운영과 같은 실데이터
-"""
+"""개발 DB 는 최근 데이터가 비운영이고 약 1년 전 구간만 운영과 같은 실데이터"""
 from __future__ import annotations
 
 import os

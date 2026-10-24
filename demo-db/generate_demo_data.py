@@ -1,5 +1,4 @@
 """
-column_spec.json, vocab.py, 데모 DB 표 정의 기반의 공개용 데모 DB 가상 데이터 생성
 표 간 ID 가 맞물리는 데이터, 실제 기록 미사용, 같은 SEED 면 같은 결과
 
 실행 방법 (backend/ 에서):
@@ -31,7 +30,7 @@ DATE_START = datetime(2024, 10, 1)
 DATE_END = datetime(2026, 10, 20)
 BATCH = 500
 
-# 표별 행 수, 부모 표가 먼저 오는 순서 유지 필요
+# 부모 표가 먼저 오는 순서 유지 필요
 ROW_COUNTS = {
     "CIM_CODECLASS": 20, "CIM_CODE": 200,
     "CIM_FACILITY": 20, "CIM_FACILITYMAP": 20,
@@ -54,7 +53,6 @@ DEMO_FILL = {
     ("CIM_MATERIALLOT", "RECEIVEDTIME"): (0.9, "date"),
 }
 YN_FLAG = re.compile(r"^IS|FLAG$|YN$")
-# 다른 표 ID 참조 칸의 접두어 (PREVPROCESSNODEID -> PROCESSNODEID)
 REF_PREFIXES = ("PREV", "NEXT", "ROOTPARENT", "PARENT", "SOURCE", "RESERVED", "START", "ORIGINAL", "MERGE", "CHILD", "REPLACE", "SUB")
 
 # 스키마 파일에 없는 참조 관계
@@ -65,14 +63,11 @@ EXTRA_REFS = {
 
 rng = random.Random(SEED)
 generated_ids: dict[str, list[str]] = {}
-# 표별 ID 와 대표 이름 (자식 표 이름 생성용)
 names: dict[str, dict[str, str]] = {}
-# 표별 ID 와 행 (자식 표의 부모 값 참조용)
 rows_by_id: dict[str, dict[str, dict]] = {}
 
 
 def load_columns(cur) -> dict[str, list[dict]]:
-    """데모 DB 표 정의 (칸 이름, 종류, 길이, NULL 허용, PK 여부)"""
     cur.execute("""
         SELECT c.TABLE_NAME, c.COLUMN_NAME, c.DATA_TYPE, c.CHARACTER_MAXIMUM_LENGTH,
                c.NUMERIC_PRECISION, c.NUMERIC_SCALE, c.IS_NULLABLE,
@@ -91,7 +86,6 @@ def load_columns(cur) -> dict[str, list[dict]]:
 
 
 def owner_table(table: str, column: str) -> str | None:
-    """이 칸이 가리키는 부모 표 (FK 정의, 추가 관계, 이름 규칙 순)"""
     if (table, column) in EXTRA_REFS:
         return EXTRA_REFS[(table, column)]
     for fk in SCHEMA.get(table, {}).get("foreign_keys", []):
@@ -111,7 +105,6 @@ def owner_table(table: str, column: str) -> str | None:
 
 
 def own_id_column(table: str, columns: list[dict]) -> str | None:
-    """표 자신의 ID 칸 (PK 중 SITEID 가 아니고 부모를 가리키지 않는 첫 칸)"""
     for c in columns:
         if c["pk"] and c["name"] != "SITEID" and not owner_table(table, c["name"]):
             return c["name"]
@@ -132,7 +125,6 @@ def random_code(length: int) -> str:
 
 
 def random_date(base: datetime, column: str) -> datetime:
-    """행 기준 시각 주변 날짜, 시작 계열은 가깝게, 종료 계열은 뒤로"""
     upper = column.upper()
     if any(k in upper for k in ("START", "TRACKIN", "CREATE", "RELEASE", "PLAN")):
         return base + timedelta(minutes=rng.randint(0, 120))
@@ -148,7 +140,6 @@ def is_text(col: dict) -> bool:
 
 
 def fit(value, col: dict):
-    """칸 종류와 길이에 맞춘 값 변환"""
     if value is None:
         return None
     t = col["type"]
@@ -171,14 +162,12 @@ def fit(value, col: dict):
 
 
 def is_yn_flag(col: dict, spec: dict) -> bool:
-    """Y/N 표시 칸 (코드값이 Y, N 뿐이거나 IS, FLAG, YN 이름)"""
     if spec.get("kind") == "code":
         return set(spec["values"]) <= {"Y", "N"}
     return is_text(col) and bool(YN_FLAG.search(col["name"]))
 
 
 def common_text(table: str, name: str, n: int):
-    """여러 표 공통 칸의 값, 해당 없으면 None"""
     if name in ("ACTIVITY", "PREVACTIVITY"):
         return rng.choice(vocab.LOT_ACTIVITIES if table in LOT_TABLES else vocab.MASTER_ACTIVITIES)
     if name in ("CUSTOMACTIVITY", "PREVCUSTOMACTIVITY"):
@@ -227,7 +216,6 @@ def name_of(table: str, key) -> str:
 
 
 def apply_domain_rules(table: str, row: dict, n: int) -> str | None:
-    """업무상 자연스러운 이름과 값 보정, 행의 대표 이름 반환"""
     def pick(items):
         return items[(n - 1) % len(items)]
 
