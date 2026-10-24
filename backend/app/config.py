@@ -25,6 +25,8 @@ MES_API_KEY = os.getenv("MES_API_KEY", "my-secret-api-key")
 
 CHROMA_PATH = os.getenv("CHROMA_PATH", "./vector_index")
 
+CORS_ORIGINS = [o.strip() for o in os.getenv("CORS_ORIGINS", "*").split(",") if o.strip()]
+
 RAG_TOP_K = int(os.getenv("RAG_TOP_K", "8"))
 
 EMBED_MODEL = os.getenv("EMBED_MODEL", "bge-m3")

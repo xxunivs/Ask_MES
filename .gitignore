@@ -11,6 +11,7 @@ __pycache__/
 
 # 벡터 검색 인덱스 (실행 시 자동 생성)
 vector_index/
+backend/vector_index_deploy/
 
 # 기타
 .DS_Store
