@@ -6,4 +6,4 @@
 2. `generate_demo_data.py`: `real_db_profile.json`과 `fake_vocab.py`로 가짜 데이터 생성 -> 데모 SQL Server
 3. `export_sqlite.py`: 데모 SQL Server -> `backend/data/mes_demo.sqlite` (공개 데모가 쓰는 DB)
 
-데모 SQL Server는 루트의 `docker-compose.yml`로 띄우고, `01_create_tables.sql`(테이블 26개), `02_create_reader.sql`(조회 전용 계정) 순서로 실행한다.
+데모 SQL Server는 이 폴더의 `docker-compose.yml`로 띄우고, `01_create_tables.sql`(테이블 26개), `02_create_reader.sql`(조회 전용 계정) 순서로 실행한다.
