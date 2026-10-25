@@ -120,7 +120,7 @@ backend/
 │   └── synthetic_data/        가상 데이터 생성, 데모 SQL Server
 └── tests/                     검증기, 안전 검사, 자동 교정, SQLite 번역 테스트 (pytest)
 
-web/                           웹 화면 (Next.js, React, TypeScript)
+frontend/                      웹 화면 (Next.js, React, TypeScript)
 hosting/                       ask-mes.web.app 연결 설정 (Firebase Hosting)
 .github/                       CI 설정, README 그림
 ```
