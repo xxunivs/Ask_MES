@@ -2,7 +2,7 @@
 데모 SQL Server -> 배포용 SQLite 파일
 
 실행 방법 (backend/ 에서, 데모 DB 를 띄운 상태):
-  ./venv/bin/python ../synthetic_data/export_sqlite.py
+  ./venv/bin/python scripts/synthetic_data/export_sqlite.py
 결과: backend/data/mes_demo.sqlite (배포용 데모 DB)
 """
 
@@ -15,7 +15,7 @@ from datetime import date, datetime
 from decimal import Decimal
 from pathlib import Path
 
-BACKEND = Path(__file__).resolve().parents[1] / "backend"
+BACKEND = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(BACKEND))
 
 from app.config import SQLITE_PATH  # noqa: E402

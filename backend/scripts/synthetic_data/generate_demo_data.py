@@ -2,7 +2,7 @@
 real_db_profile.json 모양대로 가짜 데이터 생성 -> 데모 SQL Server
 
 실행 방법 (backend/ 에서, docker compose 로 데모 DB 를 띄운 상태):
-  ./venv/bin/python ../synthetic_data/generate_demo_data.py
+  ./venv/bin/python scripts/synthetic_data/generate_demo_data.py
 """
 
 from __future__ import annotations
@@ -16,8 +16,8 @@ from datetime import datetime, timedelta
 from decimal import Decimal
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT / "backend"))
+BACKEND = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(BACKEND))
 sys.path.insert(0, str(Path(__file__).parent))
 
 import fake_vocab as vocab  # noqa: E402
@@ -26,9 +26,7 @@ from app.execution.demo_db import connect  # noqa: E402
 
 SEED = 42
 SPEC = json.loads((Path(__file__).parent / "real_db_profile.json").read_text(encoding="utf-8"))
-SCHEMA = {
-    t["name"]: t for t in json.loads((ROOT / "backend/data/mes_schema.json").read_text(encoding="utf-8"))["tables"]
-}
+SCHEMA = {t["name"]: t for t in json.loads((BACKEND / "data/mes_schema.json").read_text(encoding="utf-8"))["tables"]}
 SITE_ID = "1000"
 DATE_START = datetime(2024, 10, 1)
 DATE_END = datetime(2026, 10, 20)

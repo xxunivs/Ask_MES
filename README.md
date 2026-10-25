@@ -117,9 +117,9 @@ backend/
 ├── data/                      스키마, 온톨로지, 코드값, 벤치마크 질문 세트, 데모용 SQLite DB
 ├── eval/                      벤치마크 실행, 채점, 논문 원본 결과
 ├── scripts/                   벡터 색인 생성, 코드값 수집
+│   └── synthetic_data/        가상 데이터 생성, 데모 SQL Server
 └── tests/                     검증기, 안전 검사, 자동 교정, SQLite 번역 테스트 (pytest)
 
-synthetic_data/                실제 DB 값 모양 조사, 가상 데이터 생성, SQLite 내보내기, 데모 SQL Server (docker compose)
 web/                           웹 화면 (Next.js, React, TypeScript)
 hosting/                       ask-mes.web.app 연결 설정 (Firebase Hosting)
 .github/                       CI 설정, README 그림

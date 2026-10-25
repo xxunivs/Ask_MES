@@ -2,8 +2,8 @@
 실제 MES DB 값 모양 조사 (실제 기록, ID, 사람 이름 값은 미보관, 코드성 컬럼만 값 목록 보관)
 
 실행 방법 (backend/ 에서, 실제 DB 접속 필요):
-  ./venv/bin/python ../synthetic_data/profile_real_db.py
-결과: synthetic_data/value_profile.md (요약, git 제외), synthetic_data/real_db_profile.json (컬럼 규칙, 실제 값 미포함)
+  ./venv/bin/python scripts/synthetic_data/profile_real_db.py
+결과: value_profile.md (요약, git 제외), real_db_profile.json (컬럼 규칙, 실제 값 미포함)
 """
 
 from __future__ import annotations
@@ -15,8 +15,8 @@ import sys
 from collections import Counter
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT / "backend"))
+BACKEND = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(BACKEND))
 
 from app.execution.sql_executor import execute_sql  # noqa: E402
 
@@ -117,7 +117,7 @@ async def main() -> None:
     )
     targets = [
         line.split("[")[1].split("]")[0]
-        for line in (ROOT / "synthetic_data/01_create_tables.sql").read_text(encoding="utf-8").splitlines()
+        for line in (Path(__file__).resolve().parent / "01_create_tables.sql").read_text(encoding="utf-8").splitlines()
         if line.startswith("CREATE TABLE")
     ]
     print(f"실제 DB CIM 테이블 {tables['count']}개 중 데모 대상 {len(targets)}개 조사")
