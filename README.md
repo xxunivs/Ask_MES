@@ -1,4 +1,4 @@
-<img src="img/hero.png" alt="Ask MES!">
+<img src=".github/assets/hero.png" alt="Ask MES!">
 
 # Ask MES!
 
@@ -19,11 +19,11 @@ SQL을 모르는 제조 현업이 **자연어로 질문하면 SQL로 바꿔 MES 
 
 #### 질문하면 SQL을 만들어 실행하고 표로 보여 줌
 
-<img src="img/screen_table.png" alt="질문 결과 표">
+<img src=".github/assets/screen_table.png" alt="질문 결과 표">
 
 #### 날짜, 숫자 결과는 차트로 전환
 
-<img src="img/screen_chart.png" alt="질문 결과 차트">
+<img src=".github/assets/screen_chart.png" alt="질문 결과 차트">
 
 **맡은 역할 (AI, BE, FE)**: 개념 사전 구축, 하이브리드 검색, JOIN 경로 계산, 실제 DB 값 확인, 웹 개발과 공개 데모 배포
 
@@ -33,7 +33,7 @@ SQL을 모르는 제조 현업이 **자연어로 질문하면 SQL로 바꿔 MES 
 
 질문이 들어오면 필요한 DB 정보를 찾아 LLM에 함께 넘기고, LLM이 만든 SQL을 검사한 뒤 조회만 가능한 계정으로 실행합니다.
 
-<img src="img/architecture.png" alt="시스템 구조">
+<img src=".github/assets/architecture.png" alt="시스템 구조">
 
 <br>
 
@@ -43,7 +43,7 @@ SQL을 모르는 제조 현업이 **자연어로 질문하면 SQL로 바꿔 MES 
 
 <table>
 <tr>
-<td width="48%"><img src="img/ts1_retrieval.png" alt="개념 사전과 벡터 검색"></td>
+<td width="48%"><img src=".github/assets/ts1_retrieval.png" alt="개념 사전과 벡터 검색"></td>
 <td>
 <b>문제</b><br>현장에서는 '홀드', '보류'라고 말하지만 DB에는 <code>CIM_LOT.ISHOLD</code>로 되어 있어 테이블을 못 찾았고, 465개 컬럼을 전부 넣기엔 컨텍스트가 부족했습니다.<br><br>
 <b>해결</b><br>현장 용어 155개를 DB 컬럼에 연결한 개념 사전과 ChromaDB 벡터 검색을 합쳐, 질문에 필요한 스키마만 골라 LLM에 넘겼습니다.<br><br>
@@ -57,7 +57,7 @@ SQL을 모르는 제조 현업이 **자연어로 질문하면 SQL로 바꿔 MES 
 
 <table>
 <tr>
-<td width="48%"><img src="img/ts2_join.png" alt="외래키 그래프로 JOIN 경로 계산"></td>
+<td width="48%"><img src=".github/assets/ts2_join.png" alt="외래키 그래프로 JOIN 경로 계산"></td>
 <td>
 <b>문제</b><br>'설비 종류별 불량 수량'처럼 필요한 테이블이 직접 연결되어 있지 않으면 LLM이 중간 테이블을 찾지 못해 SQL 생성에 실패했습니다.<br><br>
 <b>해결</b><br>외래키 관계를 그래프로 만들고 Dijkstra로 최단 경로를 계산해, 중간 테이블까지 포함한 JOIN 절을 힌트로 넣었습니다.<br><br>
@@ -71,7 +71,7 @@ SQL을 모르는 제조 현업이 **자연어로 질문하면 SQL로 바꿔 MES 
 
 <table>
 <tr>
-<td width="48%"><img src="img/ts3_values.png" alt="실제 값을 조회해 프롬프트에 넣음"></td>
+<td width="48%"><img src=".github/assets/ts3_values.png" alt="실제 값을 조회해 프롬프트에 넣음"></td>
 <td>
 <b>문제</b><br><code>ISHOLD</code>에는 'Y', 'N'이 문자로 들어 있는데, LLM이 컬럼명만 보고 <code>ISHOLD = TRUE</code>로 비교해 실행 오류가 났습니다.<br><br>
 <b>해결</b><br>SQL을 만들기 전에 대상 컬럼의 샘플과 값 분포를 DB에서 조회해 프롬프트에 함께 넣었습니다.<br><br>
@@ -87,13 +87,13 @@ SQL을 모르는 제조 현업이 **자연어로 질문하면 SQL로 바꿔 MES 
 
 실제 MES DB로 직접 만든 GOLD 질문 200개(쉬움 80, 보통 78, 어려움 42)로 측정했습니다.
 
-<img src="img/results.png" alt="결과">
+<img src=".github/assets/results.png" alt="결과">
 
 <br>
 
 ## 🛠 사용 기술
 
-<img src="img/stack.png" alt="사용 기술">
+<img src=".github/assets/stack.png" alt="사용 기술">
 
 <br>
 
@@ -122,6 +122,6 @@ backend/
 synthetic_data/                실제 DB 값 모양 조사, 가상 데이터 생성, SQLite 내보내기
 web/                           웹 화면 (Next.js, React, TypeScript)
 hosting/                       ask-mes.web.app 연결 설정 (Firebase Hosting)
-img/                           README 그림
+.github/                       CI 설정, README 그림
 docker-compose.yml             가상 데이터 SQL Server
 ```
