@@ -1,6 +1,4 @@
 """
-real_db_profile.json 모양대로 가짜 데이터 생성 -> 데모 SQL Server
-
 실행 방법 (backend/ 에서, docker compose 로 데모 DB 를 띄운 상태):
   ./venv/bin/python scripts/synthetic_data/generate_demo_data.py
 """

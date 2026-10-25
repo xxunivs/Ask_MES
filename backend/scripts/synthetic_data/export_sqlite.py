@@ -1,6 +1,4 @@
 """
-데모 SQL Server -> 배포용 SQLite 파일
-
 실행 방법 (backend/ 에서, 데모 DB 를 띄운 상태):
   ./venv/bin/python scripts/synthetic_data/export_sqlite.py
 결과: backend/data/mes_demo.sqlite (배포용 데모 DB)

@@ -1,5 +1,3 @@
-"""가짜 데이터용 일반 용어 (실제 회사 값 아님)"""
-
 from __future__ import annotations
 
 # {n} 은 1부터 시작하는 번호
